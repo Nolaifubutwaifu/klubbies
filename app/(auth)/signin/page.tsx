@@ -10,13 +10,18 @@ export const metadata: Metadata = { title: "Log in" };
 
 async function clubPreview(handle: string | undefined) {
   if (!handle || !/^[a-z0-9_]{1,48}$/i.test(handle)) return null;
-  const { data } = await createAdminClient()
-    .from("clubs")
-    .select("name, organisation, handle")
-    .eq("handle", handle.toLowerCase())
-    .eq("status", "active")
-    .maybeSingle();
-  return data;
+  try {
+    const { data } = await createAdminClient()
+      .from("clubs")
+      .select("name, organisation, handle")
+      .eq("handle", handle.toLowerCase())
+      .eq("status", "active")
+      .maybeSingle();
+    return data;
+  } catch (error) {
+    console.error("club preview failed", error);
+    return null;
+  }
 }
 
 export default async function SignInPage(props: PageProps<"/signin">) {
