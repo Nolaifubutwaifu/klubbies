@@ -61,8 +61,8 @@ export function SignInForm({ flow }: { flow: "member" | "create" }) {
       </button>
       <div className="border-t-2 border-divider pt-3 text-[13px] leading-normal text-neutral-600">
         {flow === "create"
-          ? "We'll email you a six digit code. No password to forget."
-          : "We'll email a six digit code to the address your club has on file. No password to forget."}
+          ? "We'll email you a sign-in code. No password to forget."
+          : "We'll email a sign-in code to the address your club has on file. No password to forget."}
       </div>
     </form>
   );

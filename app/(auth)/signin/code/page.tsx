@@ -23,12 +23,12 @@ export default async function CodePage(props: PageProps<"/signin/code">) {
     <AuthSplit
       kicker="Check your inbox"
       headline={maskEmail(email)}
-      detail={isCreate ? "We've sent a six digit code. It expires in 10 minutes." : NEUTRAL_MESSAGE}
+      detail={isCreate ? "We've sent you a sign-in code. It expires in 10 minutes." : NEUTRAL_MESSAGE}
       footnote="Codes work once. Nobody from your club or from Klubbies will ever ask you for one."
     >
       <div>
         <h1 className="display mb-2 text-[32px]">Enter your code</h1>
-        <p className="text-[15px] text-neutral-700">Type the six digits from the email.</p>
+        <p className="text-[15px] text-neutral-700">Type the code from the email.</p>
       </div>
       <CodeForm restartHref={isCreate ? "/start" : "/signin"} />
     </AuthSplit>

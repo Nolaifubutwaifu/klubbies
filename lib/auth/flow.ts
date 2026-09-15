@@ -12,7 +12,7 @@ export const CODE_TTL_MS = 10 * 60 * 1000;
 export const MAX_VERIFY_ATTEMPTS = 5;
 
 export const NEUTRAL_MESSAGE =
-  "If that address is on a club member list, we've sent it a six digit code. It expires in 10 minutes.";
+  "If that address is on a club member list, we've sent it a sign-in code. It expires in 10 minutes.";
 export const CODE_REJECTED = "That code didn't work or has expired. Check the latest email, or request a new code.";
 
 export const requestCodeSchema = z.object({
@@ -22,7 +22,8 @@ export const requestCodeSchema = z.object({
 });
 
 export const verifyCodeSchema = z.object({
-  code: z.string().trim().regex(/^\d{6}$/, "Enter the six digit code"),
+  // Supabase issues 6 to 10 digit codes depending on the project setting.
+  code: z.string().trim().regex(/^\d{6,10}$/, "Enter the code from the email"),
 });
 
 export type RequestCodeInput = z.infer<typeof requestCodeSchema>;

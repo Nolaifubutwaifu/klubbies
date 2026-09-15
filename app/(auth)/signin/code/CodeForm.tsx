@@ -37,16 +37,16 @@ export function CodeForm({ restartHref }: { restartHref: string }) {
   return (
     <form onSubmit={onSubmit} className="flex max-w-[420px] flex-col gap-4">
       <label className="field">
-        Six digit code
+        Code from the email
         <input
           className="input font-heading"
           name="code"
           value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
           inputMode="numeric"
           autoComplete="one-time-code"
-          pattern="\d{6}"
-          placeholder="000000"
+          pattern="\d{6,10}"
+          placeholder="00000000"
           required
           autoFocus
           style={{ fontSize: 32, fontWeight: 900, letterSpacing: "0.3em", minHeight: 64 }}
@@ -57,7 +57,7 @@ export function CodeForm({ restartHref }: { restartHref: string }) {
           {error}
         </div>
       ) : null}
-      <button type="submit" className="btn btn-primary btn-lg justify-start" disabled={pending || code.length !== 6}>
+      <button type="submit" className="btn btn-primary btn-lg justify-start" disabled={pending || code.length < 6}>
         {pending ? "Checking…" : "Open my albums"}
       </button>
       <div className="border-t-2 border-divider pt-3 text-[13px] leading-normal text-neutral-600">
