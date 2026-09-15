@@ -12,6 +12,7 @@ export function AdminNav({ handle }: { handle: string }) {
     { href: `${base}/albums`, label: "Albums" },
     { href: `${base}/activity`, label: "Activity" },
     { href: `${base}/settings`, label: "Settings" },
+    { href: `${base}/billing`, label: "Billing" },
   ];
   return (
     <nav className="flex flex-wrap gap-1 border-b-2 border-divider bg-neutral-900 px-6 py-2">

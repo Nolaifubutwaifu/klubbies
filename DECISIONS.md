@@ -47,3 +47,14 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
 15. **Zip download is deferred to v1.1**, as listed in §14. The grace banner asks members to save what they want via single downloads.
 16. **Supabase free plan limit.** Uploads over 50 MB per file are rejected by Storage on the free plan. Clubs uploading video need the Pro plan (the file size limit is configurable up to 500 GB).
 17. **Sessions:** the cookie `maxAge` is 30 days and is refreshed by `proxy.ts` on every navigation (rolling). "Sign out of all devices" uses `signOut({ scope: "global" })`.
+
+## 2026-09-16 · Billing (Stripe)
+
+18. **A club must be paid before admins can add members, create albums or upload** (Max chose "gate club creation behind payment"). The club is created first as `unpaid`, then step 2 of 4 is Stripe Checkout. Viewing is never gated, so members of a lapsed club keep seeing existing albums. Enforced in RLS by `private.club_can_write()` on album, media, membership and storage inserts, and repeated in server actions and routes for friendly errors.
+19. **Checkout is created server-side from `STRIPE_PRICE_ID`**, not from the Buy Button, so every payment carries the club id in its metadata. Whether the price is one-off or recurring decides `payment` versus `subscription` mode.
+20. **The club activates on the `checkout.session.completed` webhook**, and also when the admin lands back on the billing page with the session id. This means local dev works without webhook forwarding. Webhook events are stored in `stripe_events` for idempotency.
+21. **Subscription status mapping:**
+    - `active` and `trialing` → active
+    - `past_due` → past_due (still writable while Stripe retries)
+    - `unpaid`, `canceled`, `incomplete_expired` and `paused` → canceled
+22. **Clubs that existed before billing were set to `comped`.** Super admins can comp a club with `update clubs set billing_status = 'comped'`.

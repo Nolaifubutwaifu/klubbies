@@ -94,7 +94,7 @@ async function main() {
     await removeSeedClub(spec.handle);
     const { data: club, error } = await db
       .from("clubs")
-      .insert({ handle: spec.handle, name: spec.name, organisation: spec.organisation, created_by: adminId })
+      .insert({ handle: spec.handle, name: spec.name, organisation: spec.organisation, created_by: adminId, billing_status: "comped" })
       .select("id")
       .single();
     if (error || !club) throw error;

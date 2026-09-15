@@ -199,6 +199,7 @@ export type Database = {
       clubs: {
         Row: {
           accent_colour: string | null;
+          billing_status: string;
           created_at: string;
           created_by: string | null;
           description: string | null;
@@ -207,12 +208,21 @@ export type Database = {
           logo_path: string | null;
           name: string;
           organisation: string | null;
+          paid_at: string | null;
           roster_mapping: Json | null;
           status: string;
+          stripe_checkout_session_id: string | null;
+          stripe_customer_id: string | null;
+          stripe_subscription_id: string | null;
           updated_at: string;
         };
         Insert: {
           accent_colour?: string | null;
+          billing_status?: string;
+          paid_at?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -227,6 +237,11 @@ export type Database = {
         };
         Update: {
           accent_colour?: string | null;
+          billing_status?: string;
+          paid_at?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_customer_id?: string | null;
+          stripe_subscription_id?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -505,6 +520,36 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      stripe_events: {
+        Row: {
+          club_id: string | null;
+          created_at: string;
+          id: string;
+          payload: Json;
+          processed_at: string | null;
+          type: string;
+          updated_at: string;
+        };
+        Insert: {
+          club_id?: string | null;
+          created_at?: string;
+          id: string;
+          payload: Json;
+          processed_at?: string | null;
+          type: string;
+          updated_at?: string;
+        };
+        Update: {
+          club_id?: string | null;
+          created_at?: string;
+          id?: string;
+          payload?: Json;
+          processed_at?: string | null;
+          type?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       users: {
         Row: {

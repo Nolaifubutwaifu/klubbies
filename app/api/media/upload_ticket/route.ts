@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getClubContextById } from "@/lib/auth/session";
+import { ACTIVATE_MESSAGE, canWrite } from "@/lib/billing/status";
 import { ACCEPTED_TYPES, resolveMimeType } from "@/lib/media/constants";
 import { BUCKET, derivativePaths, mediaFolder } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
 
   const ctx = await getClubContextById(album.club_id);
   if (!ctx?.isAdmin) return NextResponse.json({ error: "Album not found" }, { status: 404 });
+  if (!canWrite(ctx.club.billing_status)) return NextResponse.json({ error: ACTIVATE_MESSAGE }, { status: 402 });
 
   const id = crypto.randomUUID();
   const folder = mediaFolder(album.club_id, album.id, id);

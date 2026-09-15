@@ -40,6 +40,18 @@ SEED_ADMIN_EMAIL=you@example.com pnpm seed
 | `pnpm test` | Unit tests (handles, roster parsing, name matching) |
 | `pnpm test:e2e` | Access-control tests against the real Supabase project (needs the service role key) |
 
+## Billing
+
+Clubs pay through Stripe Checkout before they can add members or upload.
+
+1. Set `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID` (use test mode keys locally).
+2. In Stripe → Developers → Webhooks, add `https://<your-domain>/api/stripe/webhook` with these events:
+   - `checkout.session.completed`
+   - `checkout.session.async_payment_succeeded`
+   - `customer.subscription.created`, `.updated` and `.deleted`
+3. Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
+4. For local webhooks, run `stripe listen --forward-to localhost:3000/api/stripe/webhook`.
+
 ## Deploying
 
 Deploy to Vercel in the `syd1` region (`vercel.json`). Set every variable from `.env.example`. `CRON_SECRET` enables the daily grace-period job at `/api/cron/grace`.

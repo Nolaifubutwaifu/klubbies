@@ -14,7 +14,7 @@ export function CreateClubForm({ appUrl }: { appUrl: string }) {
   return (
     <form action={action} className="flex max-w-[920px] flex-col gap-6 px-6 py-8">
       <div>
-        <span className="kicker">Step 1 of 3</span>
+        <span className="kicker">Step 1 of 4</span>
         <h1 className="display mt-2" style={{ fontSize: "clamp(30px, 4vw, 44px)" }}>
           Create your club
         </h1>
@@ -63,7 +63,7 @@ export function CreateClubForm({ appUrl }: { appUrl: string }) {
       <div className="hr" />
       <div className="flex flex-wrap gap-3">
         <SubmitButton className="btn btn-primary justify-start" pendingText="Creating…">
-          Continue to member list
+          Continue to payment
         </SubmitButton>
       </div>
     </form>

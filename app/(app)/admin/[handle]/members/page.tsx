@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
+import { canWrite } from "@/lib/billing/status";
+import { BillingGate } from "@/components/BillingGate";
 import { createClient } from "@/lib/supabase/server";
 import { AddMemberForm } from "./AddMemberForm";
 import { MemberTable } from "./MemberTable";
@@ -28,7 +30,7 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
   const filter = FILTERS.find((f) => f.key === search.filter)?.key ?? "all";
   const q = typeof search.q === "string" ? search.q.trim().slice(0, 100) : "";
   const page = Math.max(0, Number(search.page) || 0);
-  const isOnboarding = search.step === "2";
+  const isOnboarding = search.step === "3";
 
   let query = supabase
     .from("memberships")
@@ -72,11 +74,11 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
       {isOnboarding ? (
         <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-accent p-4">
           <div>
-            <div className="kicker">Step 2 of 3</div>
+            <div className="kicker">Step 3 of 4</div>
             <div className="mt-1 font-heading text-[20px] font-extrabold">Add the people who should see your photos.</div>
           </div>
           <Link href={`/admin/${handle}/albums`} className="btn btn-primary">
-            Continue to first album
+            Step 4: first album
           </Link>
         </div>
       ) : null}
@@ -87,8 +89,14 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
       <div className="hr" />
 
       <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-        <RosterImport clubId={ctx.club.id} />
-        <AddMemberForm clubId={ctx.club.id} />
+        {canWrite(ctx.club.billing_status) ? (
+          <>
+            <RosterImport clubId={ctx.club.id} />
+            <AddMemberForm clubId={ctx.club.id} />
+          </>
+        ) : (
+          <BillingGate handle={handle} action="add members" />
+        )}
         <Stat
           value={(onList.count ?? 0).toLocaleString("en-AU")}
           label={`on the list · ${(pending.count ?? 0).toLocaleString("en-AU")} never logged in`}

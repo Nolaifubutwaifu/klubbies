@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { requireAdminContext } from "@/lib/auth/admin-context";
+import { canWrite } from "@/lib/billing/status";
+import { BillingGate } from "@/components/BillingGate";
 import { listAlbumMedia } from "@/lib/media/queries";
 import { createClient } from "@/lib/supabase/server";
 import { AdminMediaGrid } from "./AdminMediaGrid";
@@ -62,7 +64,7 @@ export default async function AdminAlbumPage(props: PageProps<"/admin/[handle]/a
           description={album.description}
           allowDownload={album.allow_download}
         />
-        <Uploader albumId={album.id} />
+        {canWrite(ctx.club.billing_status) ? <Uploader albumId={album.id} /> : <BillingGate handle={handle} action="upload" />}
       </div>
 
       <section className="flex flex-col gap-3">

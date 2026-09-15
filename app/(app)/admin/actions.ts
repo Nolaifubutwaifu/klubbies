@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { z } from "zod";
 import { getClubContextById, requireUser } from "@/lib/auth/session";
+import { ACTIVATE_MESSAGE, canWrite } from "@/lib/billing/status";
 import { graceWindow, sendDueGraceNotice } from "@/lib/membership/grace";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { generateHandleBase } from "@/lib/roster/handle";
@@ -53,7 +54,7 @@ export async function createClubAction(_prev: ActionState, form: FormData): Prom
   });
   if (error || !data) return { error: "Could not create the club. Try again." };
 
-  redirect(`/admin/${data.handle}/members?step=2`);
+  redirect(`/admin/${data.handle}/billing?step=2`);
 }
 
 const clubSettingsSchema = clubSchema.extend({
@@ -107,6 +108,7 @@ const memberSchema = z.object({
 
 export async function addMemberAction(clubId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
   const ctx = await adminContext(clubId);
+  if (!canWrite(ctx.club.billing_status)) return { error: ACTIVATE_MESSAGE };
   const parsed = memberSchema.safeParse({ name: text(form, "name"), email: text(form, "email") });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
@@ -270,6 +272,7 @@ function albumInput(form: FormData) {
 
 export async function createAlbumAction(clubId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
   const ctx = await adminContext(clubId);
+  if (!canWrite(ctx.club.billing_status)) return { error: ACTIVATE_MESSAGE };
   const parsed = albumInput(form);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 

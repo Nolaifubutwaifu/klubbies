@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { AlbumCard } from "@/components/AlbumCard";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
+import { canWrite } from "@/lib/billing/status";
+import { BillingGate } from "@/components/BillingGate";
 import { listAlbums } from "@/lib/media/queries";
 import { createClient } from "@/lib/supabase/server";
 import { NewAlbumForm } from "./NewAlbumForm";
@@ -18,7 +20,7 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
     <main className="flex flex-col gap-6 px-6 py-8">
       <PageTitle kicker={ctx.club.name} title="Albums" />
       <div className="hr" />
-      <NewAlbumForm clubId={ctx.club.id} />
+      {canWrite(ctx.club.billing_status) ? <NewAlbumForm clubId={ctx.club.id} /> : <BillingGate handle={handle} action="create albums" />}
       {albums.length ? (
         <div className="tile-grid border-2 border-divider" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
           {albums.map((album) => (
