@@ -8,6 +8,10 @@ import { serverEnv } from "@/lib/env";
 let client: Resend | undefined;
 
 async function send(to: string, subject: string, element: React.ReactElement): Promise<void> {
+  if (process.env.EMAIL_DRY_RUN === "1") {
+    console.info(`[email dry run] "${subject}" → ${to}`);
+    return;
+  }
   const env = serverEnv();
   client ??= new Resend(env.RESEND_API_KEY);
   const [html, text] = await Promise.all([render(element), render(element, { plainText: true })]);

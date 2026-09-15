@@ -105,7 +105,10 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
                 {status === "canceled" ? "Reactivate club" : "Pay and activate"}
               </SubmitButton>
             </form>
-            <span className="text-[12px] text-neutral-600">Payments are handled by Stripe. Klubbies never sees your card details.</span>
+            <span className="text-[12px] text-neutral-600">
+              Payments are handled by Stripe. Klubbies never sees your card details. By activating you agree to the{" "}
+              <Link href="/terms">terms</Link> and <Link href="/refunds">refund and cancellation policy</Link>.
+            </span>
           </div>
           <div className="flex flex-col gap-3">
             <span className="text-[13px] font-semibold">What happens next</span>

@@ -111,7 +111,11 @@ export default async function LandingPage() {
 
       <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-6 text-[13px] text-neutral-700">
         <span>© {new Date().getFullYear()} Klubbies</span>
-        <Link href="/privacy">Privacy</Link>
+        <nav className="flex gap-4">
+          <Link href="/terms">Terms</Link>
+          <Link href="/refunds">Refunds</Link>
+          <Link href="/privacy">Privacy</Link>
+        </nav>
       </footer>
     </main>
   );

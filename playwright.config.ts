@@ -24,6 +24,8 @@ export default defineConfig({
       APP_URL: `http://localhost:${PORT}`,
       // Short signed URLs so the expiry test runs in seconds.
       SIGNED_URL_TTL_OVERRIDE_SECONDS: "4",
+      // Never send real email to the fake test addresses.
+      EMAIL_DRY_RUN: "1",
     },
   },
 });
