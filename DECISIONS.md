@@ -1,0 +1,49 @@
+# Decisions
+
+Choices made during the v1 build that `klubbies_masterfile.md` did not settle. Newest at the bottom.
+
+## 2026-09-15 · v1 build
+
+1. **Sign-in codes are minted by Supabase Auth and delivered by Resend.** `request_code` checks the roster with the service role and calls `auth.admin.generateLink` to get the six digit OTP. We email it with a React Email template and do not use Supabase's mailer, so there are no Supabase email rate limits and branding stays consistent. Supabase handles hashing, single use and expiry. We additionally enforce a 10 minute window and 5 attempts in `pending_sign_ins`.
+2. **The roster lookup runs after the response (`after()`).** Every `request_code` call returns the same body and status in the same time, whether or not the email is on a roster.
+3. **"Start a club" is open to any verified email** (confirmed with Max). The `/start` flow sends a code without a roster check. The creator becomes `club_admin` through the `create_club` RPC.
+4. **RLS helpers live in a `private` schema** (`private.is_club_member`, `private.is_club_admin`, `private.can_view_club_item`) so they cannot be called over the REST API. The Supabase security advisor flagged the public versions.
+5. **Storage read access mirrors media visibility.** The `storage.objects` select policy joins `public.media`, so signing a URL through the user's own client is itself an authorisation check. The service role never signs member-facing URLs.
+6. **Upload derivatives are made in the browser.** `thumb.webp` (400 px), `display.webp` (2000 px) and the video `poster.jpg` are generated client-side, and `/api/media/[id]/finalize` verifies the objects exist before marking the item `ready`. There is no Edge Function worker in v1. If a browser can't decode a file (for example HEVC `.mov` in Chrome), the original still uploads and the grid shows a placeholder. A backfill worker is future work.
+7. **Albums are created as `draft`** and published explicitly once uploads finish. This matches the mockup's "album not yet published" state. The masterfile default was `published`.
+8. **Added schema beyond §7:**
+   - `media.display_path`
+   - `media.sort_at` (generated, for keyset navigation)
+   - `memberships.name_mismatch` and `grace_notices_sent`
+   - `albums.published_at` and `created_by`
+   - `clubs.roster_mapping`
+   - `roster_imports.status` and `mapping`
+   - `club_handle_redirects`
+   - `auth_rate_events`
+   - `pending_sign_ins`
+   - views `album_media_counts` and `club_storage_usage`
+9. **Removing a member who never signed in revokes immediately.** They had nothing to keep. Members who have signed in enter the 30 day grace window and get the day 1 email at removal. The daily Vercel Cron job sends day 7 and day 29 and revokes at the end.
+10. **Club admins can read `access_events` for their club.** The masterfile says "no client reads", but the admin activity page needs it. Members can never read it, and inserts are server-only.
+11. **Roster imports run in three steps.** Preview parses and stores the rows, a dry-run commit shows the counts and problem rows, and the final commit applies. People in grace or revoked who reappear in an import are restored.
+12. **Mockup elements not built in v1:**
+    - "Chosen members" visibility (decision 3 in the masterfile)
+    - "Invite co-admin" (v2)
+    - "Find yourself in this album" (v3)
+    - the editable slug field (handles are generated, §7.1)
+    - greyscale photo treatment (confirmed: real photos in colour)
+13. **The unauthenticated `/signin?club=` panel shows only the club name and university.** It doesn't show the mockup's event or photo counts, so a shared link reveals nothing about activity.
+14. **Screens not in the mockup were built from the design tokens:**
+    - code entry
+    - start a club
+    - club switcher
+    - admin overview
+    - albums list
+    - album editor (reuses the Upload screen)
+    - settings
+    - activity log
+    - roster mapping dialog
+    - privacy page
+    - 404
+15. **Zip download is deferred to v1.1**, as listed in §14. The grace banner asks members to save what they want via single downloads.
+16. **Supabase free plan limit.** Uploads over 50 MB per file are rejected by Storage on the free plan. Clubs uploading video need the Pro plan (the file size limit is configurable up to 500 GB).
+17. **Sessions:** the cookie `maxAge` is 30 days and is refreshed by `proxy.ts` on every navigation (rolling). "Sign out of all devices" uses `signOut({ scope: "global" })`.

@@ -1,0 +1,59 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { getClubContextById } from "@/lib/auth/session";
+import { ACCEPTED_TYPES, resolveMimeType } from "@/lib/media/constants";
+import { BUCKET, derivativePaths, mediaFolder } from "@/lib/storage";
+import { createClient } from "@/lib/supabase/server";
+
+const schema = z.object({
+  albumId: z.uuid(),
+  filename: z.string().trim().min(1).max(255),
+  mimeType: z.string().max(100).default(""),
+  byteSize: z.number().int().positive(),
+});
+
+export async function POST(request: Request) {
+  const parsed = schema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Invalid upload request" }, { status: 400 });
+  const { albumId, filename, byteSize } = parsed.data;
+
+  const mimeType = resolveMimeType(filename, parsed.data.mimeType);
+  if (!mimeType) {
+    return NextResponse.json({ error: "Only JPG, PNG, HEIC, WebP, MP4 and MOV files can be uploaded" }, { status: 415 });
+  }
+
+  const supabase = await createClient();
+  const { data: album } = await supabase.from("albums").select("id, club_id").eq("id", albumId).maybeSingle();
+  if (!album) return NextResponse.json({ error: "Album not found" }, { status: 404 });
+
+  const ctx = await getClubContextById(album.club_id);
+  if (!ctx?.isAdmin) return NextResponse.json({ error: "Album not found" }, { status: 404 });
+
+  const id = crypto.randomUUID();
+  const folder = mediaFolder(album.club_id, album.id, id);
+  const { kind, ext } = ACCEPTED_TYPES[mimeType];
+  const storagePath = `${folder}/original.${ext}`;
+
+  const { error } = await supabase.from("media").insert({
+    id,
+    club_id: album.club_id,
+    album_id: album.id,
+    kind,
+    storage_path: storagePath,
+    byte_size: byteSize,
+    mime_type: mimeType,
+    original_filename: filename,
+    uploaded_by: ctx.userId,
+    status: "processing",
+  });
+  if (error) return NextResponse.json({ error: "Could not start the upload" }, { status: 500 });
+
+  return NextResponse.json({
+    mediaId: id,
+    kind,
+    bucket: BUCKET,
+    mimeType,
+    storagePath,
+    derivatives: derivativePaths(folder),
+  });
+}
