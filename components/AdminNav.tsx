@@ -10,6 +10,7 @@ export function AdminNav({ handle }: { handle: string }) {
     { href: base, label: "Overview", exact: true },
     { href: `${base}/members`, label: "Members" },
     { href: `${base}/albums`, label: "Albums" },
+    { href: `${base}/roles`, label: "Roles" },
     { href: `${base}/activity`, label: "Activity" },
     { href: `${base}/settings`, label: "Settings" },
     { href: `${base}/billing`, label: "Billing" },

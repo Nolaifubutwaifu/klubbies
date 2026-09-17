@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { ClubHeader } from "@/components/ClubHeader";
-import { displayNameFor } from "@/lib/auth/display-name";
+import { AppHeader } from "@/components/AppHeader";
 import { getClubContext } from "@/lib/auth/session";
+import { accentStyle } from "@/lib/theme";
 
 export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
   const { handle } = await props.params;
@@ -9,8 +9,8 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
   if (!ctx) notFound();
 
   return (
-    <div className="flex flex-1 flex-col">
-      <ClubHeader ctx={ctx} displayName={await displayNameFor(ctx)} area="member" />
+    <div className="flex flex-1 flex-col" style={accentStyle(ctx.club.accent_colour)}>
+      <AppHeader ctx={ctx} />
       {props.children}
     </div>
   );

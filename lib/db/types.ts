@@ -74,7 +74,9 @@ export type Database = {
         Row: {
           allow_download: boolean;
           club_id: string;
+          contributor_scope: string;
           cover_media_id: string | null;
+          cover_path: string | null;
           created_at: string;
           created_by: string | null;
           description: string | null;
@@ -89,7 +91,9 @@ export type Database = {
         Insert: {
           allow_download?: boolean;
           club_id: string;
+          contributor_scope?: string;
           cover_media_id?: string | null;
+          cover_path?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -104,7 +108,9 @@ export type Database = {
         Update: {
           allow_download?: boolean;
           club_id?: string;
+          contributor_scope?: string;
           cover_media_id?: string | null;
+          cover_path?: string | null;
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
@@ -364,8 +370,11 @@ export type Database = {
           grace_started_at: string | null;
           id: string;
           invited_at: string | null;
+          accepted_at: string | null;
+          declined_at: string | null;
           name_mismatch: boolean;
           role: string;
+          role_id: string | null;
           roster_email: string;
           roster_name: string;
           status: string;
@@ -382,8 +391,11 @@ export type Database = {
           grace_started_at?: string | null;
           id?: string;
           invited_at?: string | null;
+          accepted_at?: string | null;
+          declined_at?: string | null;
           name_mismatch?: boolean;
           role?: string;
+          role_id?: string | null;
           roster_email: string;
           roster_name: string;
           status?: string;
@@ -400,8 +412,11 @@ export type Database = {
           grace_started_at?: string | null;
           id?: string;
           invited_at?: string | null;
+          accepted_at?: string | null;
+          declined_at?: string | null;
           name_mismatch?: boolean;
           role?: string;
+          role_id?: string | null;
           roster_email?: string;
           roster_name?: string;
           status?: string;
@@ -409,6 +424,13 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "memberships_role_id_fkey";
+            columns: ["role_id"];
+            isOneToOne: false;
+            referencedRelation: "club_roles";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "memberships_club_id_fkey";
             columns: ["club_id"];
@@ -454,6 +476,207 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      club_roles: {
+        Row: {
+          club_id: string;
+          created_at: string;
+          id: string;
+          is_builtin: boolean;
+          is_default: boolean;
+          key: string;
+          manage_albums: boolean;
+          manage_club: boolean;
+          manage_members: boolean;
+          name: string;
+          post_feed: boolean;
+          sort_order: number;
+          updated_at: string;
+          upload: boolean;
+        };
+        Insert: {
+          club_id: string;
+          created_at?: string;
+          id?: string;
+          is_builtin?: boolean;
+          is_default?: boolean;
+          key: string;
+          manage_albums?: boolean;
+          manage_club?: boolean;
+          manage_members?: boolean;
+          name: string;
+          post_feed?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+          upload?: boolean;
+        };
+        Update: {
+          club_id?: string;
+          created_at?: string;
+          id?: string;
+          is_builtin?: boolean;
+          is_default?: boolean;
+          key?: string;
+          manage_albums?: boolean;
+          manage_club?: boolean;
+          manage_members?: boolean;
+          name?: string;
+          post_feed?: boolean;
+          sort_order?: number;
+          updated_at?: string;
+          upload?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "club_roles_club_id_fkey";
+            columns: ["club_id"];
+            isOneToOne: false;
+            referencedRelation: "clubs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      posts: {
+        Row: {
+          album_id: string | null;
+          author_membership_id: string | null;
+          body: string;
+          club_id: string;
+          created_at: string;
+          id: string;
+          pinned: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          album_id?: string | null;
+          author_membership_id?: string | null;
+          body: string;
+          club_id: string;
+          created_at?: string;
+          id?: string;
+          pinned?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          album_id?: string | null;
+          author_membership_id?: string | null;
+          body?: string;
+          club_id?: string;
+          created_at?: string;
+          id?: string;
+          pinned?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "posts_album_id_fkey";
+            columns: ["album_id"];
+            isOneToOne: false;
+            referencedRelation: "albums";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_author_membership_id_fkey";
+            columns: ["author_membership_id"];
+            isOneToOne: false;
+            referencedRelation: "memberships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "posts_club_id_fkey";
+            columns: ["club_id"];
+            isOneToOne: false;
+            referencedRelation: "clubs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_comments: {
+        Row: {
+          author_membership_id: string | null;
+          body: string;
+          club_id: string;
+          created_at: string;
+          id: string;
+          post_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          author_membership_id?: string | null;
+          body: string;
+          club_id: string;
+          created_at?: string;
+          id?: string;
+          post_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          author_membership_id?: string | null;
+          body?: string;
+          club_id?: string;
+          created_at?: string;
+          id?: string;
+          post_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_author_membership_id_fkey";
+            columns: ["author_membership_id"];
+            isOneToOne: false;
+            referencedRelation: "memberships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_comments_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      post_reactions: {
+        Row: {
+          club_id: string;
+          created_at: string;
+          emoji: string;
+          membership_id: string;
+          post_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          club_id: string;
+          created_at?: string;
+          emoji: string;
+          membership_id: string;
+          post_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          club_id?: string;
+          created_at?: string;
+          emoji?: string;
+          membership_id?: string;
+          post_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_membership_id_fkey";
+            columns: ["membership_id"];
+            isOneToOne: false;
+            referencedRelation: "memberships";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "post_reactions_post_id_fkey";
+            columns: ["post_id"];
+            isOneToOne: false;
+            referencedRelation: "posts";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       roster_imports: {
         Row: {
@@ -554,16 +777,24 @@ export type Database = {
       users: {
         Row: {
           avatar_url: string | null;
+          bio: string | null;
           created_at: string;
           display_name: string | null;
           email: string;
           id: string;
           is_super_admin: boolean;
+          notify_access_ending: boolean;
+          notify_feed_post: boolean;
+          notify_new_album: boolean;
           updated_at: string;
         };
         Insert: {
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
+          notify_access_ending?: boolean;
+          notify_feed_post?: boolean;
+          notify_new_album?: boolean;
           display_name?: string | null;
           email: string;
           id: string;
@@ -572,7 +803,11 @@ export type Database = {
         };
         Update: {
           avatar_url?: string | null;
+          bio?: string | null;
           created_at?: string;
+          notify_access_ending?: boolean;
+          notify_feed_post?: boolean;
+          notify_new_album?: boolean;
           display_name?: string | null;
           email?: string;
           id?: string;
@@ -652,6 +887,8 @@ export type TablesInsert<T extends keyof PublicSchema["Tables"]> = PublicSchema[
 export type TablesUpdate<T extends keyof PublicSchema["Tables"]> = PublicSchema["Tables"][T]["Update"];
 
 export type Club = Tables<"clubs">;
+export type ClubRole = Tables<"club_roles">;
+export type Post = Tables<"posts">;
 export type Membership = Tables<"memberships">;
 export type Album = Tables<"albums">;
 export type Media = Tables<"media">;

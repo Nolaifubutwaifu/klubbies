@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { AlbumCard } from "@/components/AlbumCard";
+import { BillingGate } from "@/components/BillingGate";
+import { EventsBrowser } from "@/components/EventsBrowser";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
-import { BillingGate } from "@/components/BillingGate";
-import { listAlbums } from "@/lib/media/queries";
+import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
 import { NewAlbumForm } from "./NewAlbumForm";
 
@@ -14,20 +14,20 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
   const { handle } = await props.params;
   const ctx = await requireAdminContext(handle);
   const supabase = await createClient();
-  const { albums } = await listAlbums(supabase, ctx.club.id, { includeDrafts: true });
+  const albums = await listStackedAlbums(supabase, ctx.club.id, { includeDrafts: true });
 
   return (
-    <main className="flex flex-col gap-6 px-6 py-8">
-      <PageTitle kicker={ctx.club.name} title="Albums" />
-      <div className="hr" />
-      {canWrite(ctx.club.billing_status) ? <NewAlbumForm clubId={ctx.club.id} /> : <BillingGate handle={handle} action="create albums" />}
-      {albums.length ? (
-        <div className="tile-grid border-2 border-divider" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))" }}>
-          {albums.map((album) => (
-            <AlbumCard key={album.id} album={album} href={`/admin/${handle}/albums/${album.id}`} showStatus />
-          ))}
-        </div>
-      ) : null}
+    <main className="flex flex-col">
+      <div className="flex flex-col gap-6 px-6 pb-2 pt-8">
+        <PageTitle kicker={ctx.club.name} title="Albums" />
+        <div className="hr" />
+        {canWrite(ctx.club.billing_status) ? (
+          <NewAlbumForm clubId={ctx.club.id} />
+        ) : (
+          <BillingGate handle={handle} action="create albums" />
+        )}
+      </div>
+      <EventsBrowser albums={albums} hrefBase={`/c/${handle}/a`} canManage />
     </main>
   );
 }

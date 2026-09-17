@@ -42,6 +42,17 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
       <PageTitle kicker={ctx.club.name} title="Activity">
         Every view and download, newest first. Members are told this log exists.
       </PageTitle>
+      <div className="flex flex-col gap-2 border-2 border-divider p-4 text-[14px] leading-normal text-neutral-800">
+        <span className="font-heading text-[16px] font-extrabold">What this is for</span>
+        <p className="m-0 max-w-[70ch]">
+          If a photo from your club turns up somewhere it shouldn&apos;t, this is how you find out who opened or
+          downloaded it, and when. It&apos;s also the quickest way to see whether an album actually reached people
+          after you published it, and which members have never opened anything.
+        </p>
+        <p className="m-0 max-w-[70ch] text-neutral-700">
+          Only people who can run the club see this page. The privacy policy tells members the log exists.
+        </p>
+      </div>
       <div className="flex flex-wrap gap-1">
         <Link href={href({})} className="btn btn-secondary text-[13px]" aria-pressed={!action}>
           Everything

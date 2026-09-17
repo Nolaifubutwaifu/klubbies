@@ -58,3 +58,20 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
     - `past_due` → past_due (still writable while Stripe retries)
     - `unpaid`, `canceled`, `incomplete_expired` and `paused` → canceled
 22. **Clubs that existed before billing were set to `comped`.** Super admins can comp a club with `update clubs set billing_status = 'comped'`.
+
+## 2026-09-17 · v2 (design file `Klubbies v2.dc.html` + feedback doc)
+
+23. **Roles replace the two fixed roles.** Every club gets Admin, Committee and Member, and admins can add their own (Treasurer and so on). A role carries five permissions: run the club, manage members, manage albums, add photos, post to the feed. `memberships.role` is kept in sync by a trigger so older admin checks keep working, and RLS now asks `private.club_perm(club_id, permission)`.
+24. **Member statuses are described, not stored.** "Never logged in" is now shown as "Invited", and "Signed in" comes from `first_seen_at`. The status column keeps pending/active/grace/revoked.
+25. **The album page is the member view for everyone.** Admins get "Edit album details" and "Add photos" buttons that open panels on the same page (`?edit=1`, `?add=1`). `/admin/[handle]/albums/[id]` redirects there. Feedback: admins should see what members see.
+26. **Switching view keeps the page.** A `kb_area` cookie decides whether the admin nav is shown; the toggle sets it and returns to the same URL instead of bouncing to the overview.
+27. **Albums can accept member contributions.** `albums.contributor_scope` is `managers` or `members`; the media insert policy uses `private.can_contribute_to_album()`.
+28. **Covers can be uploaded.** `albums.cover_path` holds an uploaded image under `clubs/{club}/covers/`; picking a photo from the album still sets `cover_media_id`.
+29. **Invitations are explicit.** A membership is an invitation until `accepted_at` is set. Members accept or decline from the club switcher, the club list or their profile.
+30. **Club feed.** `posts`, `post_comments` and `post_reactions`, readable by members, postable by roles with `post_feed`. Comments are open to every member; admins can remove any. Direct messages between members are deliberately not built.
+31. **Profile page at `/account`.** Display name, photo (stored under `avatars/{user}/`), bio, club list with "member since", invitations, email preferences, and an optional password.
+32. **Password sign-in is optional, codes stay the default.** A member sets a password from their profile; `/api/auth/password_signin` verifies it and is rate limited like code verification.
+33. **Per-club accent colour.** `clubs.accent_colour` is turned into an accent ramp at render time (`lib/theme.ts`) and applied to that club's pages only, with a reset to Klubbies red.
+34. **Uploads survive navigation.** The upload queue lives in a provider above the pages with a progress tray, so an admin can keep browsing. Closing the tab still stops the transfer: true server-side ingestion is not built.
+35. **Roster import can prune.** After a preview, the import lists current members who are missing from the file and offers to remove them, for clubs whose file is a full membership export.
+36. **Empty grid cells no longer show as grey blocks.** Photo grids use a transparent background with gaps rather than a divider-coloured backdrop.

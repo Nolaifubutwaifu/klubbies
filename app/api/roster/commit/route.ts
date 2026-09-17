@@ -45,19 +45,29 @@ export async function POST(request: Request) {
   }
 
   const existing: ExistingMember[] = [];
+  const currentRows: { id: string; email: string; status: string; name: string }[] = [];
   for (let from = 0; ; from += 1000) {
     const { data, error } = await supabase
       .from("memberships")
-      .select("roster_email, status")
+      .select("id, roster_email, roster_name, status")
       .eq("club_id", ctx.club.id)
       .order("id")
       .range(from, from + 999);
     if (error) return NextResponse.json({ error: "Could not read the current roster" }, { status: 500 });
     existing.push(...(data ?? []).map((m) => ({ email: m.roster_email, status: m.status })));
+    currentRows.push(...(data ?? []).map((m) => ({ id: m.id, email: m.roster_email, status: m.status, name: m.roster_name })));
     if (!data || data.length < 1000) break;
   }
 
   const plan = buildRosterPlan(report.data.rows, mapping, existing, report.data.firstDataRowNumber);
+
+  // People on the current list who are not in this file. Useful when the file
+  // is a full membership export rather than a list of new joiners.
+  const inFile = new Set([...plan.toAdd, ...plan.toRestore, ...plan.alreadyPresent].map((r) => r.email.toLowerCase()));
+  const missing = currentRows
+    .filter((m) => (m.status === "active" || m.status === "pending") && !inFile.has(m.email.toLowerCase()))
+    .slice(0, 500)
+    .map((m) => ({ id: m.id, name: m.name, email: m.email }));
   const summary: CommitResponse = {
     dryRun,
     rowCount: plan.rowCount,
@@ -66,6 +76,7 @@ export async function POST(request: Request) {
     alreadyPresent: plan.alreadyPresent.length,
     problems: plan.problems.slice(0, 1000),
     problemCount: plan.problems.length,
+    missing,
   };
   if (dryRun) return NextResponse.json(summary);
 

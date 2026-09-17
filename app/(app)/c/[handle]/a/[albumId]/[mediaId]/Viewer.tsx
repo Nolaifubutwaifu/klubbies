@@ -148,7 +148,7 @@ export function Viewer({
         </aside>
       </div>
 
-      <div className="tile-grid p-[2px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))" }}>
+      <div className="grid gap-[2px] p-[2px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(96px, 1fr))" }}>
         {strip.map((item) => (
           <Link
             key={item.id}

@@ -40,4 +40,6 @@ export type CommitResponse = {
   alreadyPresent: number;
   problems: { row: number; name: string; email: string; reason: string }[];
   problemCount: number;
+  /** Current members who were not in the uploaded file. */
+  missing: { id: string; name: string; email: string }[];
 };

@@ -1,0 +1,213 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { FormMessage, SubmitButton } from "@/components/forms";
+import type { FeedPost } from "@/lib/feed/queries";
+import { formatDateTime } from "@/lib/format";
+import {
+  addCommentAction,
+  createPostAction,
+  deleteCommentAction,
+  deletePostAction,
+  togglePinAction,
+  toggleReactionAction,
+  type FeedResult,
+} from "./actions";
+
+export function Composer({
+  handle,
+  albums,
+  memberCount,
+}: {
+  handle: string;
+  albums: { id: string; title: string }[];
+  memberCount: number;
+}) {
+  const [state, action] = useActionState<FeedResult, FormData>(createPostAction.bind(null, handle), {});
+  const form = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.ok) form.current?.reset();
+  }, [state]);
+
+  return (
+    <form ref={form} action={action} className="flex flex-col gap-3 border-2 border-divider p-4">
+      <textarea className="input" name="body" rows={2} placeholder="Tell the club something…" maxLength={4000} required />
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="field flex-1 md:max-w-[280px]">
+          <span className="sr-only">Link an album</span>
+          <select className="input text-[14px]" name="albumId" defaultValue="">
+            <option value="">No album linked</option>
+            {albums.map((album) => (
+              <option key={album.id} value={album.id}>
+                {album.title}
+              </option>
+            ))}
+          </select>
+        </label>
+        <SubmitButton className="btn btn-primary ml-auto text-[13px]" pendingText="Posting…">
+          Post to {memberCount.toLocaleString("en-AU")} members
+        </SubmitButton>
+      </div>
+      <FormMessage state={state} />
+    </form>
+  );
+}
+
+export function PostList({ handle, posts, canPin }: { handle: string; posts: FeedPost[]; canPin: boolean }) {
+  const router = useRouter();
+  const [openComments, setOpenComments] = useState<Set<string>>(new Set());
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [pending, startTransition] = useTransition();
+
+  const run = (fn: () => Promise<FeedResult>) =>
+    startTransition(async () => {
+      const res = await fn();
+      if (res.ok) router.refresh();
+    });
+
+  const toggleComments = (id: string) =>
+    setOpenComments((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  return (
+    <div className="flex flex-col">
+      {posts.map((post) => (
+        <article key={post.id} className="flex flex-col gap-3 border-t-2 border-divider px-6 py-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex h-[34px] w-[34px] items-center justify-center bg-neutral-900 text-[12px] font-extrabold text-white">
+              {post.authorInitials}
+            </span>
+            <span className="text-[14px] font-semibold">{post.authorName}</span>
+            {post.authorRole ? <span className="tag tag-accent text-[10px]">{post.authorRole}</span> : null}
+            <span className="text-[13px] text-neutral-600">{formatDateTime(post.createdAt)}</span>
+            {post.pinned ? <span className="tag tag-outline text-[10px]">Pinned</span> : null}
+            <span className="ml-auto flex gap-2">
+              {canPin ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost text-[12px]"
+                  disabled={pending}
+                  onClick={() => run(() => togglePinAction(handle, post.id, !post.pinned))}
+                >
+                  {post.pinned ? "Unpin" : "Pin"}
+                </button>
+              ) : null}
+              {post.canDelete ? (
+                <button
+                  type="button"
+                  className="btn btn-ghost text-[12px]"
+                  disabled={pending}
+                  onClick={() => run(() => deletePostAction(handle, post.id))}
+                >
+                  Delete
+                </button>
+              ) : null}
+            </span>
+          </div>
+
+          <p className="max-w-[62ch] whitespace-pre-wrap text-[16px] leading-normal">{post.body}</p>
+
+          {post.album ? (
+            <Link
+              href={`/c/${handle}/a/${post.album.id}`}
+              className="flex items-center gap-3 border-2 border-divider p-3 text-ink no-underline hover:border-accent"
+            >
+              {post.album.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                <img src={post.album.coverUrl} alt="" className="h-11 w-11 object-cover" />
+              ) : (
+                <span className="h-11 w-11 bg-neutral-400" />
+              )}
+              <span>
+                <span className="block font-heading text-[15px] font-extrabold">{post.album.title}</span>
+                <span className="block text-[12px] text-neutral-700">{post.album.meta}</span>
+              </span>
+            </Link>
+          ) : null}
+
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {post.reactions.map((reaction) => (
+              <button
+                key={reaction.emoji}
+                type="button"
+                className="border-2 px-[10px] py-[6px] text-[13px] font-semibold"
+                style={{
+                  borderColor: reaction.mine ? "var(--color-accent)" : "var(--color-divider)",
+                  background: reaction.mine ? "var(--color-accent-100)" : "transparent",
+                }}
+                disabled={pending}
+                onClick={() => run(() => toggleReactionAction(handle, post.id, reaction.emoji))}
+              >
+                {reaction.emoji} {reaction.count || ""}
+              </button>
+            ))}
+            <button type="button" className="btn btn-ghost text-[13px]" onClick={() => toggleComments(post.id)}>
+              {post.comments.length
+                ? `${post.comments.length} ${post.comments.length === 1 ? "comment" : "comments"}`
+                : "Comment"}
+            </button>
+          </div>
+
+          {openComments.has(post.id) ? (
+            <div className="flex flex-col gap-3 border-l-2 border-divider pl-4">
+              {post.comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <span className="min-w-0">
+                    <span className="text-[13px] font-semibold">{comment.author}</span>
+                    <span className="ml-[6px] text-[12px] text-neutral-600">{formatDateTime(comment.createdAt)}</span>
+                    <span className="mt-[2px] block max-w-[54ch] text-[14px] leading-normal">{comment.body}</span>
+                  </span>
+                  {comment.canDelete ? (
+                    <button
+                      type="button"
+                      className="btn btn-ghost ml-auto text-[12px]"
+                      disabled={pending}
+                      onClick={() => run(() => deleteCommentAction(handle, comment.id))}
+                    >
+                      Delete
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+              <div className="flex gap-2">
+                <input
+                  className="input flex-1 text-[14px]"
+                  placeholder="Write a comment"
+                  value={drafts[post.id] ?? ""}
+                  onChange={(e) => setDrafts((d) => ({ ...d, [post.id]: e.target.value }))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (drafts[post.id] ?? "").trim()) {
+                      e.preventDefault();
+                      const body = drafts[post.id];
+                      setDrafts((d) => ({ ...d, [post.id]: "" }));
+                      run(() => addCommentAction(handle, post.id, body));
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary text-[13px]"
+                  disabled={pending || !(drafts[post.id] ?? "").trim()}
+                  onClick={() => {
+                    const body = drafts[post.id];
+                    setDrafts((d) => ({ ...d, [post.id]: "" }));
+                    run(() => addCommentAction(handle, post.id, body));
+                  }}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </div>
+  );
+}

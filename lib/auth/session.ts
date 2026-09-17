@@ -1,7 +1,8 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import type { Club, Membership } from "@/lib/db/types";
+import type { Club, ClubRole, Membership } from "@/lib/db/types";
+import { NO_PERMS, permsFromRole, type Perms } from "@/lib/permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -28,20 +29,17 @@ export const getProfile = cache(async () => {
 export type ClubContext = {
   club: Club;
   membership: Membership | null;
+  role: ClubRole | null;
+  perms: Perms;
   isAdmin: boolean;
   userId: string;
 };
 
-function membershipIsLive(m: Membership): boolean {
+function membershipIsLive(m: Pick<Membership, "status" | "grace_ends_at">): boolean {
   if (m.status === "active") return true;
   return m.status === "grace" && m.grace_ends_at !== null && new Date(m.grace_ends_at) > new Date();
 }
 
-/**
- * Resolves a club by handle for the signed-in user. Returns null when the club
- * does not exist or the user cannot see it; the two cases are deliberately
- * indistinguishable.
- */
 export const getClubContext = cache(async (handle: string): Promise<ClubContext | null> => {
   const user = await requireUser(`/c/${handle}`);
   const supabase = await createClient();
@@ -64,15 +62,18 @@ export const getClubContext = cache(async (handle: string): Promise<ClubContext 
 async function resolveContext(club: Club, userId: string): Promise<ClubContext | null> {
   const supabase = await createClient();
   const [{ data: membership }, { data: profile }] = await Promise.all([
-    supabase.from("memberships").select("*").eq("club_id", club.id).eq("user_id", userId).maybeSingle(),
+    supabase.from("memberships").select("*, club_roles(*)").eq("club_id", club.id).eq("user_id", userId).maybeSingle(),
     supabase.from("users").select("is_super_admin").eq("id", userId).maybeSingle(),
   ]);
 
   const live = membership && membershipIsLive(membership) ? membership : null;
-  const isAdmin = Boolean(profile?.is_super_admin) || (live?.role === "club_admin" && live.status === "active");
-  if (!live && !isAdmin) return null;
+  const role = (membership?.club_roles as ClubRole | null) ?? null;
+  const superAdmin = Boolean(profile?.is_super_admin);
+  const perms = superAdmin ? permsFromRole({ ...role, manage_club: true } as ClubRole) : live ? permsFromRole(role) : { ...NO_PERMS };
 
-  return { club, membership: live, isAdmin, userId };
+  if (!live && !superAdmin) return null;
+
+  return { club, membership: live, role, perms, isAdmin: perms.manage_club, userId };
 }
 
 /** For route handlers: never redirects, returns null when unauthorised. */
@@ -85,16 +86,66 @@ export async function getClubContextById(clubId: string): Promise<ClubContext | 
   return resolveContext(club, user.id);
 }
 
-export async function listMyClubs() {
+export type MyClub = {
+  membershipId: string;
+  clubId: string;
+  handle: string;
+  name: string;
+  organisation: string | null;
+  logoPath: string | null;
+  accentColour: string | null;
+  roleName: string;
+  isAdmin: boolean;
+  since: string;
+  status: string;
+  graceEndsAt: string | null;
+  accepted: boolean;
+};
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "??";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+export function clubInitials(name: string): string {
+  return initialsOf(name);
+}
+
+/** Clubs the member has accepted, plus invitations still waiting. */
+export const listMyClubs = cache(async (): Promise<{ clubs: MyClub[]; invites: MyClub[] }> => {
   const user = await requireUser();
   const supabase = await createClient();
   const { data } = await supabase
     .from("memberships")
-    .select("id, role, status, grace_ends_at, clubs!inner(id, name, handle, organisation, status)")
+    .select(
+      "id, role, status, grace_ends_at, created_at, invited_at, accepted_at, declined_at, club_roles(name, manage_club), clubs!inner(id, name, handle, organisation, status, logo_path, accent_colour)",
+    )
     .eq("user_id", user.id)
     .in("status", ["active", "grace"])
     .order("created_at", { ascending: true });
-  return (data ?? []).filter(
-    (m) => m.clubs.status === "active" && (m.status === "active" || (m.grace_ends_at && new Date(m.grace_ends_at) > new Date())),
-  );
-}
+
+  const rows = (data ?? [])
+    .filter((m) => m.clubs.status === "active" && membershipIsLive(m))
+    .map((m) => ({
+      membershipId: m.id,
+      clubId: m.clubs.id,
+      handle: m.clubs.handle,
+      name: m.clubs.name,
+      organisation: m.clubs.organisation,
+      logoPath: m.clubs.logo_path,
+      accentColour: m.clubs.accent_colour,
+      roleName: m.club_roles?.name ?? (m.role === "club_admin" ? "Admin" : "Member"),
+      isAdmin: Boolean(m.club_roles?.manage_club) || m.role === "club_admin",
+      since: m.invited_at ?? m.created_at,
+      status: m.status,
+      graceEndsAt: m.grace_ends_at,
+      accepted: m.accepted_at !== null,
+    }));
+
+  return {
+    clubs: rows.filter((m) => m.accepted),
+    invites: rows.filter((m) => !m.accepted),
+  };
+});

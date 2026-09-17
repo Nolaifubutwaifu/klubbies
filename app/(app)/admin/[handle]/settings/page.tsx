@@ -30,6 +30,9 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
         />
         <div className="flex flex-col gap-4">
           <span className="text-[13px] font-semibold">Club mark</span>
+          <span className="text-[13px] leading-normal text-neutral-700">
+            Shown next to the club name in the header, and on the club switcher.
+          </span>
           <LogoUploader clubId={club.id} logoUrl={logoUrl} />
           <div className="border-2 border-divider bg-surface p-4">
             <div className="label-caps">Club address</div>

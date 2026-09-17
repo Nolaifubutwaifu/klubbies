@@ -31,36 +31,63 @@ export default async function LandingPage() {
       <header className="flex items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
         <Brand />
         <nav className="flex items-center gap-2">
-          <a href="#how" className="hidden text-[14px] font-semibold sm:inline">
+          <Link href="/how-it-works" className="hidden text-[14px] font-semibold sm:inline">
             How it works
-          </a>
+          </Link>
           <Link href="/signin" className="btn btn-primary">
             Member log in
           </Link>
         </nav>
       </header>
 
+      <section className="flex flex-col items-start gap-6 border-b-2 border-divider bg-accent px-6 py-16 text-white">
+        <h1
+          className="max-w-[18ch] font-heading"
+          style={{ fontWeight: 900, fontSize: "clamp(36px, 6vw, 68px)", lineHeight: 0.98, letterSpacing: "-0.035em" }}
+        >
+          Every photo from Friday, waiting on Saturday.
+        </h1>
+        <p className="max-w-[46ch] text-[17px] leading-normal text-white/90">
+          Private photo and video albums for university clubs. Only the people on your member list get in.
+        </p>
+        <div className="flex w-full flex-wrap gap-3">
+          <Link
+            href="/start"
+            className="flex-1 bg-white px-8 py-5 text-center font-heading text-[18px] font-black text-accent-700 no-underline hover:bg-accent-100 sm:flex-none"
+          >
+            Start a club
+          </Link>
+          <Link
+            href="/signin"
+            className="flex-1 border-2 border-white px-8 py-5 text-center font-heading text-[18px] font-black text-white no-underline hover:bg-white/10 sm:flex-none"
+          >
+            I&apos;m a member
+          </Link>
+          <Link
+            href="/signin?admin=1"
+            className="flex-1 border-2 border-white px-8 py-5 text-center font-heading text-[18px] font-black text-white no-underline hover:bg-white/10 sm:flex-none"
+          >
+            I&apos;m an admin
+          </Link>
+        </div>
+      </section>
+
       <section className="grid border-b-2 border-divider" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
         <div className="flex flex-col gap-6 border-divider px-6 py-16 md:border-r-2">
           <span className="kicker">For university clubs</span>
-          <h1
+          <h2
             className="font-heading"
-            style={{ fontWeight: 900, fontSize: "clamp(38px, 6vw, 68px)", lineHeight: 0.96, letterSpacing: "-0.035em", textWrap: "balance" }}
+            style={{ fontWeight: 900, fontSize: "clamp(32px, 5vw, 56px)", lineHeight: 0.98, letterSpacing: "-0.035em", textWrap: "balance" }}
           >
             Your club&apos;s photos, for your club only.
-          </h1>
+          </h2>
           <p className="max-w-[46ch] text-[17px] leading-normal text-neutral-800">
-            Stop passing around a drive link that half the committee can edit. Upload the night&apos;s photos and videos to
-            Klubbies, and everyone on your member list can see them. Nobody else can.
+            Upload the night&apos;s photos and videos to Klubbies, and everyone on your member list can see them. Nobody
+            else can.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/start" className="btn btn-primary">
-              Start a club
-            </Link>
-            <Link href="/signin" className="btn btn-secondary">
-              I&apos;m a member
-            </Link>
-          </div>
+          <Link href="/how-it-works" className="btn btn-secondary self-start">
+            See how it works
+          </Link>
         </div>
         <div className="grid min-h-[380px] grid-cols-2 gap-[2px] bg-neutral-800 p-[2px]" aria-hidden>
           {HERO_TONES.map((tone) => (
@@ -92,26 +119,15 @@ export default async function LandingPage() {
             <p className="max-w-[52ch] text-[16px] leading-normal text-neutral-800">{f.body}</p>
           </div>
         ))}
-      </section>
-
-      <section className="flex flex-col items-start gap-6 bg-accent px-6 py-[72px] text-white">
-        <h2
-          className="max-w-[18ch] font-heading"
-          style={{ fontWeight: 900, fontSize: "clamp(32px, 5vw, 58px)", lineHeight: 1, letterSpacing: "-0.035em" }}
-        >
-          Every photo from Friday, waiting on Saturday.
-        </h2>
-        <Link
-          href="/start"
-          className="bg-white px-[22px] py-[14px] text-[16px] font-bold text-accent-700 no-underline hover:bg-accent-100"
-        >
-          Start a club
+        <Link href="/how-it-works" className="btn btn-secondary self-start">
+          The full walkthrough
         </Link>
       </section>
 
       <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-6 text-[13px] text-neutral-700">
         <span>© {new Date().getFullYear()} Klubbies</span>
         <nav className="flex gap-4">
+          <Link href="/how-it-works">How it works</Link>
           <Link href="/terms">Terms</Link>
           <Link href="/refunds">Refunds</Link>
           <Link href="/privacy">Privacy</Link>

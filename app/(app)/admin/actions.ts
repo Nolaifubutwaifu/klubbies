@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 import { getClubContextById, requireUser } from "@/lib/auth/session";
 import { ACTIVATE_MESSAGE, canWrite } from "@/lib/billing/status";
+import type { Permission } from "@/lib/permissions";
 import { graceWindow, sendDueGraceNotice } from "@/lib/membership/grace";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { generateHandleBase } from "@/lib/roster/handle";
@@ -18,6 +19,13 @@ export type ActionState = { error?: string; ok?: boolean; message?: string };
 async function adminContext(clubId: string) {
   const ctx = await getClubContextById(clubId);
   if (!ctx?.isAdmin) throw new Error("Not authorised");
+  return ctx;
+}
+
+/** Context for anyone holding a specific permission, not just full admins. */
+async function permContext(clubId: string, perm: Permission) {
+  const ctx = await getClubContextById(clubId);
+  if (!ctx?.perms[perm]) throw new Error("Not authorised");
   return ctx;
 }
 
@@ -259,6 +267,8 @@ const albumSchema = z.object({
   eventDate: z.union([z.literal(""), z.iso.date()]),
   description: z.string().trim().max(2000),
   allowDownload: z.boolean(),
+  visibility: z.enum(["members", "admins"]),
+  contributorScope: z.enum(["managers", "members"]),
 });
 
 function albumInput(form: FormData) {
@@ -267,11 +277,13 @@ function albumInput(form: FormData) {
     eventDate: text(form, "eventDate"),
     description: text(form, "description"),
     allowDownload: form.get("allowDownload") === "on",
+    visibility: text(form, "visibility") || "members",
+    contributorScope: text(form, "contributorScope") || "managers",
   });
 }
 
 export async function createAlbumAction(clubId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
-  const ctx = await adminContext(clubId);
+  const ctx = await permContext(clubId, "manage_albums");
   if (!canWrite(ctx.club.billing_status)) return { error: ACTIVATE_MESSAGE };
   const parsed = albumInput(form);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -286,7 +298,8 @@ export async function createAlbumAction(clubId: string, _prev: ActionState, form
       description: parsed.data.description || null,
       allow_download: parsed.data.allowDownload,
       status: "draft",
-      visibility: "members",
+      visibility: parsed.data.visibility,
+      contributor_scope: parsed.data.contributorScope,
       created_by: ctx.userId,
     })
     .select("id")
@@ -299,7 +312,7 @@ export async function updateAlbumAction(albumId: string, _prev: ActionState, for
   const supabase = await createClient();
   const { data: album } = await supabase.from("albums").select("id, club_id").eq("id", albumId).maybeSingle();
   if (!album) return { error: "Album not found" };
-  const ctx = await adminContext(album.club_id);
+  const ctx = await permContext(album.club_id, "manage_albums");
   const parsed = albumInput(form);
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
 
@@ -310,10 +323,11 @@ export async function updateAlbumAction(albumId: string, _prev: ActionState, for
       event_date: parsed.data.eventDate || null,
       description: parsed.data.description || null,
       allow_download: parsed.data.allowDownload,
+      visibility: parsed.data.visibility,
+      contributor_scope: parsed.data.contributorScope,
     })
     .eq("id", albumId);
   if (error) return { error: "Could not save the album" };
-  revalidatePath(`/admin/${ctx.club.handle}/albums/${albumId}`);
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
   return { ok: true, message: "Saved" };
 }
@@ -322,7 +336,7 @@ export async function setAlbumPublishedAction(albumId: string, published: boolea
   const supabase = await createClient();
   const { data: album } = await supabase.from("albums").select("id, club_id, published_at").eq("id", albumId).maybeSingle();
   if (!album) return { error: "Album not found" };
-  const ctx = await adminContext(album.club_id);
+  const ctx = await permContext(album.club_id, "manage_albums");
 
   if (published) {
     const { count } = await supabase
@@ -350,12 +364,25 @@ export async function setAlbumCoverAction(albumId: string, mediaId: string): Pro
   const supabase = await createClient();
   const { data: album } = await supabase.from("albums").select("id, club_id").eq("id", albumId).maybeSingle();
   if (!album) return { error: "Album not found" };
-  const ctx = await adminContext(album.club_id);
-  const { error } = await supabase.from("albums").update({ cover_media_id: mediaId }).eq("id", albumId);
+  const ctx = await permContext(album.club_id, "manage_albums");
+  const { error } = await supabase.from("albums").update({ cover_media_id: mediaId, cover_path: null }).eq("id", albumId);
   if (error) return { error: "Could not set the cover" };
   revalidatePath(`/admin/${ctx.club.handle}/albums/${albumId}`);
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
   return { ok: true, message: "Cover updated" };
+}
+
+export async function setAlbumCoverImageAction(albumId: string, path: string | null): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: album } = await supabase.from("albums").select("id, club_id").eq("id", albumId).maybeSingle();
+  if (!album) return { error: "Album not found" };
+  const ctx = await permContext(album.club_id, "manage_albums");
+  if (path !== null && !path.startsWith(`clubs/${album.club_id}/covers/`)) return { error: "Invalid cover path" };
+
+  const { error } = await supabase.from("albums").update({ cover_path: path, cover_media_id: null }).eq("id", albumId);
+  if (error) return { error: "Could not save the cover" };
+  revalidatePath(`/c/${ctx.club.handle}`, "layout");
+  return { ok: true, message: path ? "Cover updated" : "Cover cleared" };
 }
 
 export async function deleteMediaAction(mediaIds: string[]): Promise<ActionState> {
@@ -387,7 +414,7 @@ export async function deleteAlbumAction(albumId: string, typedTitle: string): Pr
   const supabase = await createClient();
   const { data: album } = await supabase.from("albums").select("id, club_id, title").eq("id", albumId).maybeSingle();
   if (!album) return { error: "Album not found" };
-  const ctx = await adminContext(album.club_id);
+  const ctx = await permContext(album.club_id, "manage_albums");
   if (typedTitle.trim().toLowerCase() !== album.title.trim().toLowerCase()) {
     return { error: `Type ${album.title} to confirm` };
   }
@@ -406,4 +433,133 @@ export async function deleteAlbumAction(albumId: string, typedTitle: string): Pr
 
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
   redirect(`/admin/${ctx.club.handle}/albums`);
+}
+
+// ---------------------------------------------------------------------------
+// Roles
+// ---------------------------------------------------------------------------
+
+const roleSchema = z.object({
+  name: z.string().trim().min(2, "Give the role a name").max(40),
+  manage_club: z.boolean(),
+  manage_members: z.boolean(),
+  manage_albums: z.boolean(),
+  upload: z.boolean(),
+  post_feed: z.boolean(),
+  is_default: z.boolean(),
+});
+
+function roleInput(form: FormData) {
+  return roleSchema.safeParse({
+    name: text(form, "name"),
+    manage_club: form.get("manage_club") === "on",
+    manage_members: form.get("manage_members") === "on",
+    manage_albums: form.get("manage_albums") === "on",
+    upload: form.get("upload") === "on",
+    post_feed: form.get("post_feed") === "on",
+    is_default: form.get("is_default") === "on",
+  });
+}
+
+function roleKey(name: string): string {
+  return name.toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40) || "role";
+}
+
+export async function createRoleAction(clubId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_club");
+  const parsed = roleInput(form);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const supabase = await createClient();
+  if (parsed.data.is_default) await supabase.from("club_roles").update({ is_default: false }).eq("club_id", clubId);
+  const { error } = await supabase.from("club_roles").insert({
+    club_id: clubId,
+    key: `${roleKey(parsed.data.name)}_${Math.random().toString(36).slice(2, 6)}`,
+    name: parsed.data.name,
+    manage_club: parsed.data.manage_club,
+    manage_members: parsed.data.manage_members,
+    manage_albums: parsed.data.manage_albums,
+    upload: parsed.data.upload,
+    post_feed: parsed.data.post_feed,
+    is_default: parsed.data.is_default,
+    sort_order: 10,
+  });
+  if (error) return { error: "Could not create that role" };
+  revalidatePath(`/admin/${ctx.club.handle}/roles`);
+  revalidatePath(`/admin/${ctx.club.handle}/members`);
+  return { ok: true, message: `${parsed.data.name} added` };
+}
+
+export async function updateRoleAction(clubId: string, roleId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_club");
+  const parsed = roleInput(form);
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
+
+  const supabase = await createClient();
+  if (parsed.data.is_default) await supabase.from("club_roles").update({ is_default: false }).eq("club_id", clubId);
+  const { error } = await supabase
+    .from("club_roles")
+    .update({
+      name: parsed.data.name,
+      manage_club: parsed.data.manage_club,
+      manage_members: parsed.data.manage_members,
+      manage_albums: parsed.data.manage_albums,
+      upload: parsed.data.upload,
+      post_feed: parsed.data.post_feed,
+      is_default: parsed.data.is_default,
+    })
+    .eq("id", roleId)
+    .eq("club_id", clubId);
+  if (error) return { error: "Could not save that role" };
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  return { ok: true, message: "Role saved" };
+}
+
+export async function deleteRoleAction(clubId: string, roleId: string): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_club");
+  const supabase = await createClient();
+  const { data: role } = await supabase.from("club_roles").select("id, is_builtin, name").eq("id", roleId).eq("club_id", clubId).maybeSingle();
+  if (!role) return { error: "Role not found" };
+  if (role.is_builtin) return { error: "Built-in roles can't be deleted" };
+
+  const { data: fallback } = await supabase
+    .from("club_roles")
+    .select("id")
+    .eq("club_id", clubId)
+    .eq("key", "member")
+    .maybeSingle();
+  await supabase.from("memberships").update({ role_id: fallback?.id ?? null }).eq("club_id", clubId).eq("role_id", roleId);
+  const { error } = await supabase.from("club_roles").delete().eq("id", roleId);
+  if (error) return { error: "Could not delete that role" };
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  return { ok: true, message: `${role.name} deleted` };
+}
+
+export async function setMemberRoleAction(clubId: string, membershipIds: string[], roleId: string): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_members");
+  const ids = z.array(z.uuid()).min(1).max(500).safeParse(membershipIds);
+  if (!ids.success || !z.uuid().safeParse(roleId).success) return { error: "Select members and a role" };
+
+  const supabase = await createClient();
+  const { data: role } = await supabase.from("club_roles").select("id, name, manage_club").eq("id", roleId).eq("club_id", clubId).maybeSingle();
+  if (!role) return { error: "Role not found" };
+  if (role.manage_club && !ctx.perms.manage_club) return { error: "Only an admin can hand out admin roles" };
+
+  const { error } = await supabase.from("memberships").update({ role_id: roleId }).eq("club_id", clubId).in("id", ids.data);
+  if (error) return { error: "Could not change the role" };
+  revalidatePath(`/admin/${ctx.club.handle}/members`);
+  return { ok: true, message: `${ids.data.length} moved to ${role.name}` };
+}
+
+export async function resendInviteAction(clubId: string, membershipId: string): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_members");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("memberships")
+    .update({ invited_at: new Date().toISOString() })
+    .eq("club_id", clubId)
+    .eq("id", membershipId);
+  if (error) return { error: "Could not update that member" };
+  revalidatePath(`/admin/${ctx.club.handle}/members`);
+  return { ok: true, message: "Marked as invited again. They sign in at any time with their email." };
 }

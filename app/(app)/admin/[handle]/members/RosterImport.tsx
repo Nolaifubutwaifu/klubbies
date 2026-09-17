@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState, type DragEvent } from "react";
 import { Dialog } from "@/components/Dialog";
+import { removeMembersAction } from "../../actions";
 import { problemsToCsv } from "@/lib/roster/normalise";
 import type { CommitResponse, PreviewResponse } from "@/lib/roster/schemas";
 
@@ -22,6 +23,8 @@ export function RosterImport({ clubId }: { clubId: string }) {
   const [nameMode, setNameMode] = useState<"full" | "split">("full");
   const [summary, setSummary] = useState<CommitResponse | null>(null);
   const [done, setDone] = useState<CommitResponse | null>(null);
+  const [removeMissing, setRemoveMissing] = useState(false);
+  const [removedCount, setRemovedCount] = useState(0);
 
   async function upload(body: FormData) {
     setBusy(true);
@@ -78,6 +81,10 @@ export function RosterImport({ clubId }: { clubId: string }) {
     }
     if (dryRun) setSummary(json);
     else {
+      if (removeMissing && json.missing?.length) {
+        const removal = await removeMembersAction(clubId, json.missing.map((m) => m.id));
+        setRemovedCount(removal.ok ? json.missing.length : 0);
+      }
       setDone(json);
       setPreview(null);
       setSummary(null);
@@ -153,6 +160,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
         {done ? (
           <span className="mt-2 text-[13px] font-semibold">
             Added {done.added + done.restored}. {done.alreadyPresent} were already on the list.
+            {removedCount ? ` ${removedCount} removed.` : ""}
           </span>
         ) : null}
         <input
@@ -205,8 +213,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
               {preview.usedSavedMapping ? " · using your last mapping" : ""}
             </p>
 
-            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
-              {columnSelect("email", "Email column")}
+            <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <span className="text-[13px] font-semibold">Names are in</span>
                 <div className="flex border-2 border-divider">
@@ -225,19 +232,24 @@ export function RosterImport({ clubId }: { clubId: string }) {
                         setNameMode(mode);
                       }}
                     >
-                      {mode === "full" ? "One column" : "First + last"}
+                      {mode === "full" ? "One column" : "Two columns (first + last)"}
                     </button>
                   ))}
                 </div>
               </div>
-              {nameMode === "full" ? (
-                columnSelect("fullName", "Full name column", true)
-              ) : (
-                <>
-                  {columnSelect("firstName", "First name column", true)}
-                  {columnSelect("lastName", "Last name column", true)}
-                </>
-              )}
+              <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+                {nameMode === "full" ? (
+                  columnSelect("fullName", "Name column", true)
+                ) : (
+                  <>
+                    {columnSelect("firstName", "First name column", true)}
+                    {columnSelect("lastName", "Last name column", true)}
+                  </>
+                )}
+              </div>
+              <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}>
+                {columnSelect("email", "Email column")}
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -294,6 +306,33 @@ export function RosterImport({ clubId }: { clubId: string }) {
                     rows with problems
                   </div>
                 </div>
+                {summary.missing?.length ? (
+                  <div className="border-t-2 border-divider pt-3">
+                    <span className="text-[14px]">
+                      <strong>
+                        {summary.missing.length} current {summary.missing.length === 1 ? "member isn't" : "members aren't"} on this list.
+                      </strong>{" "}
+                      If this file is your full current membership, you can remove them. They keep access to earlier
+                      albums for 30 days.
+                    </span>
+                    <ul className="mt-2 max-h-28 overflow-auto text-[13px] text-neutral-700">
+                      {summary.missing.slice(0, 50).map((m) => (
+                        <li key={m.id}>
+                          {m.name} · {m.email}
+                        </li>
+                      ))}
+                    </ul>
+                    <label className="mt-2 flex items-center gap-2 text-[14px]">
+                      <input
+                        type="checkbox"
+                        checked={removeMissing}
+                        onChange={(e) => setRemoveMissing(e.target.checked)}
+                        style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
+                      />
+                      Remove these {summary.missing.length} after importing
+                    </label>
+                  </div>
+                ) : null}
                 {summary.problemCount ? (
                   <>
                     <ul className="max-h-40 overflow-auto text-[13px] text-neutral-700">

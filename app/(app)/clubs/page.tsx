@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { InviteCard } from "@/components/InviteCard";
 import { Brand, EmptyState, PageTitle } from "@/components/ui";
 import { getProfile, listMyClubs, requireUser } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
@@ -8,14 +9,16 @@ export const metadata: Metadata = { title: "Your clubs" };
 
 export default async function ClubsPage() {
   await requireUser("/clubs");
-  const [clubs, profile] = await Promise.all([listMyClubs(), getProfile()]);
+  const [{ clubs, invites }, profile] = await Promise.all([listMyClubs(), getProfile()]);
 
   return (
     <main className="flex flex-1 flex-col">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
         <Brand href="/clubs" />
         <div className="flex items-center gap-3">
-          <span className="text-[13px] text-neutral-700">{profile?.display_name ?? profile?.email}</span>
+          <Link href="/account" className="text-[13px] text-neutral-700">
+            {profile?.display_name ?? profile?.email}
+          </Link>
           <form action="/api/auth/signout" method="post">
             <button type="submit" className="btn btn-ghost text-[13px]">
               Sign out
@@ -26,33 +29,46 @@ export default async function ClubsPage() {
 
       <div className="flex flex-col gap-6 px-6 py-8">
         <PageTitle title="Your clubs">Pick a club to see its event albums.</PageTitle>
+
+        {invites.length ? (
+          <section>
+            <span className="label-caps">Invitations</span>
+            {invites.map((invite) => (
+              <InviteCard key={invite.membershipId} invite={invite} />
+            ))}
+          </section>
+        ) : null}
+
         {clubs.length === 0 ? (
           <EmptyState
-            title="You're not on any club list yet"
+            title={invites.length ? "Accept an invitation to get started" : "You're not on any club list yet"}
             action={
               <Link href="/admin/new" className="btn btn-primary">
                 Start a club
               </Link>
             }
           >
-            Ask your committee to add {profile?.email ?? "your email"} to their member list, or start your own club.
+            {invites.length
+              ? "Your clubs appear here once you accept."
+              : `Ask your committee to add ${profile?.email ?? "your email"} to their member list, or start your own club.`}
           </EmptyState>
         ) : (
-          <div className="tile-grid border-2 border-divider" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-            {clubs.map((m) => (
+          <div className="grid gap-[2px] border-2 border-divider bg-divider" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+            {clubs.map((club) => (
               <Link
-                key={m.id}
-                href={`/c/${m.clubs.handle}`}
+                key={club.membershipId}
+                href={`/c/${club.handle}`}
                 className="flex flex-col gap-2 bg-bg p-6 text-ink no-underline hover:bg-neutral-200"
               >
-                <span className="kicker">{m.clubs.organisation ?? "Club"}</span>
-                <span className="font-heading text-[24px] font-black tracking-[-0.02em]">{m.clubs.name}</span>
+                <span className="kicker">{club.organisation ?? "Club"}</span>
+                <span className="font-heading text-[24px] font-black tracking-[-0.02em]">{club.name}</span>
                 <span className="flex flex-wrap gap-2">
-                  {m.role === "club_admin" && m.status === "active" ? <span className="tag tag-accent">Admin</span> : null}
-                  {m.status === "grace" ? (
-                    <span className="tag tag-accent-2">Access ends {formatLongDate(m.grace_ends_at)}</span>
+                  <span className={club.isAdmin ? "tag tag-accent" : "tag tag-outline"}>{club.roleName}</span>
+                  {club.status === "grace" ? (
+                    <span className="tag tag-accent-2">Access ends {formatLongDate(club.graceEndsAt)}</span>
                   ) : null}
                 </span>
+                <span className="text-[12px] text-neutral-600">Member since {formatLongDate(club.since)}</span>
               </Link>
             ))}
           </div>
@@ -61,6 +77,9 @@ export default async function ClubsPage() {
         <div className="flex flex-wrap items-center gap-3 border-t-2 border-divider pt-4 text-[13px] text-neutral-700">
           <Link href="/admin/new" className="btn btn-secondary">
             Start another club
+          </Link>
+          <Link href="/account" className="btn btn-secondary">
+            Your profile
           </Link>
           <form action="/api/auth/signout" method="post">
             <input type="hidden" name="scope" value="global" />
