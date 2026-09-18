@@ -27,7 +27,6 @@ export default async function RolesPage(props: PageProps<"/admin/[handle]/roles"
       <PageTitle kicker={ctx.club.name} title="Roles and permissions">
         Every member has one role. Roles decide who can add people, make albums, upload photos and post to the feed.
       </PageTitle>
-      <div className="hr" />
       <RoleEditor
         clubId={ctx.club.id}
         roles={(roles ?? []).map((role) => ({ ...role, memberCount: memberCount.get(role.id) ?? 0 }))}

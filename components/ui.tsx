@@ -1,36 +1,65 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { SquiggleUnderline } from "@/components/soft/illustrations";
 
 export function Brand({ href = "/", size = 20 }: { href?: string; size?: number }) {
   return (
-    <Link href={href} className="brand" style={{ fontSize: size }}>
+    <Link href={href} className="soft-wordmark text-ink no-underline" style={{ fontSize: size }}>
       klubbies
     </Link>
   );
 }
 
 export function Kicker({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <span className={`kicker ${className}`}>{children}</span>;
+  return <span className={`soft-chip ${className}`}>{children}</span>;
 }
 
-export function PageTitle({ kicker, title, children }: { kicker?: ReactNode; title: ReactNode; children?: ReactNode }) {
+/**
+ * Page heading for the committee screens. The kicker is the club name, so it
+ * reads as a chip rather than the old all-caps label.
+ */
+export function PageTitle({
+  kicker,
+  title,
+  children,
+  underline = false,
+}: {
+  kicker?: ReactNode;
+  title: ReactNode;
+  children?: ReactNode;
+  /** Hand-drawn underline, for the first heading on a screen. */
+  underline?: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col items-start gap-2">
       {kicker ? <Kicker>{kicker}</Kicker> : null}
-      <h1 className="display" style={{ fontSize: "clamp(30px, 4vw, 44px)" }}>
+      <h1 className="soft-display" style={{ fontSize: "clamp(28px, 4vw, 42px)" }}>
         {title}
       </h1>
-      {children ? <p className="text-[15px] text-neutral-700">{children}</p> : null}
+      {underline ? <SquiggleUnderline /> : null}
+      {children ? <p className="max-w-[60ch] text-[15px] text-[color:var(--ink-70)]">{children}</p> : null}
     </div>
   );
 }
 
-export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+/** No blank screens: an illustration, one sentence, one action. */
+export function EmptyState({
+  title,
+  children,
+  action,
+  art,
+}: {
+  title: string;
+  children?: ReactNode;
+  action?: ReactNode;
+  art?: ReactNode;
+}) {
   return (
-    <div className="dropzone px-4 py-12" style={{ cursor: "default" }}>
-      <span className="font-heading text-[18px] font-extrabold">{title}</span>
-      {children ? <span className="max-w-[46ch] text-[14px] text-neutral-700">{children}</span> : null}
-      {action ? <div className="mt-2">{action}</div> : null}
+    <div className="soft-dashed flex flex-col items-start gap-3 p-7">
+      {art ? <span className="text-accent-400">{art}</span> : null}
+      <span className="soft-display text-[20px]">{title}</span>
+      {children ? <span className="max-w-[46ch] text-[14px] text-[color:var(--ink-70)]">{children}</span> : null}
+      {action ? <div className="mt-1">{action}</div> : null}
     </div>
   );
 }
@@ -38,19 +67,36 @@ export function EmptyState({ title, children, action }: { title: string; childre
 export function StatusTag({ status, role, graceEndsAt }: { status: string; role?: string; graceEndsAt?: string | null }) {
   if (status === "grace") {
     const ends = graceEndsAt ? new Date(graceEndsAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" }) : "";
-    return <span className="tag tag-accent-2">Leaving{ends ? ` · ${ends}` : ""}</span>;
+    return <span className="soft-chip">Leaving{ends ? ` · ${ends}` : ""}</span>;
   }
-  if (status === "revoked") return <span className="tag tag-neutral">Removed</span>;
-  if (role === "club_admin") return <span className="tag tag-accent">Admin</span>;
-  if (status === "active") return <span className="tag tag-outline">Active</span>;
-  return <span className="tag tag-neutral">Never logged in</span>;
+  if (status === "revoked") return <span className="soft-chip soft-chip-muted">Removed</span>;
+  if (role === "club_admin") return <span className="soft-chip">Admin</span>;
+  if (status === "active") return <span className="soft-chip soft-chip-muted">Active</span>;
+  return <span className="soft-chip soft-chip-muted">Never logged in</span>;
 }
 
-export function Stat({ value, label }: { value: ReactNode; label: ReactNode }) {
+/**
+ * One figure on the committee dashboard. `hint` carries the movement under it
+ * — the thing that makes a number worth looking at.
+ */
+export function Stat({
+  value,
+  label,
+  hint,
+  tone = "plain",
+}: {
+  value: ReactNode;
+  label: ReactNode;
+  hint?: ReactNode;
+  tone?: "plain" | "good" | "attention";
+}) {
+  const hintColour =
+    tone === "good" ? "text-[#2f6b36]" : tone === "attention" ? "text-accent-700" : "text-[color:var(--ink-55)]";
   return (
-    <div className="stat">
-      <span className="display text-[40px]">{value}</span>
-      <span className="text-[13px] text-neutral-700">{label}</span>
+    <div className="soft-card flex flex-col gap-1 p-4">
+      <span className="text-[13px] text-[color:var(--ink-70)]">{label}</span>
+      <span className="soft-display text-[clamp(26px,3vw,32px)] leading-none">{value}</span>
+      {hint ? <span className={`text-[12px] font-bold ${hintColour}`}>{hint}</span> : null}
     </div>
   );
 }

@@ -144,8 +144,8 @@ export function RosterImport({ clubId }: { clubId: string }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <span className="font-heading text-[16px] font-extrabold">{busy && !preview ? "Reading the file…" : "Drop members.csv"}</span>
-        <span className="text-[13px] text-neutral-700">CSV or Excel. Any columns, any order.</span>
+        <span className="soft-display text-[16px]">{busy && !preview ? "Reading the file…" : "Drop members.csv"}</span>
+        <span className="text-[13px] text-[color:var(--ink-70)]">CSV or Excel. Any columns, any order.</span>
         <button
           type="button"
           className="btn btn-ghost text-[13px]"
@@ -176,7 +176,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
       </div>
 
       <Dialog open={pasteOpen} onClose={() => setPasteOpen(false)} title="Paste members">
-        <p className="text-[14px] text-neutral-700">One person per line: name and email, in any format.</p>
+        <p className="text-[14px] text-[color:var(--ink-70)]">One person per line: name and email, in any format.</p>
         <textarea
           className="input font-mono text-[13px]"
           rows={10}
@@ -207,7 +207,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
       <Dialog open={preview !== null} onClose={() => setPreview(null)} title="Check the columns" wide>
         {preview ? (
           <>
-            <p className="text-[14px] text-neutral-700">
+            <p className="text-[14px] text-[color:var(--ink-70)]">
               {preview.filename} · {preview.rowCount.toLocaleString("en-AU")} rows
               {preview.headerRowNumber ? ` · headers found on row ${preview.headerRowNumber}` : " · no header row found"}
               {preview.usedSavedMapping ? " · using your last mapping" : ""}
@@ -216,7 +216,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
                 <span className="text-[13px] font-semibold">Names are in</span>
-                <div className="flex border-2 border-divider">
+                <div className="flex soft-card">
                   {(["full", "split"] as const).map((mode) => (
                     <button
                       key={mode}
@@ -307,7 +307,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
                   </div>
                 </div>
                 {summary.missing?.length ? (
-                  <div className="border-t-2 border-divider pt-3">
+                  <div className="border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-3">
                     <span className="text-[14px]">
                       <strong>
                         {summary.missing.length} current {summary.missing.length === 1 ? "member isn't" : "members aren't"} on this list.
@@ -315,7 +315,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
                       If this file is your full current membership, you can remove them. They keep access to earlier
                       albums for 30 days.
                     </span>
-                    <ul className="mt-2 max-h-28 overflow-auto text-[13px] text-neutral-700">
+                    <ul className="mt-2 max-h-28 overflow-auto text-[13px] text-[color:var(--ink-70)]">
                       {summary.missing.slice(0, 50).map((m) => (
                         <li key={m.id}>
                           {m.name} · {m.email}
@@ -335,7 +335,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
                 ) : null}
                 {summary.problemCount ? (
                   <>
-                    <ul className="max-h-40 overflow-auto text-[13px] text-neutral-700">
+                    <ul className="max-h-40 overflow-auto text-[13px] text-[color:var(--ink-70)]">
                       {summary.problems.slice(0, 50).map((p) => (
                         <li key={`${p.row}-${p.email}`}>
                           Row {p.row}: {p.name || "(no name)"} {p.email ? `· ${p.email}` : ""} — {p.reason}

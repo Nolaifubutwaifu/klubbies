@@ -234,7 +234,7 @@ export function MemberTable({
                     </div>
                   ) : null}
                 </td>
-                <td className="text-neutral-700">{member.email}</td>
+                <td className="text-[color:var(--ink-70)]">{member.email}</td>
                 <td>
                   {canManageRoles && member.userId !== currentUserId ? (
                     <select
@@ -255,7 +255,7 @@ export function MemberTable({
                   )}
                 </td>
                 <td>{statusTag(member)}</td>
-                <td className="whitespace-nowrap text-neutral-700">{shortDate(member.since)}</td>
+                <td className="whitespace-nowrap text-[color:var(--ink-70)]">{shortDate(member.since)}</td>
                 <td className="whitespace-nowrap text-right">
                   {member.status === "grace" ? (
                     <>
@@ -285,7 +285,7 @@ export function MemberTable({
         </table>
       </div>
 
-      <span className="text-[12px] text-neutral-600">
+      <span className="text-[12px] text-[color:var(--ink-55)]">
         {visible.length.toLocaleString("en-AU")} shown of {members.length.toLocaleString("en-AU")}
       </span>
 
@@ -294,7 +294,7 @@ export function MemberTable({
           They lose access to new albums right away. Anyone who has signed in keeps access to earlier albums for 30 days
           and gets an email about it.
         </p>
-        <ul className="max-h-40 overflow-auto text-[14px] text-neutral-700">
+        <ul className="max-h-40 overflow-auto text-[14px] text-[color:var(--ink-70)]">
           {chosen.map((m) => (
             <li key={m.id}>
               {m.name} · {m.email}

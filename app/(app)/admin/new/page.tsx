@@ -11,7 +11,7 @@ export default async function NewClubPage() {
   await requireUser("/admin/new");
   return (
     <main className="flex flex-1 flex-col">
-      <header className="flex items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
+      <header className="flex items-center justify-between gap-4 border-b border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] px-6 py-4">
         <Brand href="/clubs" />
         <Link href="/clubs" className="btn btn-ghost text-[13px]">
           Cancel

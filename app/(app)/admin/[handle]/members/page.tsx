@@ -59,28 +59,29 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
   const notSignedIn = rows.filter((m) => m.status !== "revoked" && !m.firstSeenAt).length;
 
   return (
-    <main className="flex max-w-[1180px] flex-col gap-6 px-6 py-8">
+    <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       {search.step === "3" ? (
-        <div className="flex flex-wrap items-center justify-between gap-4 border-2 border-accent p-4">
+        <div className="soft-bordered flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
-            <div className="kicker">Step 3 of 4</div>
-            <div className="mt-1 font-heading text-[20px] font-extrabold">Add the people who should see your photos.</div>
+            <span className="soft-chip">Step 3 of 4</span>
+            <div className="soft-display mt-2 text-[20px]">Add the people who should see your photos.</div>
           </div>
-          <Link href={`/admin/${handle}/albums`} className="btn btn-primary">
+          <Link href={`/admin/${handle}/albums`} className="soft-btn soft-btn-primary no-underline">
             Step 4: first album
           </Link>
         </div>
       ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle kicker={ctx.club.name} title="Member list" />
+        <PageTitle kicker={ctx.club.name} title="Member list" underline>
+          {onList.toLocaleString("en-AU")} on the list. That list is the door: anyone on it can sign in and see your albums.
+        </PageTitle>
         {ctx.perms.manage_club ? (
-          <Link href={`/admin/${handle}/roles`} className="btn btn-secondary">
+          <Link href={`/admin/${handle}/roles`} className="soft-btn soft-btn-tonal no-underline">
             Roles and permissions
           </Link>
         ) : null}
       </div>
-      <div className="hr" />
 
       <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
         {writable ? (
@@ -93,7 +94,9 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
         )}
         <Stat
           value={onList.toLocaleString("en-AU")}
-          label={`on the list · ${notSignedIn.toLocaleString("en-AU")} haven't signed in yet`}
+          label="On the list"
+          hint={notSignedIn > 0 ? `${notSignedIn.toLocaleString("en-AU")} never signed in` : "everyone has signed in"}
+          tone={notSignedIn > 0 ? "attention" : "good"}
         />
       </div>
 
@@ -106,14 +109,14 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
       />
 
       {rows.length >= MAX_ROWS ? (
-        <p className="text-[13px] text-neutral-700">
+        <p className="text-[13px] text-[color:var(--ink-70)]">
           Showing the first {MAX_ROWS.toLocaleString("en-AU")} members. Search to narrow the list.
         </p>
       ) : null}
 
       {imports.data?.length ? (
-        <section className="flex flex-col gap-2">
-          <h2 className="label-caps">Import history</h2>
+        <section className="soft-card flex flex-col gap-3 p-5">
+          <h2 className="soft-display text-[19px]">Import history</h2>
           <table className="table">
             <thead>
               <tr>
@@ -131,7 +134,7 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
                   <td>{i.added_count}</td>
                   <td>{i.matched_count}</td>
                   <td>{i.error_count}</td>
-                  <td className="text-neutral-700">{new Date(i.imported_at).toLocaleDateString("en-AU")}</td>
+                  <td className="text-[color:var(--ink-70)]">{new Date(i.imported_at).toLocaleDateString("en-AU")}</td>
                 </tr>
               ))}
             </tbody>

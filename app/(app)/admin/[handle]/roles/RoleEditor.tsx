@@ -28,7 +28,7 @@ function PermissionFields({ role }: { role?: Role }) {
           />
           <span>
             <span className="font-semibold">{PERMISSION_LABELS[perm].label}</span>
-            <span className="block text-[13px] text-neutral-700">{PERMISSION_LABELS[perm].hint}</span>
+            <span className="block text-[13px] text-[color:var(--ink-70)]">{PERMISSION_LABELS[perm].hint}</span>
           </span>
         </label>
       ))}
@@ -43,11 +43,11 @@ function RoleCard({ clubId, role }: { clubId: string; role: Role }) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <div className="flex flex-col gap-3 border-2 border-divider p-4">
+    <div className="flex flex-col gap-3 soft-card p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <span className="font-heading text-[18px] font-extrabold">{role.name}</span>
-          <span className="ml-2 text-[13px] text-neutral-700">
+          <span className="soft-display text-[18px]">{role.name}</span>
+          <span className="ml-2 text-[13px] text-[color:var(--ink-70)]">
             {role.memberCount.toLocaleString("en-AU")} {role.memberCount === 1 ? "member" : "members"}
             {role.is_default ? " · given to new members" : ""}
           </span>
@@ -84,7 +84,7 @@ function RoleCard({ clubId, role }: { clubId: string; role: Role }) {
       </div>
 
       {open ? (
-        <form action={action} className="flex flex-col gap-4 border-t-2 border-divider pt-4">
+        <form action={action} className="flex flex-col gap-4 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-4">
           <label className="field max-w-[280px]">
             Role name
             <input className="input" name="name" defaultValue={role.name} maxLength={40} required />

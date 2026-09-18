@@ -56,7 +56,6 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
   return (
     <main className="flex max-w-[920px] flex-col gap-6 px-6 py-8">
       <PageTitle kicker={onboarding && !writable ? "Step 2 of 4" : ctx.club.name} title={writable ? "Billing" : `Activate ${ctx.club.name}`} />
-      <div className="hr" />
 
       {search.canceled ? <div className="notice">Checkout was cancelled. Nothing was charged.</div> : null}
       {search.error === "checkout" ? <div className="notice">We couldn&apos;t open checkout. Try again in a moment.</div> : null}
@@ -71,12 +70,12 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
       ) : null}
 
       {writable ? (
-        <section className="flex flex-col gap-4 border-2 border-divider p-6">
+        <section className="flex flex-col gap-4 soft-card p-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className={status === "past_due" ? "tag tag-accent-2" : "tag tag-outline"}>{BILLING_LABEL[status]}</span>
-            {ctx.club.paid_at ? <span className="text-[13px] text-neutral-700">Paid {formatLongDate(ctx.club.paid_at)}</span> : null}
+            {ctx.club.paid_at ? <span className="text-[13px] text-[color:var(--ink-70)]">Paid {formatLongDate(ctx.club.paid_at)}</span> : null}
             {card ? (
-              <span className="text-[13px] text-neutral-700">
+              <span className="text-[13px] text-[color:var(--ink-70)]">
                 {card.brand.toUpperCase()} ending {card.last4} · expires {String(card.expMonth).padStart(2, "0")}/
                 {String(card.expYear).slice(-2)}
               </span>
@@ -127,7 +126,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
                 {status === "canceled" ? "Reactivate club" : "Pay and activate"}
               </SubmitButton>
             </form>
-            <span className="text-[12px] text-neutral-600">
+            <span className="text-[12px] text-[color:var(--ink-55)]">
               Payments are handled by Stripe. Klubbies never sees your card details. By activating you agree to the{" "}
               <Link href="/terms">terms</Link> and <Link href="/refunds">refund and cancellation policy</Link>.
             </span>
@@ -146,7 +145,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
               </li>
             </ol>
             {status === "canceled" ? (
-              <p className="text-[13px] text-neutral-700">
+              <p className="text-[13px] text-[color:var(--ink-70)]">
                 Members can still open existing albums. Adding members and uploading resume once the club is active again.
               </p>
             ) : null}

@@ -38,7 +38,7 @@ export function Uploader({ albumId }: { albumId: string }) {
   return (
     <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
       <div className="flex flex-col gap-3">
-        <span className="font-heading text-[18px] font-extrabold">Add photos and videos</span>
+        <span className="soft-display text-[18px]">Add photos and videos</span>
         <div
           className="dropzone px-4 py-8"
           data-active={dragging}
@@ -53,8 +53,8 @@ export function Uploader({ albumId }: { albumId: string }) {
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
         >
-          <span className="font-heading text-[16px] font-extrabold">Drop files, or choose from your phone</span>
-          <span className="text-[13px] text-neutral-700">JPG, PNG, HEIC, WebP, MP4, MOV · originals kept at full quality</span>
+          <span className="soft-display text-[16px]">Drop files, or choose from your phone</span>
+          <span className="text-[13px] text-[color:var(--ink-70)]">JPG, PNG, HEIC, WebP, MP4, MOV · originals kept at full quality</span>
           <input
             ref={input}
             type="file"
@@ -67,9 +67,9 @@ export function Uploader({ albumId }: { albumId: string }) {
             }}
           />
         </div>
-        <div className="flex flex-col gap-2 border-2 border-divider p-4">
+        <div className="flex flex-col gap-2 soft-card p-4">
           <span className="text-[14px] font-semibold">You can keep using Klubbies while this runs.</span>
-          <span className="text-[13px] leading-normal text-neutral-700">
+          <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
             Uploads continue as you move around the app, and a progress box follows you. Leave this tab open until it
             finishes; if your connection drops, each file picks up where it left off.
           </span>
@@ -93,14 +93,14 @@ export function Uploader({ albumId }: { albumId: string }) {
                   ? "Some files need another go"
                   : "Upload complete"}
           </span>
-          <span className="text-[13px] text-neutral-700">{jobs.length ? `${pct}%` : ""}</span>
+          <span className="text-[13px] text-[color:var(--ink-70)]">{jobs.length ? `${pct}%` : ""}</span>
         </div>
         <div className="h-[10px] bg-neutral-300">
           <div className="h-full bg-accent transition-[width]" style={{ width: `${pct}%` }} />
         </div>
-        <div className="border-2 border-divider">
+        <div className="soft-card">
           {jobs.length === 0 ? (
-            <p className="m-0 p-3 text-[13px] text-neutral-700">Files you choose show up here with their status.</p>
+            <p className="m-0 p-3 text-[13px] text-[color:var(--ink-70)]">Files you choose show up here with their status.</p>
           ) : (
             jobs.slice(-40).map((job) => (
               <div key={job.key} className="flex items-center justify-between gap-3 border-b border-divider px-3 py-[10px] last:border-b-0">
@@ -137,7 +137,7 @@ export function Uploader({ albumId }: { albumId: string }) {
           )}
         </div>
         {jobs.length ? (
-          <span className="text-[13px] text-neutral-700">
+          <span className="text-[13px] text-[color:var(--ink-70)]">
             {done} of {jobs.length} ready{failed.length ? ` · ${failed.length} failed` : ""}
           </span>
         ) : null}

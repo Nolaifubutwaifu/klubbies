@@ -42,14 +42,14 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
       <PageTitle kicker={ctx.club.name} title="Activity">
         Every view and download, newest first. Members are told this log exists.
       </PageTitle>
-      <div className="flex flex-col gap-2 border-2 border-divider p-4 text-[14px] leading-normal text-neutral-800">
-        <span className="font-heading text-[16px] font-extrabold">What this is for</span>
+      <div className="flex flex-col gap-2 soft-card p-4 text-[14px] leading-normal text-neutral-800">
+        <span className="soft-display text-[16px]">What this is for</span>
         <p className="m-0 max-w-[70ch]">
           If a photo from your club turns up somewhere it shouldn&apos;t, this is how you find out who opened or
           downloaded it, and when. It&apos;s also the quickest way to see whether an album actually reached people
           after you published it, and which members have never opened anything.
         </p>
-        <p className="m-0 max-w-[70ch] text-neutral-700">
+        <p className="m-0 max-w-[70ch] text-[color:var(--ink-70)]">
           Only people who can run the club see this page. The privacy policy tells members the log exists.
         </p>
       </div>
@@ -65,7 +65,7 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
         </Link>
       </div>
       {rows.length === 0 ? (
-        <p className="border-2 border-divider p-6 text-[14px] text-neutral-700">Nothing logged yet.</p>
+        <p className="soft-card p-6 text-[14px] text-[color:var(--ink-70)]">Nothing logged yet.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="table min-w-[640px]">
@@ -80,10 +80,10 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
             <tbody>
               {rows.map((e) => (
                 <tr key={e.id}>
-                  <td className="whitespace-nowrap text-neutral-700">{formatDateTime(e.occurred_at)}</td>
+                  <td className="whitespace-nowrap text-[color:var(--ink-70)]">{formatDateTime(e.occurred_at)}</td>
                   <td>
                     <span className="font-semibold">{e.memberships?.roster_name ?? "Admin"}</span>
-                    {e.memberships ? <div className="text-[12px] text-neutral-600">{e.memberships.roster_email}</div> : null}
+                    {e.memberships ? <div className="text-[12px] text-[color:var(--ink-55)]">{e.memberships.roster_email}</div> : null}
                   </td>
                   <td>
                     <span className={e.action === "download" ? "tag tag-accent" : "tag tag-neutral"}>{e.action}</span>
@@ -92,7 +92,7 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
                     {e.media?.album_id ? (
                       <Link href={`/c/${handle}/a/${e.media.album_id}/${e.media.id}`}>{e.media.original_filename ?? "Open"}</Link>
                     ) : (
-                      <span className="text-neutral-600">Deleted item</span>
+                      <span className="text-[color:var(--ink-55)]">Deleted item</span>
                     )}
                   </td>
                 </tr>

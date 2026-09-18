@@ -19,7 +19,6 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
   return (
     <main className="flex max-w-[920px] flex-col gap-6 px-6 py-8">
       <PageTitle kicker={club.name} title="Club settings" />
-      <div className="hr" />
       <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
         <SettingsForm
           clubId={club.id}
@@ -30,16 +29,16 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
         />
         <div className="flex flex-col gap-4">
           <span className="text-[13px] font-semibold">Club mark</span>
-          <span className="text-[13px] leading-normal text-neutral-700">
+          <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
             Shown next to the club name in the header, and on the club switcher.
           </span>
           <LogoUploader clubId={club.id} logoUrl={logoUrl} />
-          <div className="border-2 border-divider bg-surface p-4">
+          <div className="soft-card bg-surface p-4">
             <div className="label-caps">Club address</div>
-            <div className="mt-2 break-all font-heading text-[18px] font-extrabold">
+            <div className="mt-2 break-all soft-display text-[18px]">
               {appUrl().replace(/^https?:\/\//, "")}/c/{club.handle}
             </div>
-            <p className="mt-2 text-[13px] leading-normal text-neutral-700">
+            <p className="mt-2 text-[13px] leading-normal text-[color:var(--ink-70)]">
               Share this link with members. It never changes, so links in group chats keep working.
             </p>
           </div>

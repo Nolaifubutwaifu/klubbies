@@ -26,7 +26,7 @@ export function PublishToggle({ albumId, published, readyCount }: { albumId: str
         {pending ? "Saving…" : published ? "Unpublish" : "Publish album"}
       </button>
       {error ? <span className="text-[12px] text-accent-700">{error}</span> : null}
-      {!published && readyCount === 0 ? <span className="text-[12px] text-neutral-600">Upload something first</span> : null}
+      {!published && readyCount === 0 ? <span className="text-[12px] text-[color:var(--ink-55)]">Upload something first</span> : null}
     </div>
   );
 }

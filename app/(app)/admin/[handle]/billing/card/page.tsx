@@ -22,7 +22,6 @@ export default async function CardPage(props: PageProps<"/admin/[handle]/billing
           ? `Currently paying with ${card.brand.toUpperCase()} ending ${card.last4}, expires ${String(card.expMonth).padStart(2, "0")}/${String(card.expYear).slice(-2)}.`
           : "Save a card for this club's subscription."}
       </PageTitle>
-      <div className="hr" />
       <CardForm clubId={ctx.club.id} doneHref={`/admin/${handle}/billing`} />
     </main>
   );

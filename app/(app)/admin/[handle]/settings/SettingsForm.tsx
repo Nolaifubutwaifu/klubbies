@@ -39,7 +39,7 @@ export function SettingsForm({
 
       <div className="flex flex-col gap-3">
         <span className="text-[13px] font-semibold">Club colour</span>
-        <span className="text-[13px] leading-normal text-neutral-700">
+        <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
           Buttons, tags and highlights across this club follow this colour. Only this club changes.
         </span>
         <input type="hidden" name="accentColour" value={accent.toLowerCase() === DEFAULT_ACCENT ? "" : accent} />
@@ -60,7 +60,7 @@ export function SettingsForm({
               type="color"
               value={accent}
               onChange={(e) => setAccent(e.target.value)}
-              className="h-9 w-9 cursor-pointer border-2 border-divider bg-transparent p-0"
+              className="h-9 w-9 cursor-pointer soft-card bg-transparent p-0"
               aria-label="Pick a custom colour"
             />
             <input
@@ -77,7 +77,7 @@ export function SettingsForm({
             </button>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-3 border-2 border-divider p-3" style={preview}>
+        <div className="flex flex-wrap items-center gap-3 soft-card p-3" style={preview}>
           <span className="btn btn-primary">Primary button</span>
           <span className="tag tag-accent">Admin</span>
           <span className="kicker">Preview</span>
