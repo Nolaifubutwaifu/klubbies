@@ -10,6 +10,7 @@ import { SaveAlbum } from "@/components/SaveAlbum";
 import { UnfinishedUploads } from "@/components/UnfinishedUploads";
 import { getClubContext } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
+import { favouritedIds } from "@/lib/media/favourites";
 import { listAlbumMedia } from "@/lib/media/queries";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -84,55 +85,81 @@ export default async function AlbumPage(props: Props) {
     coverUrl = items[0].thumbUrl;
   }
 
+  const savedIds = await favouritedIds(supabase, ctx.userId, items.map((item) => item.id));
+
   const photoCount = counts?.photo_count ?? 0;
   const videoCount = counts?.video_count ?? 0;
 
   return (
     <main className="flex flex-1 flex-col">
-      <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-divider px-6 pb-4 pt-6">
-        <div className="min-w-0">
-          <Link href={`/c/${handle}`} className="btn btn-ghost text-[13px]">
-            ← All events
+      {/* Sticky album header: the title and the download stay reachable while
+          you scroll a thousand photos. */}
+      <div className="sticky top-0 z-20 border-b border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-4 px-4 py-3.5 sm:px-6">
+          <Link
+            href={`/c/${handle}`}
+            aria-label="Back to all events"
+            className="flex h-11 w-11 flex-none items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-text)_5%,transparent)] text-ink no-underline transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)]"
+          >
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
+              <path d="M14 6l-6 6 6 6" />
+            </svg>
           </Link>
-          {canManage ? (
-            <div className="kicker mt-2 block">{album.status === "published" ? "Published" : "Draft · members can't see it yet"}</div>
-          ) : null}
-          <h1 className="display mt-1" style={{ fontSize: "clamp(28px, 4vw, 44px)" }}>
-            {album.title}
-          </h1>
-          <p className="mt-2 text-[14px] text-neutral-700">
-            {[
-              formatLongDate(album.event_date),
-              photoCount ? `${photoCount.toLocaleString("en-AU")} photos` : null,
-              videoCount ? `${videoCount.toLocaleString("en-AU")} videos` : null,
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-          </p>
-          {album.description ? (
-            <p className="mt-3 max-w-[60ch] text-[15px] leading-normal text-neutral-800">{album.description}</p>
-          ) : null}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {canManage ? (
-            <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="btn btn-secondary text-[14px]">
-              {editing ? "Close details" : "Edit album details"}
-            </Link>
-          ) : null}
-          {canAdd ? (
-            <Link href={adding ? albumHref : `${albumHref}?add=1`} className="btn btn-primary text-[14px]">
-              {adding ? "Close uploader" : "Add photos"}
-            </Link>
-          ) : null}
-          <SaveAlbum
-            albumId={album.id}
-            mediaIds={(readyIds ?? []).map((m) => m.id)}
-            parts={Math.max(1, Math.ceil((photoCount + videoCount) / 150))}
-            canDownload={album.allow_download || canManage}
-          />
-          {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
+
+          <div className="min-w-0 flex-1">
+            <h1 className="soft-display truncate text-[clamp(20px,2.6vw,28px)]">{album.title}</h1>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[color:var(--ink-70)]">
+              <span>
+                {[
+                  formatLongDate(album.event_date),
+                  photoCount ? `${photoCount.toLocaleString("en-AU")} photos` : null,
+                  videoCount ? `${videoCount.toLocaleString("en-AU")} videos` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                  <rect x="4" y="10" width="16" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+                Members only
+              </span>
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {canManage ? (
+              <span className={album.status === "published" ? "soft-chip" : "soft-chip soft-chip-muted"}>
+                {album.status === "published" ? "Published" : "Draft · members can't see it"}
+              </span>
+            ) : null}
+            {canManage ? (
+              <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="soft-btn soft-btn-tonal !min-h-[44px] !text-[14px] no-underline">
+                {editing ? "Close details" : "Edit details"}
+              </Link>
+            ) : null}
+            {canAdd ? (
+              <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-tonal !min-h-[44px] !text-[14px] no-underline">
+                {adding ? "Close uploader" : "Add photos"}
+              </Link>
+            ) : null}
+            <SaveAlbum
+              albumId={album.id}
+              mediaIds={(readyIds ?? []).map((m) => m.id)}
+              parts={Math.max(1, Math.ceil((photoCount + videoCount) / 150))}
+              canDownload={album.allow_download || canManage}
+            />
+            {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
+          </div>
         </div>
       </div>
+
+      {album.description ? (
+        <div className="mx-auto w-full max-w-[1100px] px-4 pt-5 sm:px-6">
+          <p className="max-w-[60ch] text-[15px] leading-normal text-[color:var(--ink-70)]">{album.description}</p>
+        </div>
+      ) : null}
 
       {album.contributor_scope === "members" && !canManage && ctx.membership ? (
         <div className="border-b-2 border-divider border-l-4 border-l-accent bg-accent-100 px-6 py-3 text-[14px] text-accent-800">
@@ -176,6 +203,9 @@ export default async function AlbumPage(props: Props) {
         coverMediaId={album.cover_media_id}
         canManage={canManage}
         selectMode={search.pickCover === "1"}
+        photoCount={photoCount}
+        videoCount={videoCount}
+        savedIds={[...savedIds]}
       />
     </main>
   );

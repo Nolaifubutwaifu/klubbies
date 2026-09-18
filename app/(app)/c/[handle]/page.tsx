@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { MarkVisited } from "@/components/MarkVisited";
 import { SoftEvents } from "@/components/soft/SoftEvents";
 import { getClubContext } from "@/lib/auth/session";
 import { listStackedAlbums } from "@/lib/media/album-list";
@@ -17,7 +18,10 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
   if (!ctx) notFound();
 
   const supabase = await createClient();
-  const albums = await listStackedAlbums(supabase, ctx.club.id, { includeDrafts: ctx.perms.manage_albums });
+  const albums = await listStackedAlbums(supabase, ctx.club.id, {
+    includeDrafts: ctx.perms.manage_albums,
+    since: ctx.membership?.last_seen_at ?? null,
+  });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -27,7 +31,10 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
         canManage={ctx.perms.manage_albums}
         clubName={ctx.club.name}
         newAlbumHref={`/admin/${handle}/albums`}
+        savedHref={`/c/${handle}/saved`}
       />
+      {/* Stamps the visit after render, so this page still shows what was new. */}
+      <MarkVisited clubId={ctx.club.id} />
     </main>
   );
 }

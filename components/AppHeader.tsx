@@ -27,6 +27,7 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
 
   const memberLinks = [
     { href: `/c/${club.handle}`, label: "Events" },
+    { href: `/c/${club.handle}/saved`, label: "Saved" },
     { href: `/c/${club.handle}/feed`, label: "Club feed" },
   ];
 

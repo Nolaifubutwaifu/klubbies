@@ -20,8 +20,7 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
     <main className="flex flex-col">
       <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 px-4 pb-2 pt-8 sm:px-6">
         <PageTitle kicker={ctx.club.name} title="Albums" />
-        <div className="hr" />
-        {canWrite(ctx.club.billing_status) ? (
+          {canWrite(ctx.club.billing_status) ? (
           <NewAlbumForm clubId={ctx.club.id} />
         ) : (
           <BillingGate handle={handle} action="create albums" />
@@ -33,6 +32,7 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
         canManage
         clubName={ctx.club.name}
         newAlbumHref={`/admin/${handle}/albums`}
+        savedHref={`/c/${handle}/saved`}
       />
     </main>
   );

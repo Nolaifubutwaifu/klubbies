@@ -4,6 +4,7 @@ import { z } from "zod";
 import { getClubContext } from "@/lib/auth/session";
 import { formatBytes, formatDuration, formatLongDate } from "@/lib/format";
 import { logAccess } from "@/lib/media/access";
+import { favouritedIds } from "@/lib/media/favourites";
 import { getViewerData } from "@/lib/media/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Viewer } from "./Viewer";
@@ -30,6 +31,7 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
   if (!data) notFound();
 
   await logAccess(ctx, data.media.id, "view");
+  const favourites = await favouritedIds(supabase, ctx.userId, [data.media.id]);
 
   const { media } = data;
   const details = [
@@ -70,6 +72,7 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
       total={data.total}
       strip={data.strip}
       canDownload={album.allow_download || ctx.isAdmin}
+      favourited={favourites.has(data.media.id)}
     />
   );
 }

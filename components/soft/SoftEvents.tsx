@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { CalendarIcon, CameraIcon, ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from "@/components/soft/icons";
 import { ConfettiArt, PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
 import { formatDate, formatLongDate } from "@/lib/format";
+import { findAnniversary } from "@/lib/media/anniversary";
 import type { StackedAlbum } from "@/lib/media/album-list";
 
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -44,12 +45,14 @@ export function SoftEvents({
   canManage,
   clubName,
   newAlbumHref,
+  savedHref,
 }: {
   albums: StackedAlbum[];
   hrefBase: string;
   canManage: boolean;
   clubName: string;
   newAlbumHref: string;
+  savedHref: string;
 }) {
   const [query, setQuery] = useState("");
   const [day, setDay] = useState<string | null>(null);
@@ -73,6 +76,7 @@ export function SoftEvents({
   const hero = filtersOn ? null : (filtered.find((a) => a.coverUrl && a.photoCount + a.videoCount > 0) ?? null);
   const rows = hero ? filtered.filter((a) => a.id !== hero.id) : filtered;
   const totals = albums.reduce((sum, a) => sum + a.photoCount + a.videoCount, 0);
+  const memory = filtersOn ? null : findAnniversary(albums);
 
   return (
     <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-6 sm:px-6">
@@ -87,12 +91,17 @@ export function SoftEvents({
               : "Everything the committee shares lands here."}
           </p>
         </div>
-        {canManage ? (
-          <Link href={newAlbumHref} className="soft-btn soft-btn-primary no-underline">
-            <PlusIcon />
-            New album
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={savedHref} className="soft-btn soft-btn-tonal no-underline">
+            Saved
           </Link>
-        ) : null}
+          {canManage ? (
+            <Link href={newAlbumHref} className="soft-btn soft-btn-primary no-underline">
+              <PlusIcon />
+              New album
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -217,6 +226,26 @@ export function SoftEvents({
         </div>
       ) : null}
 
+      {memory ? (
+        <Link
+          href={`${hrefBase}/${memory.album.id}`}
+          className="mt-6 flex items-center gap-4 rounded-[var(--soft-r)] bg-[color:var(--tone-support)] p-4 text-[color:var(--tone-support-ink)] no-underline transition-transform hover:-translate-y-0.5"
+        >
+          {memory.album.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+            <img src={memory.album.coverUrl} alt="" className="h-[62px] w-[62px] flex-none rounded-[16px] object-cover" />
+          ) : null}
+          <span className="min-w-0 flex-1">
+            <span className="block text-[12px] font-bold">
+              {memory.years === 1 ? "One year ago tonight" : `${memory.years} years ago tonight`}
+            </span>
+            <span className="soft-display block truncate text-[17px] text-ink">{memory.album.title}</span>
+            <span className="block text-[12px]">{countLabel(memory.album)}</span>
+          </span>
+          <ChevronRightIcon />
+        </Link>
+      ) : null}
+
       {filtered.length === 0 ? (
         <div className="soft-card mt-6 flex flex-col items-start gap-3 p-8">
           <span className="text-accent-400">
@@ -253,7 +282,9 @@ export function SoftEvents({
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
                 <img src={hero.coverUrl ?? ""} alt="" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[rgba(25,18,22,0.82)] via-[rgba(25,18,22,0.15)] to-transparent" />
-                <span className="soft-sticker absolute right-4 top-4 sm:right-6 sm:top-6">Latest album</span>
+                <span className="soft-sticker absolute right-4 top-4 sm:right-6 sm:top-6">
+                  {hero.isNew ? "New since you were here" : "Latest album"}
+                </span>
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 sm:p-7">
                   <span className="soft-chip bg-white/90 text-[--color-accent-700]">{formatDate(hero.date)}</span>
                   <span className="soft-display text-[clamp(26px,4.5vw,44px)] text-white">{hero.title}</span>
@@ -312,6 +343,9 @@ export function SoftEvents({
                   </div>
                 )}
                 <div className="flex flex-wrap items-center gap-2">
+                  {album.isNew ? (
+                    <span className="soft-chip !bg-accent !text-white">New</span>
+                  ) : null}
                   <span className="soft-chip">{formatDate(album.date)}</span>
                   {album.status === "draft" && canManage ? <span className="soft-chip soft-chip-muted">Draft</span> : null}
                   {album.openToMembers ? <span className="soft-chip soft-chip-muted">Members can add</span> : null}

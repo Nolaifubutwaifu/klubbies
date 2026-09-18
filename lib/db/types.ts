@@ -270,6 +270,49 @@ export type Database = {
           },
         ];
       };
+      favourites: {
+        Row: {
+          club_id: string;
+          created_at: string;
+          media_id: string;
+          user_id: string;
+        };
+        Insert: {
+          club_id: string;
+          created_at?: string;
+          media_id: string;
+          user_id: string;
+        };
+        Update: {
+          club_id?: string;
+          created_at?: string;
+          media_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "favourites_club_id_fkey";
+            columns: ["club_id"];
+            isOneToOne: false;
+            referencedRelation: "clubs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "favourites_media_id_fkey";
+            columns: ["media_id"];
+            isOneToOne: false;
+            referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "favourites_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       media: {
         Row: {
           album_id: string | null;
@@ -365,6 +408,7 @@ export type Database = {
           club_id: string;
           created_at: string;
           first_seen_at: string | null;
+          last_seen_at: string | null;
           grace_ends_at: string | null;
           grace_notices_sent: number;
           grace_started_at: string | null;
@@ -386,6 +430,7 @@ export type Database = {
           club_id: string;
           created_at?: string;
           first_seen_at?: string | null;
+          last_seen_at?: string | null;
           grace_ends_at?: string | null;
           grace_notices_sent?: number;
           grace_started_at?: string | null;
@@ -407,6 +452,7 @@ export type Database = {
           club_id?: string;
           created_at?: string;
           first_seen_at?: string | null;
+          last_seen_at?: string | null;
           grace_ends_at?: string | null;
           grace_notices_sent?: number;
           grace_started_at?: string | null;
@@ -868,6 +914,8 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      seed_club_roles: { Args: { p_club_id: string }; Returns: undefined };
+      touch_club_visit: { Args: { p_club_id: string }; Returns: undefined };
     };
     Enums: {
       [_ in never]: never;

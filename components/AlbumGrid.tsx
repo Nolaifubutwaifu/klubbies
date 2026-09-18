@@ -14,7 +14,7 @@ function duration(seconds: number | null): string {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
 }
 
-function Tile({ item, cover }: { item: GridItem; cover: boolean }) {
+function Tile({ item, cover, saved }: { item: GridItem; cover: boolean; saved: boolean }) {
   return (
     <>
       {item.thumbUrl ? (
@@ -26,16 +26,23 @@ function Tile({ item, cover }: { item: GridItem; cover: boolean }) {
         </span>
       )}
       {item.kind === "video" ? (
-        <span className="absolute bottom-0 left-0 bg-accent px-2 py-1 text-[10px] font-bold tracking-[0.08em] text-white">
-          VIDEO{item.duration_seconds ? ` · ${duration(item.duration_seconds)}` : ""}
+        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2 py-0.5 text-[10px] font-bold text-white">
+          {item.duration_seconds ? duration(item.duration_seconds) : "Video"}
         </span>
       ) : null}
       {cover ? (
-        <span className="absolute left-0 top-0 bg-neutral-900 px-2 py-1 text-[10px] font-bold tracking-[0.08em] text-white">COVER</span>
+        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Cover</span>
+      ) : null}
+      {saved ? (
+        <span className="absolute bottom-1.5 right-1.5 text-white drop-shadow" aria-label="Saved">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+            <path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
+          </svg>
+        </span>
       ) : null}
       {item.status !== "ready" ? (
-        <span className="absolute inset-x-0 top-0 bg-accent-100/95 px-2 py-1 text-[11px] font-semibold text-accent-800">
-          {item.status === "failed" ? "Failed" : "Not finished"}
+        <span className="absolute inset-x-1.5 top-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_14%,white)] px-2 py-0.5 text-center text-[10px] font-bold text-accent-800">
+          {item.status === "failed" ? "Failed" : "Processing"}
         </span>
       ) : null}
     </>
@@ -50,6 +57,9 @@ export function AlbumGrid({
   coverMediaId,
   canManage,
   selectMode = false,
+  photoCount,
+  videoCount,
+  savedIds,
 }: {
   albumId: string;
   hrefBase: string;
@@ -58,6 +68,9 @@ export function AlbumGrid({
   coverMediaId: string | null;
   canManage: boolean;
   selectMode?: boolean;
+  photoCount: number;
+  videoCount: number;
+  savedIds: string[];
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -68,6 +81,8 @@ export function AlbumGrid({
   const [confirm, setConfirm] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
+  const [kind, setKind] = useState<"all" | "photo" | "video">("all");
+  const saved = new Set(savedIds);
 
   const toggle = (id: string) =>
     setSelected((current) => {
@@ -78,6 +93,7 @@ export function AlbumGrid({
     });
 
   const selectedIds = [...selected];
+  const shown = kind === "all" ? items : items.filter((item) => item.kind === kind);
 
   const loadMore = () =>
     startTransition(async () => {
@@ -137,8 +153,32 @@ export function AlbumGrid({
         </div>
       ) : null}
 
-      <div className="grid gap-2 px-4 pb-6 pt-4 sm:px-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
-        {items.map((item) =>
+      {videoCount > 0 ? (
+        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap gap-2 px-4 sm:px-6">
+          {(
+            [
+              ["all", `All ${(photoCount + videoCount).toLocaleString("en-AU")}`],
+              ["photo", `Photos ${photoCount.toLocaleString("en-AU")}`],
+              ["video", `Videos ${videoCount.toLocaleString("en-AU")}`],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={kind === value}
+              onClick={() => setKind(value)}
+              className={`soft-btn !min-h-[40px] !px-4 !text-[13px] ${
+                kind === value ? "!bg-ink !text-white" : "soft-btn-tonal"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="mx-auto grid w-full max-w-[1100px] gap-2 px-4 pb-6 pt-4 sm:px-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
+        {shown.map((item) =>
           selecting ? (
             <button
               key={item.id}
@@ -148,11 +188,11 @@ export function AlbumGrid({
               className="relative block aspect-square overflow-hidden rounded-[var(--soft-r-sm)] border-0 bg-bg p-0"
               style={{ outline: selected.has(item.id) ? "3px solid var(--color-accent)" : undefined, outlineOffset: -3 }}
             >
-              <Tile item={item} cover={item.id === coverMediaId} />
+              <Tile item={item} cover={item.id === coverMediaId} saved={saved.has(item.id)} />
             </button>
           ) : (
             <Link key={item.id} href={`${hrefBase}/${item.id}`} className="soft-tile relative block aspect-square" scroll={false}>
-              <Tile item={item} cover={item.id === coverMediaId} />
+              <Tile item={item} cover={item.id === coverMediaId} saved={saved.has(item.id)} />
             </Link>
           ),
         )}

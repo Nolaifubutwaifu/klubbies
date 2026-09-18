@@ -18,6 +18,8 @@ export type StackedAlbum = {
   coverUrl: string | null;
   tiles: { id: string; url: string | null; kind: string }[];
   moreCount: number;
+  /** Published since the viewer last opened this club. */
+  isNew: boolean;
 };
 
 /**
@@ -28,9 +30,11 @@ export type StackedAlbum = {
 export async function listStackedAlbums(
   supabase: UserClient,
   clubId: string,
-  opts: { includeDrafts?: boolean; limit?: number } = {},
+  opts: { includeDrafts?: boolean; limit?: number; since?: string | null } = {},
 ): Promise<StackedAlbum[]> {
   const limit = opts.limit ?? 60;
+  // A first visit has nothing to compare against, so nothing is "new".
+  const since = opts.since ? new Date(opts.since).getTime() : null;
   let query = supabase
     .from("albums")
     .select("id, title, description, event_date, status, created_at, published_at, allow_download, contributor_scope, cover_media_id, cover_path")
@@ -103,6 +107,11 @@ export async function listStackedAlbums(
         url: urls.get(t.thumb_path ?? t.poster_path ?? "") ?? null,
       })),
       moreCount: Math.max(0, total - tilesSource.length),
+      isNew:
+        since !== null &&
+        album.status === "published" &&
+        album.published_at !== null &&
+        new Date(album.published_at).getTime() > since,
     };
   });
 }
