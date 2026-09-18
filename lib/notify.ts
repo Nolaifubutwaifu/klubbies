@@ -78,7 +78,13 @@ export async function notifyNewAlbum(clubId: string, albumId: string, actorUserI
 export async function notifyFeedPost(clubId: string, postId: string, actorUserId?: string | null): Promise<number> {
   const admin = createAdminClient();
   const [{ data: post }, { data: club }] = await Promise.all([
-    admin.from("posts").select("id, body, author_membership_id, memberships(roster_name, claimed_name)").eq("id", postId).maybeSingle(),
+    // Named for the same reason as lib/feed/queries.ts: post_reactions gives
+    // posts a second route to memberships.
+    admin
+      .from("posts")
+      .select("id, body, author_membership_id, memberships!posts_author_membership_id_fkey(roster_name, claimed_name)")
+      .eq("id", postId)
+      .maybeSingle(),
     admin.from("clubs").select("name, handle").eq("id", clubId).maybeSingle(),
   ]);
   if (!post || !club) return 0;

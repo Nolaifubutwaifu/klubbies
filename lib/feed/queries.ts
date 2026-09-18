@@ -26,15 +26,20 @@ function initials(name: string): string {
 }
 
 export async function listFeed(supabase: UserClient, ctx: ClubContext, limit = 30): Promise<FeedPost[]> {
-  const { data: posts } = await supabase
+  const { data: posts, error } = await supabase
     .from("posts")
     .select(
-      "id, body, pinned, created_at, album_id, author_membership_id, memberships(roster_name, claimed_name, user_id, club_roles(name)), albums(id, title, cover_media_id, cover_path)",
+      // post_reactions also joins posts to memberships, so the relationship has to
+      // be named or PostgREST refuses the embed (PGRST201).
+      "id, body, pinned, created_at, album_id, author_membership_id, memberships!posts_author_membership_id_fkey(roster_name, claimed_name, user_id, club_roles(name)), albums(id, title, cover_media_id, cover_path)",
     )
     .eq("club_id", ctx.club.id)
     .order("pinned", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
+  // Swallowing this turned any query failure into a convincing "Nothing posted
+  // yet", which is exactly how the feed looked while posts sat in the table.
+  if (error) throw error;
   if (!posts?.length) return [];
 
   const postIds = posts.map((p) => p.id);
