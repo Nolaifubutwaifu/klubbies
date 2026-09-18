@@ -106,10 +106,10 @@ export default async function AlbumPage(props: Props) {
             </svg>
           </Link>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-[220px] flex-1">
             <h1 className="soft-display truncate text-[clamp(20px,2.6vw,28px)]">{album.title}</h1>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-[color:var(--ink-70)]">
-              <span>
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-[color:var(--ink-70)]">
+              <span className="whitespace-nowrap">
                 {[
                   formatLongDate(album.event_date),
                   photoCount ? `${photoCount.toLocaleString("en-AU")} photos` : null,
@@ -118,7 +118,7 @@ export default async function AlbumPage(props: Props) {
                   .filter(Boolean)
                   .join(" · ")}
               </span>
-              <span className="inline-flex items-center gap-1.5">
+              <span className="inline-flex flex-none items-center gap-1.5 whitespace-nowrap">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
                   <rect x="4" y="10" width="16" height="11" rx="2" />
                   <path d="M8 10V7a4 4 0 0 1 8 0v3" />
@@ -128,7 +128,7 @@ export default async function AlbumPage(props: Props) {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
             {canManage ? (
               <span className={album.status === "published" ? "soft-chip" : "soft-chip soft-chip-muted"}>
                 {album.status === "published" ? "Published" : "Draft · members can't see it"}
