@@ -44,3 +44,6 @@ next-env.d.ts
 /test-results
 /playwright-report
 !.env.example
+
+# Full-size marketing source photos (web crops live in public/marketing)
+design/source-photos/

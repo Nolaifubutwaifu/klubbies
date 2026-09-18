@@ -6,16 +6,18 @@ import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 import { CameraIcon, PlayIcon, SearchIcon } from "@/components/soft/icons";
 import { PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
 
-/**
- * Drop photos into /public/marketing with these names and they appear here.
- * Until then each slide shows its gradient, so nothing looks broken.
- */
+/** Club photos in /public/marketing, cropped to 2000x1000. The tint shows
+ *  while the photo loads. */
 const NIGHTS: Slide[] = [
-  { src: "/marketing/night-ball.jpg", title: "The ball", caption: "Formal", tint: "linear-gradient(140deg,#f6b8a6,#b9569b)" },
-  { src: "/marketing/night-grandfinal.jpg", title: "Grand final day", caption: "Sport", tint: "linear-gradient(140deg,#ffd6a5,#e0553a)" },
-  { src: "/marketing/night-oweek.jpg", title: "O-Week sign-up", caption: "Recruiting", tint: "linear-gradient(140deg,#c9b6f7,#5b3fa8)" },
-  { src: "/marketing/night-camp.jpg", title: "The camp", caption: "Weekend away", tint: "linear-gradient(140deg,#a8e0c8,#2a7f6a)" },
+  { src: "/marketing/night-ball.jpg", title: "Ball night", caption: "Formal", tint: "linear-gradient(140deg,#f6d6a6,#c98a3a)" },
+  { src: "/marketing/night-grandfinal.jpg", title: "Grand final", caption: "Sport", tint: "linear-gradient(140deg,#bfe0a8,#3f7a45)" },
+  { src: "/marketing/night-bigone.jpg", title: "The whole club, one room", caption: "End of season", tint: "linear-gradient(140deg,#f6b8a6,#a8443a)" },
+  { src: "/marketing/night-bar.jpg", title: "Bar night", caption: "Social", tint: "linear-gradient(140deg,#a8d8e0,#2a6a7f)" },
+  { src: "/marketing/night-dancefloor.jpg", title: "Dance floor", caption: "Night out", tint: "linear-gradient(140deg,#c9b6f7,#5b3fa8)" },
 ];
+
+/** Square crops for the hero album stack. */
+const HERO_TILES = ["/marketing/hero-1.jpg", "/marketing/hero-2.jpg", "/marketing/hero-3.jpg"];
 
 const TICKER = ["Ball night", "Grand final", "O-Week", "Camp", "Bar crawl", "Awards night", "Trials", "End of season"];
 
@@ -108,16 +110,29 @@ export function SoftLanding() {
 
           <div className="relative mx-auto w-full max-w-[420px]">
             <div className="soft-card absolute -left-3 top-8 hidden w-[58%] rotate-[-8deg] p-3 sm:block" aria-hidden>
-              <div className="aspect-[4/3] rounded-[var(--soft-r-sm)] bg-[linear-gradient(140deg,var(--tone-support),color-mix(in_srgb,var(--color-accent)_18%,white))]" />
+              <div
+                className="aspect-[4/3] rounded-[var(--soft-r-sm)] bg-cover bg-center"
+                style={{ backgroundImage: "url(/marketing/hero-4.jpg)", backgroundColor: "var(--tone-support)" }}
+              />
               <span className="mt-2 block h-3 w-2/3 rounded-full bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]" />
             </div>
             <div className="soft-card relative ml-auto w-[80%] rotate-[4deg] p-3">
               <div className="grid aspect-[4/3] grid-cols-3 grid-rows-2 gap-1.5">
-                <span className="col-span-2 row-span-2 rounded-[var(--soft-r-sm)] bg-[linear-gradient(150deg,color-mix(in_srgb,var(--color-accent)_40%,white),var(--tone-support))]" />
-                <span className="rounded-[var(--soft-r-sm)] bg-[linear-gradient(150deg,var(--tone-support),color-mix(in_srgb,var(--color-accent)_28%,white))]" />
-                <span className="flex items-center justify-center rounded-[var(--soft-r-sm)] bg-[color-mix(in_srgb,var(--color-text)_72%,transparent)] text-[15px] font-extrabold text-white">
-                  +38
-                </span>
+                {HERO_TILES.map((src, i) => (
+                  <span
+                    key={src}
+                    className={`relative overflow-hidden rounded-[var(--soft-r-sm)] bg-cover bg-center ${i === 0 ? "col-span-2 row-span-2" : ""}`}
+                    style={{ backgroundImage: `url(${src})`, backgroundColor: "var(--tone-support)" }}
+                  >
+                    {/* The count rides the last tile: a fourth cell would spill onto a third row. */}
+                    {i === HERO_TILES.length - 1 ? (
+                      <>
+                        <span className="absolute inset-0 bg-[rgba(25,18,22,0.58)]" aria-hidden />
+                        <span className="absolute inset-0 flex items-center justify-center text-[15px] font-extrabold text-white">+38</span>
+                      </>
+                    ) : null}
+                  </span>
+                ))}
               </div>
               <div className="mt-3 flex items-center gap-2">
                 <span className="soft-chip">17 Sept</span>
