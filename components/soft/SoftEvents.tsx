@@ -348,6 +348,7 @@ export function SoftEvents({
                   ) : null}
                   <span className="soft-chip">{formatDate(album.date)}</span>
                   {album.status === "draft" && canManage ? <span className="soft-chip soft-chip-muted">Draft</span> : null}
+                  {album.status === "hidden" && canManage ? <span className="soft-chip soft-chip-muted">Hidden</span> : null}
                   {album.openToMembers ? <span className="soft-chip soft-chip-muted">Members can add</span> : null}
                 </div>
                 <div>

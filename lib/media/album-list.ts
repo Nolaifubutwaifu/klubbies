@@ -20,6 +20,9 @@ export type StackedAlbum = {
   moreCount: number;
   /** Published since the viewer last opened this club. */
   isNew: boolean;
+  /** Set when a draft is queued to publish itself. */
+  publishAt: string | null;
+  sortOrder: number;
 };
 
 /**
@@ -37,8 +40,12 @@ export async function listStackedAlbums(
   const since = opts.since ? new Date(opts.since).getTime() : null;
   let query = supabase
     .from("albums")
-    .select("id, title, description, event_date, status, created_at, published_at, allow_download, contributor_scope, cover_media_id, cover_path")
+    .select(
+      "id, title, description, event_date, status, created_at, published_at, publish_at, sort_order, allow_download, contributor_scope, cover_media_id, cover_path",
+    )
     .eq("club_id", clubId)
+    // An explicit order wins; everything still at 0 falls back to event date.
+    .order("sort_order", { ascending: false })
     .order("event_date", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -107,6 +114,8 @@ export async function listStackedAlbums(
         url: urls.get(t.thumb_path ?? t.poster_path ?? "") ?? null,
       })),
       moreCount: Math.max(0, total - tilesSource.length),
+      publishAt: album.publish_at,
+      sortOrder: album.sort_order,
       isNew:
         since !== null &&
         album.status === "published" &&

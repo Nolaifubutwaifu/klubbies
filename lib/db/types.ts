@@ -83,6 +83,8 @@ export type Database = {
           event_date: string | null;
           id: string;
           published_at: string | null;
+          publish_at: string | null;
+          sort_order: number;
           status: string;
           title: string;
           updated_at: string;
@@ -100,6 +102,8 @@ export type Database = {
           event_date?: string | null;
           id?: string;
           published_at?: string | null;
+          publish_at?: string | null;
+          sort_order?: number;
           status?: string;
           title: string;
           updated_at?: string;
@@ -117,6 +121,8 @@ export type Database = {
           event_date?: string | null;
           id?: string;
           published_at?: string | null;
+          publish_at?: string | null;
+          sort_order?: number;
           status?: string;
           title?: string;
           updated_at?: string;

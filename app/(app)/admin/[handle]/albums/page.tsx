@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BillingGate } from "@/components/BillingGate";
 import { SoftEvents } from "@/components/soft/SoftEvents";
+import { AlbumManager } from "./AlbumManager";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
@@ -26,6 +27,10 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
           <BillingGate handle={handle} action="create albums" />
         )}
       </div>
+      <div className="mx-auto w-full max-w-[1100px] px-4 pb-2 sm:px-6">
+        <AlbumManager clubId={ctx.club.id} handle={handle} albums={albums} />
+      </div>
+
       <SoftEvents
         albums={albums}
         hrefBase={`/c/${handle}/a`}
