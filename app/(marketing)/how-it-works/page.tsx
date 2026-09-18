@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Brand } from "@/components/ui";
+import { SquiggleUnderline } from "@/components/soft/illustrations";
 
 export const metadata: Metadata = { title: "How Klubbies works" };
 
@@ -42,75 +42,86 @@ const FAQ: [string, string][] = [
 
 export default function HowItWorksPage() {
   return (
-    <main className="flex flex-col">
-      <header className="flex items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
-        <Brand />
-        <nav className="flex items-center gap-2">
-          <Link href="/start" className="btn btn-secondary">
+    <main className="mx-auto flex w-full max-w-[1000px] flex-col px-4 sm:px-6">
+      <header className="soft-card mt-5 flex items-center gap-3 !rounded-full py-2 pl-5 pr-3">
+        <Link href="/" className="soft-wordmark text-[22px] text-ink no-underline">
+          klubbies
+        </Link>
+        <nav className="ml-auto flex items-center gap-2">
+          <Link href="/start" className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[14px] no-underline">
             Start a club
           </Link>
-          <Link href="/signin" className="btn btn-primary">
+          <Link href="/signin" className="soft-btn soft-btn-primary !min-h-[40px] !px-5 !text-[14px] no-underline">
             Log in
           </Link>
         </nav>
       </header>
 
-      <section className="border-b-2 border-divider px-6 py-12">
-        <span className="kicker">How it works</span>
-        <h1
-          className="mt-3 max-w-[20ch] font-heading"
-          style={{ fontWeight: 900, fontSize: "clamp(34px, 5vw, 60px)", lineHeight: 1, letterSpacing: "-0.035em" }}
-        >
-          One member list. One private place for the photos.
+      <section className="pb-6 pt-12">
+        <h1 className="max-w-[20ch] text-[clamp(34px,5vw,58px)] leading-[1.03]">
+          One member list. One <span className="soft-word">private</span> place for the photos.
         </h1>
-        <p className="mt-4 max-w-[60ch] text-[17px] leading-normal text-neutral-800">
+        <SquiggleUnderline className="soft-squiggle mt-1 !w-[min(240px,55%)]" />
+        <p className="mt-5 max-w-[60ch] text-[17px] leading-[1.5] text-[color:var(--ink-70)]">
           Klubbies replaces the shared drive folder that half the committee can edit and anyone can forward. Here is the
           whole thing, start to finish.
         </p>
       </section>
 
       {STEPS.map((step) => (
-        <section key={step.num} className="grid items-start gap-6 border-b-2 border-divider px-6 py-8" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+        <section
+          key={step.num}
+          className="soft-card mt-4 grid items-start gap-6 p-6 sm:p-7"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
+        >
           <div>
-            <span className="text-[12px] font-bold tracking-[0.16em] text-accent-700">{step.num}</span>
-            <h2 className="mt-2 font-heading text-[26px] font-extrabold tracking-[-0.02em]">{step.title}</h2>
+            <span className="soft-chip">{step.num}</span>
+            <h2 className="mt-3 text-[24px]">{step.title}</h2>
           </div>
-          <p className="max-w-[56ch] text-[16px] leading-normal text-neutral-800">{step.body}</p>
+          <p className="max-w-[56ch] text-[16px] leading-[1.55] text-[color:var(--ink-70)]">{step.body}</p>
         </section>
       ))}
 
-      <section className="border-b-2 border-divider px-6 py-8">
-        <h2 className="font-heading text-[28px] font-black tracking-[-0.02em]">Questions we get</h2>
-        <dl className="mt-4 flex flex-col gap-4">
+      <section className="pt-12">
+        <h2 className="text-[clamp(26px,4vw,36px)]">
+          Questions we <span className="soft-word">get</span>.
+        </h2>
+        <dl className="mt-6 flex flex-col gap-3">
           {FAQ.map(([q, a]) => (
-            <div key={q} className="border-t border-divider pt-4">
-              <dt className="font-heading text-[17px] font-extrabold">{q}</dt>
-              <dd className="mt-1 max-w-[60ch] text-[15px] leading-normal text-neutral-800">{a}</dd>
+            <div key={q} className="soft-card p-6">
+              <dt className="soft-display text-[18px]">{q}</dt>
+              <dd className="mt-2 max-w-[60ch] text-[15px] leading-[1.55] text-[color:var(--ink-70)]">{a}</dd>
             </div>
           ))}
         </dl>
       </section>
 
-      <section className="flex flex-col items-start gap-6 bg-accent px-6 py-[72px] text-white">
-        <h2 className="max-w-[18ch] font-heading" style={{ fontWeight: 900, fontSize: "clamp(30px, 5vw, 52px)", lineHeight: 1, letterSpacing: "-0.035em" }}>
-          Ready when your next event is.
-        </h2>
+      <section className="soft-cta mt-14 flex flex-col items-start gap-6 p-8 sm:p-12">
+        <h2 className="max-w-[18ch] text-[clamp(28px,4.5vw,46px)] text-white">Ready when your next event is.</h2>
         <div className="flex flex-wrap gap-3">
-          <Link href="/start" className="bg-white px-[22px] py-[14px] text-[16px] font-bold text-accent-700 no-underline hover:bg-accent-100">
+          <Link href="/start" className="soft-btn soft-btn-lg bg-white !text-[color:var(--color-accent-700)] no-underline">
             Start a club
           </Link>
-          <Link href="/signin" className="border-2 border-white px-[22px] py-[14px] text-[16px] font-bold text-white no-underline">
+          <Link href="/signin" className="soft-btn soft-btn-lg bg-white/15 !text-white no-underline">
             Log in
           </Link>
         </div>
       </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 px-6 py-6 text-[13px] text-neutral-700">
-        <Link href="/">← Back home</Link>
+      <footer className="flex flex-wrap items-center justify-between gap-4 py-8 text-[13px] text-[color:var(--ink-55)]">
+        <Link href="/" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
+          &larr; Back home
+        </Link>
         <nav className="flex gap-4">
-          <Link href="/terms">Terms</Link>
-          <Link href="/refunds">Refunds</Link>
-          <Link href="/privacy">Privacy</Link>
+          <Link href="/terms" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
+            Terms
+          </Link>
+          <Link href="/refunds" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
+            Refunds
+          </Link>
+          <Link href="/privacy" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
+            Privacy
+          </Link>
         </nav>
       </footer>
     </main>

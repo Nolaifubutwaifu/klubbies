@@ -2,7 +2,6 @@ import Link from "next/link";
 import type React from "react";
 import { PhotoCarousel, type Slide } from "@/components/soft/PhotoCarousel";
 import { Reveal } from "@/components/soft/Reveal";
-import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 import { CameraIcon, PlayIcon, SearchIcon } from "@/components/soft/icons";
 import { PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
 
@@ -90,10 +89,8 @@ const FAQS = [
 /** Marketing home in the soft theme. */
 export function SoftLanding() {
   return (
-    <div className="theme-soft relative flex flex-1 flex-col">
-      <SoftBackdrop />
-
-      <div className="relative z-10">
+    <div className="flex flex-1 flex-col">
+      <div>
         <div className="mx-auto w-full max-w-[1100px] px-4 pt-5 sm:px-6">
           <header className="soft-card flex items-center gap-3 !rounded-full py-2 pl-5 pr-3">
             <Link href="/" className="soft-wordmark text-[22px] text-ink no-underline">

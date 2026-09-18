@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   return (
-    <main className="flex flex-1 flex-col gap-6 px-6 py-8">
+    <main className="theme-soft flex flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <Link href="/" className="brand">
         klubbies
       </Link>
