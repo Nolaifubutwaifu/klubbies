@@ -12,7 +12,6 @@ const NIGHTS: Slide[] = [
   { src: "/marketing/night-ball.jpg", title: "Ball night", caption: "Formal", tint: "linear-gradient(140deg,#f6d6a6,#c98a3a)" },
   { src: "/marketing/night-grandfinal.jpg", title: "Grand final", caption: "Sport", tint: "linear-gradient(140deg,#bfe0a8,#3f7a45)" },
   { src: "/marketing/night-bigone.jpg", title: "The whole club, one room", caption: "End of season", tint: "linear-gradient(140deg,#f6b8a6,#a8443a)" },
-  { src: "/marketing/night-bar.jpg", title: "Bar night", caption: "Social", tint: "linear-gradient(140deg,#a8d8e0,#2a6a7f)" },
   { src: "/marketing/night-dancefloor.jpg", title: "Dance floor", caption: "Night out", tint: "linear-gradient(140deg,#c9b6f7,#5b3fa8)" },
 ];
 
@@ -37,6 +36,32 @@ const FOR_MEMBERS = [
   { title: "One login, no password", body: "A code to the email your club already has. That's the whole sign-in." },
   { title: "Search by night", body: "Every album by name or date, so last year's ball is two taps away." },
   { title: "Save what you want", body: "Download the album, or send a batch straight to your phone's Photos app." },
+];
+
+const REVIEWS = [
+  {
+    name: "Alex",
+    club: "UOM Boardgames",
+    role: "Executive",
+    avatar: "/marketing/avatar-alex.jpg",
+    quote:
+      "I love Klubbies! In the past, we've shared all of our event pictures with Google Drive, and it was just inefficient and ugly. Now it's way smoother we can get the pictures to all our members.",
+  },
+  {
+    name: "Hannah",
+    club: "TUG Racing",
+    role: "Team leader",
+    avatar: "/marketing/avatar-hannah.jpg",
+    quote: "We've had many events this past years and Klubbies had made it really easy to keep our photos organized.",
+  },
+  {
+    name: "Janci",
+    club: "BBE Club WU",
+    role: "President",
+    avatar: "/marketing/avatar-janci.jpg",
+    quote:
+      "We take a lot of pictures during trips and distributing them has always been a pain. With Klubbies that's history.",
+  },
 ];
 
 const FAQS = [
@@ -66,7 +91,7 @@ const FAQS = [
 export function SoftLanding() {
   return (
     <div className="theme-soft relative flex flex-1 flex-col">
-      <SoftBackdrop />
+      <SoftBackdrop photos />
 
       <div className="relative z-10">
         <div className="mx-auto w-full max-w-[1100px] px-4 pt-5 sm:px-6">
@@ -88,8 +113,7 @@ export function SoftLanding() {
         {/* Hero */}
         <section className="mx-auto grid w-full max-w-[1100px] items-center gap-10 px-4 pb-6 pt-12 sm:px-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:pt-16">
           <div>
-            <span className="soft-chip">For university clubs</span>
-            <h1 className="mt-4 max-w-[15ch] text-[clamp(38px,6vw,68px)] leading-[1.02]">
+            <h1 className="mt-2 max-w-[15ch] text-[clamp(38px,6vw,68px)] leading-[1.02]">
               Every photo from <span className="soft-word">Friday</span>, waiting on <span className="soft-word">Saturday</span>.
             </h1>
             <SquiggleUnderline className="soft-squiggle mt-1 !w-[min(260px,60%)]" />
@@ -105,18 +129,20 @@ export function SoftLanding() {
                 I&rsquo;m a member
               </Link>
             </div>
-            <p className="mt-4 text-[14px] text-[color:var(--ink-55)]">A$20 a month per club · cancel any time</p>
           </div>
 
           <div className="relative mx-auto w-full max-w-[420px]">
-            <div className="soft-card absolute -left-3 top-8 hidden w-[58%] rotate-[-8deg] p-3 sm:block" aria-hidden>
+            <div className="soft-pop absolute -left-3 top-8 hidden w-[58%] sm:block" style={{ animationDelay: "120ms" }} aria-hidden>
+              <div className="soft-card rotate-[-8deg] p-3">
               <div
                 className="aspect-[4/3] rounded-[var(--soft-r-sm)] bg-cover bg-center"
                 style={{ backgroundImage: "url(/marketing/hero-4.jpg)", backgroundColor: "var(--tone-support)" }}
               />
-              <span className="mt-2 block h-3 w-2/3 rounded-full bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]" />
+                <span className="mt-2 block h-3 w-2/3 rounded-full bg-[color-mix(in_srgb,var(--color-text)_10%,transparent)]" />
+              </div>
             </div>
-            <div className="soft-card relative ml-auto w-[80%] rotate-[4deg] p-3">
+            <div className="soft-pop relative ml-auto w-[80%]" style={{ animationDelay: "260ms" }}>
+              <div className="soft-card rotate-[4deg] p-3">
               <div className="grid aspect-[4/3] grid-cols-3 grid-rows-2 gap-1.5">
                 {HERO_TILES.map((src, i) => (
                   <span
@@ -134,9 +160,10 @@ export function SoftLanding() {
                   </span>
                 ))}
               </div>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="soft-chip">17 Sept</span>
-                <span className="text-[14px] font-semibold">Ball 2026</span>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="soft-chip">17 Sept</span>
+                  <span className="text-[14px] font-semibold">Ball 2026</span>
+                </div>
               </div>
             </div>
             <span className="soft-sticker absolute -top-3 right-2 sm:right-6">Members only</span>
@@ -163,14 +190,9 @@ export function SoftLanding() {
         {/* Rotating banner */}
         <section className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6">
           <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="max-w-[16ch] text-[clamp(28px,4vw,42px)]">
-                Made for the nights <span className="soft-word">worth keeping</span>.
-              </h2>
-              <p className="max-w-[34ch] text-[15px] text-[color:var(--ink-70)]">
-                One album per event, in the order they happened, for as long as your club keeps running.
-              </p>
-            </div>
+            <h2 className="max-w-[16ch] text-[clamp(28px,4vw,42px)]">
+              Made for the nights <span className="soft-word">worth keeping</span>.
+            </h2>
           </Reveal>
           <Reveal delay={90}>
             <div className="mt-7">
@@ -241,7 +263,7 @@ export function SoftLanding() {
         {/* Pricing */}
         <section className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
           <Reveal>
-            <div className="soft-offset flex flex-wrap items-center gap-8 p-8 sm:p-10">
+            <div className="soft-card flex flex-wrap items-center gap-8 p-8 sm:p-10">
               <div className="min-w-[240px] flex-1">
                 <span className="soft-chip">One price</span>
                 <h2 className="mt-4 text-[clamp(28px,4vw,40px)]">
@@ -281,14 +303,22 @@ export function SoftLanding() {
             </h2>
           </Reveal>
           <div className="mt-7 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
-            {[1, 2, 3].map((n, i) => (
-              <Reveal key={n} delay={i * 80}>
-                <figure className="soft-dashed m-0 flex h-full flex-col gap-4 p-6">
-                  <span className="soft-chip soft-chip-muted self-start text-[12px]">Placeholder</span>
-                  <blockquote className="m-0 text-[17px] leading-[1.5] text-[color:var(--ink-70)]">
-                    A real quote from a club that uses Klubbies goes here.
+            {REVIEWS.map((review, i) => (
+              <Reveal key={review.name} delay={i * 80}>
+                <figure className="soft-bordered m-0 flex h-full flex-col gap-4 p-6">
+                  <blockquote className="m-0 text-[16px] leading-[1.55] text-[color:var(--ink-70)]">
+                    &ldquo;{review.quote}&rdquo;
                   </blockquote>
-                  <figcaption className="mt-auto text-[14px] text-[color:var(--ink-55)]">Club name · role</figcaption>
+                  <figcaption className="mt-auto flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- fixed 48px avatar */}
+                    <img src={review.avatar} alt="" className="h-12 w-12 rounded-full object-cover" loading="lazy" />
+                    <span className="flex flex-col">
+                      <span className="soft-display text-[16px]">{review.name}</span>
+                      <span className="text-[13px] text-[color:var(--ink-55)]">
+                        {review.role} · {review.club}
+                      </span>
+                    </span>
+                  </figcaption>
                 </figure>
               </Reveal>
             ))}

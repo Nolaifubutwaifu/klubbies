@@ -12,11 +12,11 @@ export type Slide = {
   tint: string;
 };
 
-const INTERVAL = 5200;
+const INTERVAL = 5000;
 
 /**
- * Cross-fading banner of club nights. Auto-advances, but stops on hover, on
- * keyboard focus and whenever the visitor prefers reduced motion.
+ * Cross-fading banner of club nights. Runs on its own every 5s, pausing only
+ * for keyboard focus and for visitors who prefer reduced motion.
  */
 export function PhotoCarousel({ slides }: { slides: Slide[] }) {
   const [index, setIndex] = useState(0);
@@ -38,8 +38,6 @@ export function PhotoCarousel({ slides }: { slides: Slide[] }) {
   return (
     <div
       className="relative"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
