@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { getClubContext } from "@/lib/auth/session";
 import { REACTIONS } from "@/lib/feed/queries";
+import { notifyFeedPost } from "@/lib/notify";
 import { createClient } from "@/lib/supabase/server";
 
 export type FeedResult = { error?: string; ok?: boolean };
@@ -24,13 +26,26 @@ export async function createPostAction(handle: string, _prev: FeedResult, form: 
   const albumId = form.get("albumId");
 
   const supabase = await createClient();
-  const { error } = await supabase.from("posts").insert({
-    club_id: ctx.club.id,
-    author_membership_id: ctx.membership!.id,
-    body: parsed.data,
-    album_id: typeof albumId === "string" && z.uuid().safeParse(albumId).success ? albumId : null,
+  const { data: post, error } = await supabase
+    .from("posts")
+    .insert({
+      club_id: ctx.club.id,
+      author_membership_id: ctx.membership!.id,
+      body: parsed.data,
+      album_id: typeof albumId === "string" && z.uuid().safeParse(albumId).success ? albumId : null,
+    })
+    .select("id")
+    .single();
+  if (error || !post) return { error: "Could not post that" };
+
+  after(async () => {
+    try {
+      await notifyFeedPost(ctx.club.id, post.id, ctx.userId);
+    } catch (notifyError) {
+      console.error("feed notification failed", notifyError);
+    }
   });
-  if (error) return { error: "Could not post that" };
+
   revalidatePath(`/c/${handle}/feed`);
   return { ok: true };
 }
@@ -50,31 +65,6 @@ export async function togglePinAction(handle: string, postId: string, pinned: bo
   const supabase = await createClient();
   const { error } = await supabase.from("posts").update({ pinned }).eq("id", postId);
   if (error) return { error: "Could not update that post" };
-  revalidatePath(`/c/${handle}/feed`);
-  return { ok: true };
-}
-
-export async function addCommentAction(handle: string, postId: string, body: string): Promise<FeedResult> {
-  const ctx = await memberContext(handle);
-  const parsed = z.string().trim().min(1).max(2000).safeParse(body);
-  if (!parsed.success) return { error: "Write a comment first" };
-  const supabase = await createClient();
-  const { error } = await supabase.from("post_comments").insert({
-    post_id: postId,
-    club_id: ctx.club.id,
-    author_membership_id: ctx.membership!.id,
-    body: parsed.data,
-  });
-  if (error) return { error: "Could not add that comment" };
-  revalidatePath(`/c/${handle}/feed`);
-  return { ok: true };
-}
-
-export async function deleteCommentAction(handle: string, commentId: string): Promise<FeedResult> {
-  await memberContext(handle);
-  const supabase = await createClient();
-  const { error } = await supabase.from("post_comments").delete().eq("id", commentId);
-  if (error) return { error: "Could not delete that comment" };
   revalidatePath(`/c/${handle}/feed`);
   return { ok: true };
 }

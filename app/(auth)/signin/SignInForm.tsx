@@ -3,19 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-type Mode = "code" | "password";
+type Mode = "code" | "password" | "signup";
 
-export function SignInForm({ flow }: { flow: "member" | "create" }) {
+export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "create"; initialMode?: Mode }) {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("code");
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
-  async function requestCode(form: FormData) {
+  async function requestCode(form: FormData, requestFlow: "member" | "create" | "signup") {
     const res = await fetch("/api/auth/request_code", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ fullName: form.get("fullName"), email: form.get("email"), flow }),
+      body: JSON.stringify({ fullName: form.get("fullName"), email: form.get("email"), flow: requestFlow }),
     });
     if (!res.ok) {
       const body: { error?: string } = await res.json().catch(() => ({}));
@@ -23,7 +23,7 @@ export function SignInForm({ flow }: { flow: "member" | "create" }) {
       setPending(false);
       return;
     }
-    router.push(flow === "create" ? "/signin/code?flow=create" : "/signin/code");
+    router.push(requestFlow === "member" ? "/signin/code" : `/signin/code?flow=${requestFlow}`);
   }
 
   async function signInWithPassword(form: FormData) {
@@ -49,16 +49,28 @@ export function SignInForm({ flow }: { flow: "member" | "create" }) {
     setError("");
     try {
       if (mode === "password") await signInWithPassword(form);
-      else await requestCode(form);
+      else await requestCode(form, mode === "signup" ? "signup" : flow);
     } catch {
       setError("You seem to be offline. Try again.");
       setPending(false);
     }
   }
 
+  const submitLabel = pending
+    ? mode === "password"
+      ? "Signing in…"
+      : "Checking…"
+    : mode === "password"
+      ? "Sign in"
+      : mode === "signup"
+        ? "Create my account"
+        : flow === "create"
+          ? "Send me a code"
+          : "Check my access";
+
   return (
     <form onSubmit={onSubmit} className="flex max-w-[420px] flex-col gap-4">
-      {mode === "code" ? (
+      {mode !== "password" ? (
         <label className="field">
           Full name
           <input className="input" name="fullName" autoComplete="name" placeholder="Mara Lindqvist" required maxLength={200} />
@@ -89,34 +101,57 @@ export function SignInForm({ flow }: { flow: "member" | "create" }) {
         </div>
       ) : null}
       <button type="submit" className="btn btn-primary btn-lg justify-start text-left" disabled={pending}>
-        {pending
-          ? mode === "password"
-            ? "Signing in…"
-            : "Checking the list…"
-          : mode === "password"
-            ? "Sign in"
-            : flow === "create"
-              ? "Send me a code"
-              : "Check my access"}
+        {submitLabel}
       </button>
+
       {flow === "member" ? (
-        <button
-          type="button"
-          className="btn btn-ghost self-start px-0 text-[13px]"
-          onClick={() => {
-            setMode(mode === "code" ? "password" : "code");
-            setError("");
-          }}
-        >
-          {mode === "code" ? "I have a password" : "Email me a code instead"}
-        </button>
+        <div className="flex flex-wrap gap-4 text-[13px]">
+          {mode !== "signup" ? (
+            <button
+              type="button"
+              className="btn btn-ghost px-0"
+              onClick={() => {
+                setMode("signup");
+                setError("");
+              }}
+            >
+              First time here? Sign up
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-ghost px-0"
+              onClick={() => {
+                setMode("code");
+                setError("");
+              }}
+            >
+              I already have an account
+            </button>
+          )}
+          {mode !== "signup" ? (
+            <button
+              type="button"
+              className="btn btn-ghost px-0"
+              onClick={() => {
+                setMode(mode === "code" ? "password" : "code");
+                setError("");
+              }}
+            >
+              {mode === "code" ? "I have a password" : "Email me a code instead"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
+
       <div className="border-t-2 border-divider pt-3 text-[13px] leading-normal text-neutral-600">
         {mode === "password"
           ? "Set a password from your profile after signing in once."
-          : flow === "create"
-            ? "We'll email you a sign-in code. No password to forget."
-            : "We'll email a sign-in code to the address your club has on file. No password to forget."}
+          : mode === "signup"
+            ? "We'll email you a code to confirm the address. Once you're in, any club that adds your email shows up as an invitation."
+            : flow === "create"
+              ? "We'll email you a sign-in code. No password to forget."
+              : "We'll email a sign-in code to the address your club has on file. No password to forget."}
       </div>
     </form>
   );

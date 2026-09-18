@@ -54,6 +54,9 @@ export function EventsBrowser({
   }, [albums, query, day]);
 
   const filtersOn = query.trim() !== "" || day !== null;
+  // Only lead with a hero when the newest album actually has a picture in it.
+  const hero = !filtersOn && filtered[0]?.coverUrl && filtered[0].photoCount + filtered[0].videoCount > 0 ? filtered[0] : null;
+  const rows = hero ? filtered.slice(1) : filtered;
   const monthLabel = month.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
 
   return (
@@ -69,7 +72,7 @@ export function EventsBrowser({
               : "Everything the committee has shared with you."}
           </p>
         </div>
-        <div className="flex flex-col justify-end gap-2 p-6">
+        <div className="flex flex-col justify-end gap-2 bg-surface p-6">
           <div className="flex flex-wrap items-stretch gap-2">
             <input
               className="input min-w-[200px] flex-1 text-[14px]"
@@ -185,7 +188,7 @@ export function EventsBrowser({
 
       {filtered.length === 0 ? (
         <div className="p-6">
-          <div className="max-w-[520px] border-2 border-divider p-6">
+          <div className="panel max-w-[520px] p-6">
             <div className="font-heading text-[20px] font-extrabold">
               {albums.length ? "Nothing matches that" : "Nothing shared yet"}
             </div>
@@ -209,56 +212,91 @@ export function EventsBrowser({
           </div>
         </div>
       ) : (
-        filtered.map((album) => (
-          <section key={album.id} className="grid gap-6 border-b-2 border-divider p-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-            <div className="flex flex-col gap-2">
-              <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-accent-700">{formatDate(album.date)}</span>
-              <Link href={`${hrefBase}/${album.id}`} className="font-heading text-[26px] font-black tracking-[-0.02em] text-ink no-underline hover:text-accent">
-                {album.title}
-              </Link>
-              <span className="text-[13px] text-neutral-700">
-                {[
-                  album.photoCount ? `${album.photoCount.toLocaleString("en-AU")} photos` : null,
-                  album.videoCount ? `${album.videoCount.toLocaleString("en-AU")} videos` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ") || "Empty"}
-              </span>
-              <span className="flex flex-wrap gap-2">
-                {album.status === "draft" && canManage ? <span className="tag tag-neutral">Draft</span> : null}
-                {album.openToMembers ? <span className="tag tag-accent">Members can add</span> : null}
-              </span>
-              <Link href={`${hrefBase}/${album.id}`} className="btn btn-ghost self-start pl-0 text-[13px]">
-                Open album →
-              </Link>
-            </div>
-            <div className="flex gap-[2px] bg-divider p-[2px]">
-              {album.tiles.length === 0 ? (
-                <div className="flex aspect-[3/1] w-full items-center justify-center bg-bg text-[13px] text-neutral-600">
-                  Nothing uploaded yet
+        <>
+          {hero ? (
+            <Link href={`${hrefBase}/${hero.id}`} className="tile block border-b-2 border-divider text-ink no-underline">
+              <div className="relative aspect-[16/9] max-h-[420px] w-full sm:aspect-[21/9]">
+                {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
+                <img src={hero.coverUrl ?? ""} alt="" />
+                <div className="overlay-title">
+                  <span className="chip-date self-start">{formatDate(hero.date)}</span>
+                  <span className="display text-[clamp(28px,5vw,52px)] text-white">{hero.title}</span>
+                  <span className="text-[14px] text-white/85">
+                    {[
+                      hero.photoCount ? `${hero.photoCount.toLocaleString("en-AU")} photos` : null,
+                      hero.videoCount ? `${hero.videoCount.toLocaleString("en-AU")} videos` : null,
+                      hero.openToMembers ? "members can add" : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || "Newest album"}
+                  </span>
                 </div>
-              ) : (
-                album.tiles.map((tile, index) => (
-                  <Link
-                    key={tile.id}
-                    href={`${hrefBase}/${album.id}/${tile.id}`}
-                    className="relative block aspect-square min-w-0 flex-1 bg-neutral-400"
-                  >
-                    {tile.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                      <img src={tile.url} alt="" className="h-full w-full object-cover" loading="lazy" />
-                    ) : null}
-                    {index === album.tiles.length - 1 && album.moreCount > 0 ? (
-                      <span className="absolute inset-0 flex items-center justify-center bg-neutral-900/80 font-heading text-[16px] font-extrabold text-white">
-                        +{album.moreCount}
-                      </span>
-                    ) : null}
-                  </Link>
-                ))
-              )}
-            </div>
-          </section>
-        ))
+              </div>
+            </Link>
+          ) : null}
+
+          {rows.map((album, index) => (
+            <section
+              key={album.id}
+              className={`grid gap-6 border-b-2 border-divider p-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)] ${
+                index % 2 === 1 ? "bg-surface" : ""
+              }`}
+            >
+              <div className="flex flex-col items-start gap-3">
+                <span className="chip-date">{formatDate(album.date)}</span>
+                <Link
+                  href={`${hrefBase}/${album.id}`}
+                  className="font-heading text-[26px] font-black tracking-[-0.02em] text-ink no-underline hover:text-accent"
+                >
+                  {album.title}
+                </Link>
+                <span className="text-[13px] text-neutral-700">
+                  {[
+                    album.photoCount ? `${album.photoCount.toLocaleString("en-AU")} photos` : null,
+                    album.videoCount ? `${album.videoCount.toLocaleString("en-AU")} videos` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || "Empty"}
+                </span>
+                {album.description ? (
+                  <p className="m-0 max-w-[36ch] text-[13px] leading-normal text-neutral-700">{album.description}</p>
+                ) : null}
+                <span className="flex flex-wrap gap-2">
+                  {album.status === "draft" && canManage ? <span className="tag tag-neutral">Draft</span> : null}
+                  {album.openToMembers ? <span className="tag tag-accent">Members can add</span> : null}
+                </span>
+                <Link href={`${hrefBase}/${album.id}`} className="btn btn-secondary text-[13px]">
+                  Open album
+                </Link>
+              </div>
+              <div className="flex gap-[2px]">
+                {album.tiles.length === 0 ? (
+                  <div className="panel flex aspect-[3/1] w-full items-center justify-center text-[13px] text-neutral-600">
+                    Nothing uploaded yet
+                  </div>
+                ) : (
+                  album.tiles.map((tile, tileIndex) => (
+                    <Link
+                      key={tile.id}
+                      href={`${hrefBase}/${album.id}/${tile.id}`}
+                      className="tile aspect-square min-w-0 flex-1"
+                    >
+                      {tile.url ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                        <img src={tile.url} alt="" loading="lazy" />
+                      ) : null}
+                      {tileIndex === album.tiles.length - 1 && album.moreCount > 0 ? (
+                        <span className="absolute inset-0 flex items-center justify-center bg-neutral-900/70 font-heading text-[18px] font-extrabold text-white">
+                          +{album.moreCount}
+                        </span>
+                      ) : null}
+                    </Link>
+                  ))
+                )}
+              </div>
+            </section>
+          ))}
+        </>
       )}
     </>
   );

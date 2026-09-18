@@ -17,7 +17,6 @@ export type FeedPost = {
   canDelete: boolean;
   album: { id: string; title: string; meta: string; coverUrl: string | null } | null;
   reactions: { emoji: string; count: number; mine: boolean }[];
-  comments: { id: string; author: string; body: string; createdAt: string; canDelete: boolean }[];
 };
 
 function initials(name: string): string {
@@ -39,13 +38,8 @@ export async function listFeed(supabase: UserClient, ctx: ClubContext, limit = 3
   if (!posts?.length) return [];
 
   const postIds = posts.map((p) => p.id);
-  const [{ data: reactions }, { data: comments }, { data: counts }] = await Promise.all([
+  const [{ data: reactions }, { data: counts }] = await Promise.all([
     supabase.from("post_reactions").select("post_id, emoji, membership_id").in("post_id", postIds),
-    supabase
-      .from("post_comments")
-      .select("id, post_id, body, created_at, author_membership_id, memberships(roster_name, claimed_name, user_id)")
-      .in("post_id", postIds)
-      .order("created_at", { ascending: true }),
     supabase
       .from("album_media_counts")
       .select("*")
@@ -100,15 +94,6 @@ export async function listFeed(supabase: UserClient, ctx: ClubContext, limit = 3
         const mineReacted = postReactions.some((r) => r.emoji === emoji && r.membership_id === myMembershipId);
         return { emoji, count: postReactions.filter((r) => r.emoji === emoji).length, mine: mineReacted };
       }),
-      comments: (comments ?? [])
-        .filter((c) => c.post_id === post.id)
-        .map((c) => ({
-          id: c.id,
-          author: c.memberships?.claimed_name ?? c.memberships?.roster_name ?? "Someone",
-          body: c.body,
-          createdAt: c.created_at,
-          canDelete: c.memberships?.user_id === ctx.userId || ctx.perms.manage_club,
-        })),
     };
   });
 }

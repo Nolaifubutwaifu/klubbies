@@ -4,7 +4,7 @@ import { SubmitButton } from "@/components/forms";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
-import { getPriceSummary, stripeConfigured, syncReturnedSession, type PriceSummary } from "@/lib/billing/stripe";
+import { getDefaultCard, getPriceSummary, stripeConfigured, syncReturnedSession, type CardSummary, type PriceSummary } from "@/lib/billing/stripe";
 import { formatLongDate } from "@/lib/format";
 import { openBillingPortalAction, startCheckoutAction } from "../../billing-actions";
 
@@ -34,6 +34,14 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
   }
   if (typeof search.session_id === "string" && canWrite(status)) justPaid = true;
 
+  let card: CardSummary = null;
+  if (configured && ctx.club.stripe_customer_id) {
+    card = await getDefaultCard(ctx.club).catch((error) => {
+      console.error("card lookup failed", error);
+      return null;
+    });
+  }
+
   let price: PriceSummary | null = null;
   if (configured && !canWrite(status)) {
     price = await getPriceSummary().catch((error) => {
@@ -53,6 +61,9 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
       {search.canceled ? <div className="notice">Checkout was cancelled. Nothing was charged.</div> : null}
       {search.error === "checkout" ? <div className="notice">We couldn&apos;t open checkout. Try again in a moment.</div> : null}
       {search.error === "portal" ? <div className="notice">We couldn&apos;t open the billing portal. Try again in a moment.</div> : null}
+      {search.card === "saved" ? (
+        <div className="border-l-4 border-ink bg-neutral-100 px-4 py-3 text-[14px]">Card saved. Future payments use it.</div>
+      ) : null}
       {!configured ? (
         <div className="notice">
           Payments aren&apos;t configured on this deployment yet (STRIPE_SECRET_KEY and STRIPE_PRICE_ID).
@@ -64,6 +75,12 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
           <div className="flex flex-wrap items-center gap-3">
             <span className={status === "past_due" ? "tag tag-accent-2" : "tag tag-outline"}>{BILLING_LABEL[status]}</span>
             {ctx.club.paid_at ? <span className="text-[13px] text-neutral-700">Paid {formatLongDate(ctx.club.paid_at)}</span> : null}
+            {card ? (
+              <span className="text-[13px] text-neutral-700">
+                {card.brand.toUpperCase()} ending {card.last4} · expires {String(card.expMonth).padStart(2, "0")}/
+                {String(card.expYear).slice(-2)}
+              </span>
+            ) : null}
           </div>
           <h2 className="display text-[32px]">{justPaid ? "You're all set." : status === "past_due" ? "Your last payment failed." : "Your club is active."}</h2>
           <p className="max-w-[56ch] text-[15px] text-neutral-800">
@@ -79,10 +96,15 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
                 Continue to member list
               </Link>
             ) : null}
+            {configured ? (
+              <Link href={`/admin/${handle}/billing/card`} className="btn btn-secondary">
+                {card ? "Change card" : "Add a card"}
+              </Link>
+            ) : null}
             {ctx.club.stripe_customer_id && configured ? (
               <form action={openBillingPortalAction.bind(null, ctx.club.id)}>
-                <SubmitButton className="btn btn-secondary" pendingText="Opening…">
-                  {status === "past_due" ? "Update payment details" : "Manage billing and invoices"}
+                <SubmitButton className="btn btn-ghost" pendingText="Opening…">
+                  Invoices and cancellation
                 </SubmitButton>
               </form>
             ) : null}

@@ -6,6 +6,7 @@ import { Uploader } from "@/app/(app)/admin/[handle]/albums/[albumId]/Uploader";
 import { PublishToggle } from "@/app/(app)/admin/[handle]/albums/[albumId]/PublishToggle";
 import { AlbumEditPanel } from "@/components/AlbumEditPanel";
 import { AlbumGrid } from "@/components/AlbumGrid";
+import { SaveAlbum } from "@/components/SaveAlbum";
 import { UnfinishedUploads } from "@/components/UnfinishedUploads";
 import { getClubContext } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
@@ -44,7 +45,7 @@ export default async function AlbumPage(props: Props) {
   const adding = canAdd && search.add === "1";
   const albumHref = `/c/${handle}/a/${album.id}`;
 
-  const [{ items, hasMore }, { data: counts }, { data: unfinished }] = await Promise.all([
+  const [{ items, hasMore }, { data: counts }, { data: unfinished }, { data: readyIds }] = await Promise.all([
     listAlbumMedia(supabase, album.id, 0, { includeProcessing: canManage }),
     supabase.from("album_media_counts").select("*").eq("album_id", album.id).maybeSingle(),
     canManage
@@ -56,6 +57,13 @@ export default async function AlbumPage(props: Props) {
           .order("created_at", { ascending: false })
           .limit(20)
       : Promise.resolve({ data: [] }),
+    supabase
+      .from("media")
+      .select("id")
+      .eq("album_id", album.id)
+      .eq("status", "ready")
+      .order("sort_at", { ascending: true })
+      .limit(240),
   ]);
 
   let coverUrl: string | null = null;
@@ -116,6 +124,12 @@ export default async function AlbumPage(props: Props) {
               {adding ? "Close uploader" : "Add photos"}
             </Link>
           ) : null}
+          <SaveAlbum
+            albumId={album.id}
+            mediaIds={(readyIds ?? []).map((m) => m.id)}
+            parts={Math.max(1, Math.ceil((photoCount + videoCount) / 150))}
+            canDownload={album.allow_download || canManage}
+          />
           {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
         </div>
       </div>

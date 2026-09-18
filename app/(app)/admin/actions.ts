@@ -8,6 +8,7 @@ import { getClubContextById, requireUser } from "@/lib/auth/session";
 import { ACTIVATE_MESSAGE, canWrite } from "@/lib/billing/status";
 import type { Permission } from "@/lib/permissions";
 import { graceWindow, sendDueGraceNotice } from "@/lib/membership/grace";
+import { notifyNewAlbum } from "@/lib/notify";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { generateHandleBase } from "@/lib/roster/handle";
 import { removeObjects } from "@/lib/storage";
@@ -355,9 +356,24 @@ export async function setAlbumPublishedAction(albumId: string, published: boolea
     })
     .eq("id", albumId);
   if (error) return { error: "Could not update the album" };
+
+  // Tell members who opted in, once, when the album first goes live.
+  if (published && album.published_at === null) {
+    after(async () => {
+      try {
+        await notifyNewAlbum(ctx.club.id, albumId, ctx.userId);
+      } catch (notifyError) {
+        console.error("album notification failed", notifyError);
+      }
+    });
+  }
+
   revalidatePath(`/admin/${ctx.club.handle}`, "layout");
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
-  return { ok: true, message: published ? "Album published. Members can see it now." : "Album moved back to draft" };
+  return {
+    ok: true,
+    message: published ? "Album published. Members who opted in get an email." : "Album moved back to draft",
+  };
 }
 
 export async function setAlbumCoverAction(albumId: string, mediaId: string): Promise<ActionState> {
@@ -549,17 +565,4 @@ export async function setMemberRoleAction(clubId: string, membershipIds: string[
   if (error) return { error: "Could not change the role" };
   revalidatePath(`/admin/${ctx.club.handle}/members`);
   return { ok: true, message: `${ids.data.length} moved to ${role.name}` };
-}
-
-export async function resendInviteAction(clubId: string, membershipId: string): Promise<ActionState> {
-  const ctx = await permContext(clubId, "manage_members");
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("memberships")
-    .update({ invited_at: new Date().toISOString() })
-    .eq("club_id", clubId)
-    .eq("id", membershipId);
-  if (error) return { error: "Could not update that member" };
-  revalidatePath(`/admin/${ctx.club.handle}/members`);
-  return { ok: true, message: "Marked as invited again. They sign in at any time with their email." };
 }

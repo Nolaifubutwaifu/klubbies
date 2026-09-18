@@ -117,11 +117,16 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           </div>
           {recentTiles.length ? (
             <div className="grid gap-[2px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))" }}>
-              {recentTiles.map((tile) => (
-                <Link key={tile.id} href={`/c/${handle}/a/${tile.albumId}/${tile.id}`} className="block aspect-square bg-neutral-400">
+              {recentTiles.map((tile, index) => (
+                <Link
+                  key={tile.id}
+                  href={`/c/${handle}/a/${tile.albumId}/${tile.id}`}
+                  className="tile aspect-square"
+                  style={index === 0 ? { gridColumn: "span 2", gridRow: "span 2" } : undefined}
+                >
                   {tile.url ? (
                     // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                    <img src={tile.url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <img src={tile.url} alt="" loading="lazy" />
                   ) : null}
                 </Link>
               ))}

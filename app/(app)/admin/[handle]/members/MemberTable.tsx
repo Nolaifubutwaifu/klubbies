@@ -7,7 +7,6 @@ import { FormMessage } from "@/components/forms";
 import {
   endGraceAction,
   removeMembersAction,
-  resendInviteAction,
   restoreMemberAction,
   setMemberRoleAction,
   type ActionState,
@@ -277,10 +276,6 @@ export function MemberTable({
                   ) : member.status === "revoked" ? (
                     <button type="button" className="btn btn-ghost text-[13px]" disabled={pending} onClick={() => run(() => restoreMemberAction(clubId, member.id))}>
                       Restore
-                    </button>
-                  ) : !member.firstSeenAt ? (
-                    <button type="button" className="btn btn-ghost text-[13px]" disabled={pending} onClick={() => run(() => resendInviteAction(clubId, member.id))}>
-                      Nudge
                     </button>
                   ) : null}
                 </td>

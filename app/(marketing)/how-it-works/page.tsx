@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
             Start a club
           </Link>
           <Link href="/signin" className="btn btn-primary">
-            Member log in
+            Log in
           </Link>
         </nav>
       </header>
@@ -100,7 +100,7 @@ export default function HowItWorksPage() {
             Start a club
           </Link>
           <Link href="/signin" className="border-2 border-white px-[22px] py-[14px] text-[16px] font-bold text-white no-underline">
-            I&apos;m a member
+            Log in
           </Link>
         </div>
       </section>

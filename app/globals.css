@@ -20,10 +20,14 @@
   --color-neutral-800: #444141;
   --color-neutral-900: #2d2b2b;
   --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
   --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
   --color-accent-600: #dd2b0f;
   --color-accent-700: #ae1800;
   --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
   --color-accent-2-100: #fff2ef;
   --color-accent-2-800: #71261b;
   --font-heading: var(--font-archivo), system-ui, sans-serif;
@@ -368,12 +372,138 @@
     background: var(--color-divider);
   }
 
+  /* Photo tiles lift slightly on hover so grids feel alive. */
+  .tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-neutral-300);
+  }
+  .tile img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 240ms ease, filter 240ms ease;
+  }
+  .tile:hover img,
+  .tile:focus-visible img {
+    transform: scale(1.04);
+  }
+
+  .panel {
+    background: var(--color-surface);
+    border: 2px solid var(--color-divider);
+  }
+
+  .stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 2px solid var(--color-divider);
+  }
+  .stat::before {
+    content: "";
+    position: absolute;
+    inset: -2px -2px auto -2px;
+    height: 6px;
+    background: var(--color-accent);
+  }
+
+  .chip-date {
+    display: inline-block;
+    background: var(--color-accent);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+
+  .overlay-title {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-6);
+    background: linear-gradient(to top, rgba(32, 30, 29, 0.85), rgba(32, 30, 29, 0));
+    color: #ffffff;
+  }
+
   .masonry {
     column-gap: 2px;
     columns: 2 160px;
   }
   @media (min-width: 768px) {
-    .masonry {
+    /* Photo tiles lift slightly on hover so grids feel alive. */
+  .tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-neutral-300);
+  }
+  .tile img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 240ms ease, filter 240ms ease;
+  }
+  .tile:hover img,
+  .tile:focus-visible img {
+    transform: scale(1.04);
+  }
+
+  .panel {
+    background: var(--color-surface);
+    border: 2px solid var(--color-divider);
+  }
+
+  .stat {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 2px solid var(--color-divider);
+  }
+  .stat::before {
+    content: "";
+    position: absolute;
+    inset: -2px -2px auto -2px;
+    height: 6px;
+    background: var(--color-accent);
+  }
+
+  .chip-date {
+    display: inline-block;
+    background: var(--color-accent);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+
+  .overlay-title {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--space-6);
+    background: linear-gradient(to top, rgba(32, 30, 29, 0.85), rgba(32, 30, 29, 0));
+    color: #ffffff;
+  }
+
+  .masonry {
       columns: 4 200px;
     }
   }

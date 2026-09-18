@@ -18,7 +18,7 @@ export const CODE_REJECTED = "That code didn't work or has expired. Check the la
 export const requestCodeSchema = z.object({
   fullName: z.string().trim().min(1, "Enter your full name").max(200),
   email: z.string().trim().min(3, "Enter your email").max(254),
-  flow: z.enum(["member", "create"]).default("member"),
+  flow: z.enum(["member", "create", "signup"]).default("member"),
 });
 
 export const verifyCodeSchema = z.object({
@@ -135,6 +135,7 @@ export async function verifyCode(rawEmail: string, code: string): Promise<Verify
   }
 
   if (pending.flow === "create") return { ok: true, redirectTo: "/admin/new" };
+  if (pending.flow === "signup") return { ok: true, redirectTo: memberships.length === 1 ? `/c/${memberships[0].clubs.handle}` : "/clubs" };
   if (memberships.length === 1) return { ok: true, redirectTo: `/c/${memberships[0].clubs.handle}` };
   return { ok: true, redirectTo: "/clubs" };
 }

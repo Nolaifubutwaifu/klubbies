@@ -75,3 +75,15 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
 34. **Uploads survive navigation.** The upload queue lives in a provider above the pages with a progress tray, so an admin can keep browsing. Closing the tab still stops the transfer: true server-side ingestion is not built.
 35. **Roster import can prune.** After a preview, the import lists current members who are missing from the file and offers to remove them, for clubs whose file is a full membership export.
 36. **Empty grid cells no longer show as grey blocks.** Photo grids use a transparent background with gaps rather than a divider-coloured backdrop.
+
+## 2026-09-18 · Feedback update
+
+37. **One login button.** The landing page has Start a club and Log in; admins sign in through the same form. The `?admin=1` variant is gone.
+38. **Sign up from the login screen.** "First time here? Sign up" uses a new `signup` flow that sends a code to any address and lands on the club list, where invitations wait. A member who isn't on any list is told to ask their committee.
+39. **Feed keeps posts and reactions, drops comments** (Max: leave comments out, keep a news feed). The `post_comments` table stays in the schema, unused, in case that changes.
+40. **Notification emails.** Publishing an album and posting to the feed email the members who opted in, sent after the response with Resend batches. Every email carries a signed unsubscribe link plus `List-Unsubscribe` headers, and `/unsubscribe` needs one click to confirm so scanners can't switch it off by accident.
+41. **Album download.** `/api/albums/[id]/zip` streams the originals as a zip, in parts of 150 files so one request stays inside the function limit. On phones, "Save to Photos" hands batches of eight files to the share sheet, which writes them straight into the Photos app; that only appears where the browser supports sharing files.
+42. **Card details on our own page.** `/admin/[handle]/billing/card` uses Stripe Elements with a SetupIntent restricted to cards, then makes the new card the subscription default. Invoices and cancellation still go through Stripe's portal.
+43. **Accent colour now reaches Tailwind utilities.** `bg-accent`, `text-accent-700` and friends resolve to the CSS variables, so a club's colour also covers boxes and links, not just the component classes.
+44. **The nudge button is gone.**
+45. **Visual pass.** Photo tiles zoom slightly on hover, stat cards carry an accent bar, the events page leads with a full-width hero (only when the newest album has a photo), rows alternate with the surface colour, dates sit in accent chips, and empty placeholders are accent-tinted rather than grey.

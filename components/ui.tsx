@@ -48,7 +48,7 @@ export function StatusTag({ status, role, graceEndsAt }: { status: string; role?
 
 export function Stat({ value, label }: { value: ReactNode; label: ReactNode }) {
   return (
-    <div className="flex flex-col justify-center gap-1 border-2 border-divider p-4">
+    <div className="stat">
       <span className="display text-[40px]">{value}</span>
       <span className="text-[13px] text-neutral-700">{label}</span>
     </div>
@@ -56,7 +56,14 @@ export function Stat({ value, label }: { value: ReactNode; label: ReactNode }) {
 }
 
 export function Placeholder({ seed, className = "" }: { seed: string; className?: string }) {
-  const tones = ["#9b9797", "#7d7979", "#bab6b6", "#605d5d", "#d7d3d3", "#444141"];
+  const tones = [
+    "color-mix(in srgb, var(--color-accent) 18%, var(--color-surface))",
+    "color-mix(in srgb, var(--color-accent) 30%, var(--color-surface))",
+    "color-mix(in srgb, var(--color-accent-2) 22%, var(--color-surface))",
+    "var(--color-neutral-300)",
+    "color-mix(in srgb, var(--color-accent) 10%, var(--color-neutral-200))",
+    "var(--color-neutral-400)",
+  ];
   let hash = 0;
   for (const ch of seed) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
   return <div className={className} style={{ background: tones[hash % tones.length] }} aria-hidden />;

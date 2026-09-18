@@ -35,7 +35,7 @@ export default async function LandingPage() {
             How it works
           </Link>
           <Link href="/signin" className="btn btn-primary">
-            Member log in
+            Log in
           </Link>
         </nav>
       </header>
@@ -61,13 +61,7 @@ export default async function LandingPage() {
             href="/signin"
             className="flex-1 border-2 border-white px-8 py-5 text-center font-heading text-[18px] font-black text-white no-underline hover:bg-white/10 sm:flex-none"
           >
-            I&apos;m a member
-          </Link>
-          <Link
-            href="/signin?admin=1"
-            className="flex-1 border-2 border-white px-8 py-5 text-center font-heading text-[18px] font-black text-white no-underline hover:bg-white/10 sm:flex-none"
-          >
-            I&apos;m an admin
+            Log in
           </Link>
         </div>
       </section>

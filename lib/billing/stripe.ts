@@ -147,3 +147,60 @@ export async function syncReturnedSession(sessionId: string, clubId: string): Pr
   await applyCheckoutSession(session);
   return session.payment_status === "paid" || session.payment_status === "no_payment_required";
 }
+
+export type CardSummary = { brand: string; last4: string; expMonth: number; expYear: number } | null;
+
+/** Makes sure the club has a Stripe customer, so cards can be saved before checkout. */
+export async function ensureCustomer(club: Club, email: string): Promise<string> {
+  if (club.stripe_customer_id) return club.stripe_customer_id;
+  const customer = await stripe().customers.create({
+    email: email || undefined,
+    name: club.name,
+    metadata: { club_id: club.id, club_handle: club.handle },
+  });
+  await createAdminClient().from("clubs").update({ stripe_customer_id: customer.id }).eq("id", club.id);
+  return customer.id;
+}
+
+export async function createCardSetupIntent(club: Club, email: string): Promise<string> {
+  const customer = await ensureCustomer(club, email);
+  const intent = await stripe().setupIntents.create({
+    customer,
+    usage: "off_session",
+    // Cards only: this form exists to keep the subscription card up to date.
+    payment_method_types: ["card"],
+    metadata: { club_id: club.id },
+  });
+  if (!intent.client_secret) throw new Error("Stripe did not return a client secret");
+  return intent.client_secret;
+}
+
+/** Makes the card from a completed SetupIntent the default for the club. */
+export async function applySetupIntent(club: Club, setupIntentId: string): Promise<boolean> {
+  const intent = await stripe().setupIntents.retrieve(setupIntentId);
+  if (intent.metadata?.club_id !== club.id || intent.status !== "succeeded") return false;
+  const paymentMethod = typeof intent.payment_method === "string" ? intent.payment_method : intent.payment_method?.id;
+  const customer = typeof intent.customer === "string" ? intent.customer : intent.customer?.id;
+  if (!paymentMethod || !customer) return false;
+
+  await stripe().customers.update(customer, { invoice_settings: { default_payment_method: paymentMethod } });
+  if (club.stripe_subscription_id) {
+    await stripe().subscriptions.update(club.stripe_subscription_id, { default_payment_method: paymentMethod });
+  }
+  return true;
+}
+
+export async function getDefaultCard(club: Club): Promise<CardSummary> {
+  if (!club.stripe_customer_id) return null;
+  const customer = await stripe().customers.retrieve(club.stripe_customer_id, { expand: ["invoice_settings.default_payment_method"] });
+  if (customer.deleted) return null;
+  const method = customer.invoice_settings?.default_payment_method;
+  const card = typeof method === "string" ? null : method?.card;
+  if (!card) {
+    const methods = await stripe().paymentMethods.list({ customer: club.stripe_customer_id, type: "card", limit: 1 });
+    const fallback = methods.data[0]?.card;
+    if (!fallback) return null;
+    return { brand: fallback.brand, last4: fallback.last4, expMonth: fallback.exp_month, expYear: fallback.exp_year };
+  }
+  return { brand: card.brand, last4: card.last4, expMonth: card.exp_month, expYear: card.exp_year };
+}

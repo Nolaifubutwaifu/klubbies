@@ -27,7 +27,6 @@ async function clubPreview(handle: string | undefined) {
 export default async function SignInPage(props: PageProps<"/signin">) {
   const params = await props.searchParams;
   const clubHandle = typeof params.club === "string" ? params.club : undefined;
-  const asAdmin = params.admin === "1";
   const user = await getSessionUser();
   if (user) redirect(clubHandle ? `/c/${clubHandle}` : "/clubs");
 
@@ -40,11 +39,9 @@ export default async function SignInPage(props: PageProps<"/signin">) {
       detail={club?.organisation ?? "Every event album your committee has shared with you, in one private place."}
     >
       <div>
-        <h1 className="display mb-2 text-[32px]">{asAdmin ? "Admin log in" : "Log in"}</h1>
+        <h1 className="display mb-2 text-[32px]">Log in</h1>
         <p className="text-[15px] text-neutral-700">
-          {asAdmin
-            ? "Admins sign in the same way as members. You'll land in your club's admin area."
-            : "Use the name and email your club has on file."}
+          Use the name and email your club has on file. Admins sign in here too.
         </p>
       </div>
       <SignInForm flow="member" />
