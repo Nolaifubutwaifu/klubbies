@@ -1,9 +1,17 @@
 import Link from "next/link";
 import type React from "react";
 import { PhotoCarousel, type Slide } from "@/components/soft/PhotoCarousel";
+import { SectionFx } from "@/components/soft/SectionFx";
+import { AudienceTabs } from "@/components/soft/landing/AudienceTabs";
+import { Comparison } from "@/components/soft/landing/Comparison";
+import { Handover } from "@/components/soft/landing/Handover";
+import { HowItWorks } from "@/components/soft/landing/HowItWorks";
+import { PrivacyPromise } from "@/components/soft/landing/PrivacyPromise";
+import { ProblemStrip } from "@/components/soft/landing/ProblemStrip";
+import { YearInTheLife } from "@/components/soft/landing/YearInTheLife";
 import { Reveal } from "@/components/soft/Reveal";
-import { CameraIcon, PlayIcon, SearchIcon } from "@/components/soft/icons";
-import { PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
+import { PhotoBand } from "@/components/soft/PhotoBand";
+import { SquiggleUnderline } from "@/components/soft/illustrations";
 
 /** Club photos in /public/marketing, cropped to 2000x1000. The tint shows
  *  while the photo loads. */
@@ -18,24 +26,6 @@ const NIGHTS: Slide[] = [
 const HERO_TILES = ["/marketing/hero-1.jpg", "/marketing/hero-2.jpg", "/marketing/hero-3.jpg"];
 
 const TICKER = ["Ball night", "Grand final", "O-Week", "Camp", "Bar crawl", "Awards night", "Trials", "End of season"];
-
-const STEPS = [
-  { num: "01", title: "Bring your member list", body: "Upload the CSV your club already keeps, or type names in. That list is the door." },
-  { num: "02", title: "Drop the whole night in", body: "300 phone photos, the drone clip, the committee headshots. Full quality, one album." },
-  { num: "03", title: "Everyone finds themselves", body: "Members log in with their own email and scroll the night back. Nobody else can." },
-];
-
-const PROMISES = [
-  { title: "Nothing is public", body: "No indexing, no shareable link that escapes into a group chat." },
-  { title: "Photos, not compression", body: "Videos and full-size images sit in the event album they belong to." },
-  { title: "Leaving is handled", body: "When someone leaves the club, their access winds down on its own." },
-];
-
-const FOR_MEMBERS = [
-  { title: "One login, no password", body: "A code to the email your club already has. That's the whole sign-in." },
-  { title: "Search by night", body: "Every album by name or date, so last year's ball is two taps away." },
-  { title: "Save what you want", body: "Download the album, or send a batch straight to your phone's Photos app." },
-];
 
 const REVIEWS = [
   {
@@ -198,67 +188,24 @@ export function SoftLanding() {
           </Reveal>
         </section>
 
-        {/* Steps */}
-        <section className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
-          <Reveal>
-            <h2 className="text-[clamp(28px,4vw,40px)]">
-              Three steps, <span className="soft-word">once</span>.
-            </h2>
-          </Reveal>
-          <div className="mt-8 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
-            {STEPS.map((step, i) => (
-              <Reveal key={step.num} delay={i * 80}>
-                <article className="soft-bordered relative h-full overflow-hidden p-6">
-                  <span className="soft-numeral" aria-hidden>
-                    {step.num}
-                  </span>
-                  <h3 className="relative max-w-[16ch] text-[22px]">{step.title}</h3>
-                  <p className="relative mt-2 text-[15px] leading-[1.5] text-[color:var(--ink-70)]">{step.body}</p>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        <ProblemStrip />
 
-        {/* Members band: full-bleed accent, outline cards on top. */}
-        <section className="soft-cta !rounded-none py-16">
-          <div className="mx-auto w-full max-w-[1100px] px-4 sm:px-6">
-            <Reveal>
-              <span className="soft-chip bg-white/90">For everyone on the list</span>
-              <h2 className="mt-4 max-w-[18ch] text-[clamp(28px,4vw,42px)] text-white">
-                Members don&rsquo;t need a tutorial.
-              </h2>
-            </Reveal>
-            <div className="mt-8 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
-              {FOR_MEMBERS.map((item, i) => (
-                <Reveal key={item.title} delay={i * 80}>
-                  <div className="h-full rounded-[var(--soft-r)] border-2 border-white/45 p-6 transition-colors hover:border-white hover:bg-white/10">
-                    <h3 className="text-[20px] text-white">{item.title}</h3>
-                    <p className="mt-2 text-[15px] leading-[1.5] text-white/85">{item.body}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+        <HowItWorks />
 
-        {/* Promises */}
-        <section className="mx-auto w-full max-w-[1100px] px-4 py-16 sm:px-6">
-          <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))" }}>
-            {PROMISES.map((promise, i) => (
-              <Reveal key={promise.title} delay={i * 80}>
-                <div className="soft-panel flex h-full flex-col items-start gap-3 p-7">
-                  <span className="soft-bubble">{i === 0 ? <SearchIcon size={20} /> : i === 1 ? <CameraIcon size={20} /> : <PlayIcon size={20} />}</span>
-                  <h3 className="text-[19px]">{promise.title}</h3>
-                  <p className="m-0 text-[15px] leading-[1.5] text-[color:var(--ink-70)]">{promise.body}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        <AudienceTabs />
+
+        <Handover />
+
+        <YearInTheLife />
+
+        <Comparison />
+
+        <PrivacyPromise />
 
         {/* Pricing */}
-        <section className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
+        <section className="soft-fx-host">
+          <SectionFx blobs={["left"]} dots="full" />
+          <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
           <Reveal>
             <div className="soft-card flex flex-wrap items-center gap-8 p-8 sm:p-10">
               <div className="min-w-[240px] flex-1">
@@ -290,10 +237,13 @@ export function SoftLanding() {
               </ul>
             </div>
           </Reveal>
+          </div>
         </section>
 
         {/* Quotes: placeholders until real committees give them. */}
-        <section className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
+        <section className="soft-fx-host">
+          <SectionFx />
+          <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
           <Reveal>
             <h2 className="text-[clamp(28px,4vw,40px)]">
               What committees <span className="soft-word">say</span>.
@@ -320,10 +270,13 @@ export function SoftLanding() {
               </Reveal>
             ))}
           </div>
+          </div>
         </section>
 
         {/* FAQ */}
-        <section className="mx-auto w-full max-w-[820px] px-4 pb-16 sm:px-6">
+        <section className="soft-fx-host">
+          <SectionFx blobs={["right"]} dots="full" />
+          <div className="mx-auto w-full max-w-[820px] px-4 pb-16 sm:px-6">
           <Reveal>
             <h2 className="text-[clamp(28px,4vw,40px)]">
               Questions committees <span className="soft-word">ask</span>.
@@ -339,26 +292,32 @@ export function SoftLanding() {
               </Reveal>
             ))}
           </div>
+          </div>
         </section>
 
-        {/* Closing CTA */}
-        <section className="mx-auto w-full max-w-[1100px] px-4 pb-20 sm:px-6">
-          <Reveal>
-            <div className="soft-cta flex flex-wrap items-center gap-8 p-8 sm:p-12">
-              <div className="min-w-[260px] flex-1">
-                <h2 className="text-[clamp(28px,4vw,42px)] text-white">Your club&rsquo;s year, in one place.</h2>
-                <p className="mt-3 max-w-[44ch] text-[17px] leading-[1.5] text-white/85">
-                  Set it up tonight, and Saturday&rsquo;s photos land where everyone can find them.
-                </p>
-                <Link href="/start" className="soft-btn soft-btn-lg mt-6 bg-white !text-[color:var(--color-accent-700)] no-underline">
+        {/* Closing CTA: full-bleed collage under a deep tint. */}
+        <section className="soft-on-dark relative overflow-hidden">
+          <PhotoBand columns={8} rows={3} tint="deep" />
+          <div className="mx-auto w-full max-w-[760px] px-4 py-20 text-center sm:px-6">
+            <Reveal>
+              <h2 className="text-[clamp(32px,5vw,52px)] leading-[1.05] text-white">Your next event is this weekend.</h2>
+              <p className="mt-4 text-[19px] leading-[1.5] text-white/92">
+                Set the club up tonight and the photos have somewhere to land on Saturday morning.
+              </p>
+              <span className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link href="/start" className="soft-btn soft-btn-lg bg-white !text-[color:var(--color-accent-700)] no-underline">
                   Start your club
                 </Link>
-              </div>
-              <span className="hidden text-white/60 sm:block" style={{ "--color-surface": "transparent" } as React.CSSProperties}>
-                <PhotoStackArt size={160} />
+                <Link
+                  href="/signin"
+                  className="soft-btn soft-btn-lg !bg-transparent !text-white no-underline ring-2 ring-inset ring-white/60 hover:!bg-white/10"
+                >
+                  I&rsquo;m a member
+                </Link>
               </span>
-            </div>
-          </Reveal>
+              <p className="mt-5 text-[14px] text-white/80">A$20 a month. Cancel whenever. Your photos stay yours.</p>
+            </Reveal>
+          </div>
         </section>
 
         <footer className="mx-auto flex w-full max-w-[1100px] flex-wrap items-center gap-x-6 gap-y-2 px-4 pb-10 text-[14px] text-[color:var(--ink-55)] sm:px-6">

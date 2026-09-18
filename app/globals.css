@@ -1278,3 +1278,122 @@
     border-bottom-color: color-mix(in srgb, #2b2228 8%, transparent);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Section texture
+   SoftBackdrop decorates the page as a whole, so on a long landing page its
+   blobs sit at the very top and bottom and the middle reads as flat colour.
+   These let one section carry its own grain, dots and blobs: the section
+   becomes a stacking context and the layer sits behind its content.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .soft-fx-host {
+    position: relative;
+    z-index: 0;
+  }
+  .soft-fx {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  /* Softer dot grid for white sections, where the page dots would shout. */
+  .soft-fx .soft-dots-faint {
+    opacity: 0.12;
+  }
+
+  /* Section-scale blobs: fixed px, unlike the page blobs' viewport units. */
+  .soft-blob-s-left {
+    top: -22%;
+    left: -9%;
+    width: 520px;
+    height: 460px;
+    background: radial-gradient(circle at 42% 40%, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 70%);
+    border-radius: 58% 42% 47% 53% / 52% 45% 55% 48%;
+  }
+  .soft-blob-s-right {
+    bottom: -24%;
+    right: -8%;
+    width: 560px;
+    height: 480px;
+    background: radial-gradient(circle at 42% 40%, color-mix(in srgb, var(--color-accent-2) 52%, transparent), transparent 70%);
+    border-radius: 44% 56% 58% 42% / 48% 52% 44% 56%;
+  }
+  .soft-blob-s-lilac {
+    top: -20%;
+    right: -11%;
+    width: 520px;
+    height: 460px;
+    background: radial-gradient(circle at 45% 45%, color-mix(in srgb, var(--tone-support) 95%, transparent), transparent 72%);
+    border-radius: 52% 48% 40% 60% / 56% 44% 56% 44%;
+    opacity: 0.55;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Tinted photo band
+     The closing CTA's treatment, made reusable: a dense grid of event photos
+     under a colour wash. Dark tints carry white text; the cream wash leaves a
+     section looking like paper with photographs showing through.
+     --------------------------------------------------------------------------- */
+  .soft-photoband {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .soft-photoband-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+  }
+  .soft-photoband-grid img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .soft-photoband-tint {
+    position: absolute;
+    inset: 0;
+  }
+  .soft-tint-deep {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-accent-800) 88%, transparent),
+      color-mix(in srgb, #2b2228 94%, transparent)
+    );
+  }
+  .soft-tint-diagonal {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-accent-800) 90%, transparent),
+      color-mix(in srgb, #2b2228 94%, transparent)
+    );
+  }
+  /* Cream veil: you sense the photos without being able to read them. */
+  .soft-tint-paper {
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--color-bg) 97%, transparent) 0%,
+      color-mix(in srgb, var(--color-bg) 94%, transparent) 48%,
+      color-mix(in srgb, var(--color-bg) 87%, transparent) 100%
+    );
+  }
+  .soft-photoband-desaturate img {
+    filter: saturate(0.55);
+  }
+
+  /* On a dark band the cards keep their own surface, so only the furniture
+     around them needs inverting. */
+  .soft-on-dark {
+    color: #fff;
+  }
+  .soft-on-dark .soft-muted {
+    color: rgb(255 255 255 / 0.84);
+  }
+  .soft-on-dark .soft-faint {
+    color: rgb(255 255 255 / 0.72);
+  }
+}
