@@ -16,7 +16,7 @@ export function AdminNav({ handle }: { handle: string }) {
     { href: `${base}/billing`, label: "Billing" },
   ];
   return (
-    <nav className="flex flex-wrap gap-1 border-b-2 border-divider bg-neutral-900 px-6 py-2">
+    <nav className="flex flex-wrap gap-2 px-4 pb-2 pt-3 sm:px-6">
       {links.map((link) => {
         const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
         return (
@@ -24,11 +24,7 @@ export function AdminNav({ handle }: { handle: string }) {
             key={link.href}
             href={link.href}
             aria-current={active ? "page" : undefined}
-            className="px-[10px] py-[7px] text-[12px] font-semibold tracking-[0.04em] no-underline"
-            style={{
-              background: active ? "var(--color-accent)" : "transparent",
-              color: active ? "#ffffff" : "var(--color-neutral-300)",
-            }}
+            className={`soft-chip no-underline ${active ? "" : "soft-chip-muted"}`}
           >
             {link.label}
           </Link>

@@ -13,14 +13,14 @@ export default async function ClubsPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
+      <header className="soft-card mx-4 mt-5 flex flex-wrap items-center justify-between gap-4 !rounded-[28px] px-5 py-2.5 sm:mx-6">
         <Brand href="/clubs" />
         <div className="flex items-center gap-3">
           <Link href="/account" className="text-[13px] text-neutral-700">
             {profile?.display_name ?? profile?.email}
           </Link>
           <form action="/api/auth/signout" method="post">
-            <button type="submit" className="btn btn-ghost text-[13px]">
+            <button type="submit" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
               Sign out
             </button>
           </form>
@@ -58,7 +58,7 @@ export default async function ClubsPage() {
               <Link
                 key={club.membershipId}
                 href={`/c/${club.handle}`}
-                className="flex flex-col gap-2 border-2 border-divider bg-bg p-6 text-ink no-underline transition-colors hover:border-accent hover:bg-neutral-200"
+                className="soft-bordered flex flex-col gap-2 p-6 text-ink no-underline"
               >
                 <span className="kicker">{club.organisation ?? "Club"}</span>
                 <span className="font-heading text-[24px] font-black tracking-[-0.02em]">{club.name}</span>
@@ -74,7 +74,7 @@ export default async function ClubsPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-3 border-t-2 border-divider pt-4 text-[13px] text-neutral-700">
+        <div className="flex flex-wrap items-center gap-3 pt-2 text-[13px] text-[color:var(--ink-70)]">
           <Link href="/admin/new" className="btn btn-secondary">
             Start another club
           </Link>
@@ -83,7 +83,7 @@ export default async function ClubsPage() {
           </Link>
           <form action="/api/auth/signout" method="post">
             <input type="hidden" name="scope" value="global" />
-            <button type="submit" className="btn btn-ghost text-[13px]">
+            <button type="submit" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
               Sign out of all devices
             </button>
           </form>

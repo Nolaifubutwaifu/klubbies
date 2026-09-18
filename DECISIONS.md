@@ -87,3 +87,27 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
 43. **Accent colour now reaches Tailwind utilities.** `bg-accent`, `text-accent-700` and friends resolve to the CSS variables, so a club's colour also covers boxes and links, not just the component classes.
 44. **The nudge button is gone.**
 45. **Visual pass.** Photo tiles zoom slightly on hover, stat cards carry an accent bar, the events page leads with a full-width hero (only when the newest album has a photo), rows alternate with the surface colour, dates sit in accent chips, and empty placeholders are accent-tinted rather than grey.
+
+## 2026-09-18 · Soft theme rollout
+
+46. **The soft theme replaced the modernist one across the product.** `/` is the
+    new marketing home, the sign-in flow runs through the restyled `AuthSplit`,
+    and everything under `(app)` is wrapped in `.theme-soft`. The old landing is
+    kept at `/classic`, and the pre-redesign UI is tagged `design-v1-modernist`.
+47. **Pages join the theme by being wrapped, not rewritten.** Two adoption
+    layers in `globals.css` re-skin the existing classes inside `.theme-soft`:
+    the component classes (`.btn`, `.input`, `.panel`, `.stat`, `.tag`,
+    `.table`, `.dialog`, `.dropzone`, `.tile`) and the modernist border
+    utilities (`border-2 border-divider` boxes become soft cards, 2px rules
+    become hairlines). That is why the admin pages converted without touching
+    their markup.
+48. **No ghost or outline-only buttons.** `.btn-secondary` and `.btn-ghost` are
+    filled tonal buttons in this theme.
+49. **Type is Fredoka over DM Sans.** Fredoka carries the wordmark, headings and
+    one accent word per heading; DM Sans does body and UI. Archivo stays for
+    `/classic` only.
+50. **Colour follows 60/30/10:** cream ground, lilac supporting surfaces,
+    accent reserved for action. The per-club accent still overrides the ramp,
+    so a club's pages take its colour.
+51. **`EventsBrowser` and the `/preview` routes are gone.** `SoftEvents` is the
+    events page for both members and admins.

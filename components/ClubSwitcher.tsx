@@ -48,27 +48,27 @@ export function ClubSwitcher({
     <div ref={box} className="relative">
       <button
         type="button"
-        className="flex items-center gap-2 border-2 border-divider bg-transparent px-2 py-1 hover:border-accent"
+        className="flex items-center gap-2 rounded-full border-0 bg-[color-mix(in_srgb,var(--color-accent)_10%,transparent)] px-3 py-1.5 transition-colors hover:bg-[color-mix(in_srgb,var(--color-accent)_18%,transparent)]"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
       >
         {logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-          <img src={logoUrl} alt="" className="h-5 w-5 object-contain" />
+          <img src={logoUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
         ) : (
-          <span className="flex h-5 w-5 items-center justify-center bg-neutral-900 text-[10px] font-extrabold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-accent-500),var(--color-accent-700))] text-[10px] font-extrabold text-white">
             {initials(current?.name ?? "Klubbies")}
           </span>
         )}
-        <span className="font-heading text-[18px] font-extrabold">{current?.name ?? "Your clubs"}</span>
+        <span className="soft-wordmark text-[17px]">{current?.name ?? "Your clubs"}</span>
         {invites.length ? <span className="tag tag-accent text-[10px]">{invites.length} new</span> : null}
         <span className="text-[11px] text-neutral-600">▾</span>
       </button>
 
       {open ? (
         <div
-          className="absolute left-0 top-[calc(100%+6px)] z-40 w-[320px] max-w-[92vw] border-2 border-ink bg-bg shadow-lg"
+          className="soft-card absolute left-0 top-[calc(100%+8px)] z-40 w-[320px] max-w-[92vw] overflow-hidden !p-0"
           role="menu"
         >
           <div className="label-caps px-4 pt-3">Your clubs</div>

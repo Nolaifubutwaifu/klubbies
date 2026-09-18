@@ -540,7 +540,7 @@
   --color-bg: #fff8f4;
   --color-surface: #ffffff;
   --color-text: #2b2228;
-  --color-divider: color-mix(in srgb, #2b2228 10%, transparent);
+  --color-divider: color-mix(in srgb, #2b2228 7%, transparent);
   --color-neutral-600: #7a6e74;
   --color-neutral-700: #5f545a;
   --soft-r-lg: 28px;
@@ -1230,5 +1230,51 @@
     .soft-pop {
       animation: none;
     }
+  }
+}
+
+/* Adoption layer, part 2: pages built with the modernist border utilities.
+   Rather than rewriting 58 call sites, boxes drawn with `border-2
+   border-divider` become soft cards, and the 2px rules become hairlines. */
+@layer components {
+  .theme-soft .border-2.border-divider {
+    border-width: 1px;
+    border-radius: var(--soft-r);
+    background: var(--color-surface);
+    box-shadow: var(--soft-shadow);
+  }
+  .theme-soft .border-b-2,
+  .theme-soft .border-t-2 {
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+  }
+  /* A grid that draws its own cell separators shouldn't gain a card look. */
+  .theme-soft .grid.border-2.border-divider,
+  .theme-soft .grid.border-b-2 {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* The stat card's accent bar follows the rounded corners. */
+  .theme-soft .stat {
+    overflow: hidden;
+  }
+  .theme-soft .stat::before {
+    height: 5px;
+    border-radius: 0;
+  }
+  .theme-soft .stat .display,
+  .theme-soft .display {
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    font-weight: 600;
+  }
+
+  /* Tables: no heavy rules, just light separation. */
+  .theme-soft .table th {
+    border-bottom-color: color-mix(in srgb, #2b2228 12%, transparent);
+    color: var(--ink-55);
+  }
+  .theme-soft .table td {
+    border-bottom-color: color-mix(in srgb, #2b2228 8%, transparent);
   }
 }

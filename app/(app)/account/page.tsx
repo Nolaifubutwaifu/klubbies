@@ -24,22 +24,22 @@ export default async function AccountPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
+      <header className="soft-card mx-4 mt-5 flex flex-wrap items-center justify-between gap-4 !rounded-[28px] px-5 py-2.5 sm:mx-6">
         <Brand href="/clubs" />
         <div className="flex items-center gap-3">
-          <Link href="/clubs" className="btn btn-ghost text-[13px]">
+          <Link href="/clubs" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
             Your clubs
           </Link>
           <form action="/api/auth/signout" method="post">
-            <button type="submit" className="btn btn-ghost text-[13px]">
+            <button type="submit" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
               Sign out
             </button>
           </form>
         </div>
       </header>
 
-      <div className="grid border-b-2 border-divider" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
-        <section className="flex flex-col gap-6 border-divider p-6 md:border-r-2">
+      <div className="grid gap-5 p-4 sm:p-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+        <section className="soft-card flex flex-col gap-6 p-6 sm:p-7">
           <div>
             <span className="kicker">Your profile</span>
             <h1 className="display mt-2" style={{ fontSize: "clamp(28px, 4vw, 40px)" }}>
@@ -53,7 +53,7 @@ export default async function AccountPage() {
           <ProfileForm displayName={profile.display_name ?? ""} email={profile.email} bio={profile.bio} />
         </section>
 
-        <section className="flex flex-col gap-6 p-6">
+        <section className="soft-card flex flex-col gap-6 p-6 sm:p-7">
           <div>
             <span className="label-caps">Your clubs</span>
             {clubs.length ? (

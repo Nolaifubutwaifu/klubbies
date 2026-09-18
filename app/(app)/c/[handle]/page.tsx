@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EventsBrowser } from "@/components/EventsBrowser";
+import { SoftEvents } from "@/components/soft/SoftEvents";
 import { getClubContext } from "@/lib/auth/session";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
@@ -21,7 +21,13 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <EventsBrowser albums={albums} hrefBase={`/c/${handle}/a`} canManage={ctx.perms.manage_albums} />
+      <SoftEvents
+        albums={albums}
+        hrefBase={`/c/${handle}/a`}
+        canManage={ctx.perms.manage_albums}
+        clubName={ctx.club.name}
+        newAlbumHref={`/admin/${handle}/albums`}
+      />
     </main>
   );
 }

@@ -88,13 +88,13 @@ export function AlbumGrid({
     });
 
   if (items.length === 0) {
-    return <p className="m-6 border-2 border-divider p-6 text-[14px] text-neutral-700">Nothing in this album yet.</p>;
+    return <p className="soft-card m-6 p-6 text-[14px] text-[color:var(--ink-70)]">Nothing in this album yet.</p>;
   }
 
   return (
     <div className="flex flex-col gap-3">
       {canManage ? (
-        <div className="flex min-h-[40px] flex-wrap items-center gap-2 px-6 text-[14px]">
+        <div className="flex min-h-[40px] flex-wrap items-center gap-2 px-4 text-[14px] sm:px-6">
           {selecting ? (
             <>
               <strong>{selected.size} selected</strong>
@@ -137,7 +137,7 @@ export function AlbumGrid({
         </div>
       ) : null}
 
-      <div className="grid gap-[2px] px-6 pb-6 pt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+      <div className="grid gap-2 px-4 pb-6 pt-4 sm:px-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
         {items.map((item) =>
           selecting ? (
             <button
@@ -145,13 +145,13 @@ export function AlbumGrid({
               type="button"
               onClick={() => toggle(item.id)}
               aria-pressed={selected.has(item.id)}
-              className="relative block aspect-square border-0 bg-bg p-0"
+              className="relative block aspect-square overflow-hidden rounded-[var(--soft-r-sm)] border-0 bg-bg p-0"
               style={{ outline: selected.has(item.id) ? "3px solid var(--color-accent)" : undefined, outlineOffset: -3 }}
             >
               <Tile item={item} cover={item.id === coverMediaId} />
             </button>
           ) : (
-            <Link key={item.id} href={`${hrefBase}/${item.id}`} className="relative block aspect-square hover:opacity-90" scroll={false}>
+            <Link key={item.id} href={`${hrefBase}/${item.id}`} className="soft-tile relative block aspect-square" scroll={false}>
               <Tile item={item} cover={item.id === coverMediaId} />
             </Link>
           ),

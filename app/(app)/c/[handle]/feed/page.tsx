@@ -79,9 +79,9 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
             <Link href={`/c/${handle}/a/${latest.id}`} className="mt-2 block text-ink no-underline">
               {latest.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                <img src={latest.coverUrl} alt="" className="aspect-[4/3] w-full object-cover" />
+                <img src={latest.coverUrl} alt="" className="aspect-[4/3] w-full rounded-[var(--soft-r-sm)] object-cover" />
               ) : (
-                <span className="block aspect-[4/3] w-full bg-neutral-500" />
+                <span className="block aspect-[4/3] w-full rounded-[var(--soft-r-sm)] bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-surface))]" />
               )}
               <span className="mt-2 block font-heading text-[16px] font-extrabold">{latest.title}</span>
               <span className="block text-[12px] text-neutral-700">

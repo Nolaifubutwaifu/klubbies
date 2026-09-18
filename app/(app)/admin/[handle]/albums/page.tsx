@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BillingGate } from "@/components/BillingGate";
-import { EventsBrowser } from "@/components/EventsBrowser";
+import { SoftEvents } from "@/components/soft/SoftEvents";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
@@ -18,7 +18,7 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
 
   return (
     <main className="flex flex-col">
-      <div className="flex flex-col gap-6 px-6 pb-2 pt-8">
+      <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 px-4 pb-2 pt-8 sm:px-6">
         <PageTitle kicker={ctx.club.name} title="Albums" />
         <div className="hr" />
         {canWrite(ctx.club.billing_status) ? (
@@ -27,7 +27,13 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
           <BillingGate handle={handle} action="create albums" />
         )}
       </div>
-      <EventsBrowser albums={albums} hrefBase={`/c/${handle}/a`} canManage />
+      <SoftEvents
+        albums={albums}
+        hrefBase={`/c/${handle}/a`}
+        canManage
+        clubName={ctx.club.name}
+        newAlbumHref={`/admin/${handle}/albums`}
+      />
     </main>
   );
 }
