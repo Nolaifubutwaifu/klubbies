@@ -1,7 +1,12 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
-import { Brand } from "./ui";
+import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 
-// The two-panel layout from the "Member log in" mockup screen.
+/**
+ * Two-panel auth layout in the soft theme: the accent panel carries the
+ * message, the card carries the form. Wrapping in .theme-soft is what restyles
+ * the form controls each page passes in as children.
+ */
 export function AuthSplit({
   kicker,
   headline,
@@ -16,23 +21,24 @@ export function AuthSplit({
   children: ReactNode;
 }) {
   return (
-    <main className="grid flex-1" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
-      <section className="flex flex-col justify-between gap-8 bg-neutral-900 px-6 py-8 text-neutral-100">
-        <span className="[&_a]:!text-neutral-100">
-          <Brand size={18} />
-        </span>
-        <div>
-          <div className="text-[12px] font-bold uppercase tracking-[0.16em] text-accent-400">{kicker}</div>
-          <h2 className="display mt-3 mb-3" style={{ fontSize: "clamp(30px, 4vw, 46px)" }}>
-            {headline}
-          </h2>
-          {detail ? <p className="max-w-[40ch] text-[15px] text-neutral-400">{detail}</p> : null}
-        </div>
-        <div className="text-[13px] leading-normal text-neutral-500">
-          {footnote ?? "Not on the list? Ask your committee to add you — takes them ten seconds."}
-        </div>
-      </section>
-      <section className="flex flex-col justify-center gap-6 px-6 py-8">{children}</section>
-    </main>
+    <div className="theme-soft relative flex flex-1 flex-col">
+      <SoftBackdrop />
+      <main className="relative z-10 mx-auto grid w-full max-w-[1000px] flex-1 items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1fr)]">
+        <section className="soft-cta flex flex-col gap-6 p-8 sm:p-10">
+          <Link href="/" className="soft-wordmark text-[20px] text-white no-underline">
+            klubbies
+          </Link>
+          <div>
+            <span className="text-[13px] font-bold uppercase tracking-[0.14em] text-white/75">{kicker}</span>
+            <h1 className="mt-3 text-[clamp(28px,4vw,42px)] text-white">{headline}</h1>
+            {detail ? <p className="mt-3 max-w-[40ch] text-[16px] leading-[1.5] text-white/85">{detail}</p> : null}
+          </div>
+          <p className="m-0 text-[14px] leading-[1.5] text-white/70">
+            {footnote ?? "Not on the list? Ask your committee to add you — takes them ten seconds."}
+          </p>
+        </section>
+        <section className="soft-card flex flex-col justify-center gap-6 p-7 sm:p-9">{children}</section>
+      </main>
+    </div>
   );
 }

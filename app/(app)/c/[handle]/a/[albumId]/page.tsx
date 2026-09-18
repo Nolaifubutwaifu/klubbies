@@ -91,7 +91,7 @@ export default async function AlbumPage(props: Props) {
     <main className="flex flex-1 flex-col">
       <div className="flex flex-wrap items-start justify-between gap-4 border-b-2 border-divider px-6 pb-4 pt-6">
         <div className="min-w-0">
-          <Link href={`/c/${handle}`} className="btn btn-ghost pl-0 text-[13px]">
+          <Link href={`/c/${handle}`} className="btn btn-ghost text-[13px]">
             ← All events
           </Link>
           {canManage ? (

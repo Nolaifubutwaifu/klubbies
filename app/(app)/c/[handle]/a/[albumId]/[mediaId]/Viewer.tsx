@@ -78,7 +78,7 @@ export function Viewer({
     <main className="flex flex-1 flex-col">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-divider px-6 py-4">
         <div className="min-w-0">
-          <Link href={albumHref} className="btn btn-ghost pl-0 text-[13px]">
+          <Link href={albumHref} className="btn btn-ghost text-[13px]">
             ← All photos
           </Link>
           <div className="mt-1 truncate font-heading text-[26px] font-black tracking-[-0.03em]">{albumTitle}</div>

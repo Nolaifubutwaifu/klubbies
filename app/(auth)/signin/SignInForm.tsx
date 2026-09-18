@@ -109,7 +109,7 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           {mode !== "signup" ? (
             <button
               type="button"
-              className="btn btn-ghost px-0"
+              className="btn btn-ghost text-[13px]"
               onClick={() => {
                 setMode("signup");
                 setError("");
@@ -120,7 +120,7 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           ) : (
             <button
               type="button"
-              className="btn btn-ghost px-0"
+              className="btn btn-ghost text-[13px]"
               onClick={() => {
                 setMode("code");
                 setError("");
@@ -132,7 +132,7 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           {mode !== "signup" ? (
             <button
               type="button"
-              className="btn btn-ghost px-0"
+              className="btn btn-ghost text-[13px]"
               onClick={() => {
                 setMode(mode === "code" ? "password" : "code");
                 setError("");

@@ -905,3 +905,120 @@
     box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--color-accent) 80%, transparent);
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Soft theme adoption layer
+   Re-skins the existing component classes inside .theme-soft, so a page joins
+   the new design by being wrapped rather than rewritten.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .theme-soft .btn {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    transition:
+      transform var(--soft-ease),
+      box-shadow var(--soft-ease),
+      background-color var(--soft-ease);
+  }
+  .theme-soft .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+  .theme-soft .btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+  /* Secondary and ghost both become filled tonal buttons: no outlines, no
+     text-only buttons that disappear into the page. */
+  .theme-soft .btn-secondary,
+  .theme-soft .btn-ghost {
+    color: var(--tone-support-ink);
+    background: var(--tone-support);
+    border: 0;
+    box-shadow: var(--soft-shadow);
+  }
+  .theme-soft .btn-secondary:hover:not(:disabled),
+  .theme-soft .btn-ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--tone-support));
+  }
+  .theme-soft .btn-secondary[aria-pressed="true"] {
+    color: #fff;
+    background: var(--color-accent-700);
+  }
+  .theme-soft .btn-lg {
+    min-height: 56px;
+    padding: 14px 28px;
+    font-size: 18px;
+  }
+
+  .theme-soft .input,
+  .theme-soft .field input,
+  .theme-soft .field select,
+  .theme-soft .field textarea {
+    min-height: 46px;
+    padding: 10px 16px;
+    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
+    border-radius: 14px;
+    background: var(--color-surface);
+    box-shadow: var(--soft-shadow);
+  }
+
+  .theme-soft .panel,
+  .theme-soft .stat,
+  .theme-soft .dialog,
+  .theme-soft .notice,
+  .theme-soft .dropzone {
+    border: 1px solid color-mix(in srgb, #2b2228 6%, transparent);
+    border-radius: var(--soft-r);
+    background: var(--color-surface);
+    box-shadow: var(--soft-shadow);
+  }
+  .theme-soft .dropzone {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+
+  .theme-soft .tag,
+  .theme-soft .chip-date {
+    border: 0;
+    border-radius: 999px;
+    padding: 5px 12px;
+    font-weight: 700;
+  }
+  .theme-soft .tag-accent,
+  .theme-soft .chip-date {
+    color: var(--color-accent-700);
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  }
+  .theme-soft .tag-neutral,
+  .theme-soft .tag-outline {
+    color: var(--tone-support-ink);
+    background: var(--tone-support);
+  }
+
+  .theme-soft .tile,
+  .theme-soft .tile-grid > * {
+    border-radius: var(--soft-r-sm);
+    overflow: hidden;
+  }
+
+  .theme-soft .display,
+  .theme-soft .brand {
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .theme-soft .kicker,
+  .theme-soft .label-caps {
+    color: var(--color-accent-700);
+  }
+  .theme-soft .hr {
+    height: 1px;
+    background: color-mix(in srgb, #2b2228 10%, transparent);
+  }
+}
