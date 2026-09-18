@@ -549,6 +549,13 @@
   --soft-shadow: 0 1px 2px color-mix(in srgb, #2b2228 5%, transparent), 0 10px 24px -8px color-mix(in srgb, #2b2228 18%, transparent);
   --soft-shadow-lift: 0 2px 4px color-mix(in srgb, #2b2228 6%, transparent), 0 18px 36px -10px color-mix(in srgb, #2b2228 26%, transparent);
   --soft-ease: 200ms cubic-bezier(0.22, 0.68, 0.32, 1);
+  /* 60/30/10: cream ground, lilac supporting surfaces, accent for action only. */
+  --tone-base: #fff8f4;
+  --tone-support: #f1e9fb;
+  --tone-support-ink: #43335c;
+  --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
+  --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
+  --ink-35: color-mix(in srgb, var(--color-text) 35%, transparent);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -564,7 +571,7 @@
   .theme-soft h2,
   .theme-soft h3,
   .theme-soft .soft-display {
-    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1.1;
@@ -597,7 +604,7 @@
     padding: 10px 18px;
     border: 0;
     border-radius: 999px;
-    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
     font-weight: 800;
     font-size: 15px;
     line-height: 1.2;
@@ -620,13 +627,19 @@
   .soft-btn-primary:hover {
     box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
   }
-  .soft-btn-ghost {
-    color: var(--color-text);
-    background: var(--color-surface);
+  /* Low-emphasis button: filled tonal, never a ghost/outline. */
+  .soft-btn-tonal {
+    color: var(--tone-support-ink);
+    background: var(--tone-support);
     box-shadow: var(--soft-shadow);
   }
-  .soft-btn-ghost:hover {
-    background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+  .soft-btn-tonal:hover {
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--tone-support));
+  }
+  .soft-btn-lg {
+    min-height: 56px;
+    padding: 14px 28px;
+    font-size: 18px;
   }
 
   .soft-chip {
@@ -712,8 +725,8 @@
   .soft-blob {
     position: absolute;
     display: block;
-    filter: blur(60px);
-    opacity: 0.5;
+    filter: blur(70px);
+    opacity: 0.3;
     will-change: transform;
   }
   .soft-blob-a {
@@ -734,7 +747,7 @@
     height: 40vw;
     max-width: 540px;
     max-height: 540px;
-    background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--color-accent-2) 48%, transparent), transparent 72%);
+    background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--tone-support) 85%, transparent), transparent 72%);
     border-radius: 44% 56% 58% 42% / 48% 52% 44% 56%;
     animation: soft-drift-b 42s ease-in-out infinite;
   }
@@ -748,7 +761,7 @@
     background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-accent-300) 60%, transparent), transparent 72%);
     border-radius: 52% 48% 40% 60% / 56% 44% 56% 44%;
     animation: soft-drift-c 50s ease-in-out infinite;
-    opacity: 0.4;
+    opacity: 0.26;
   }
 
   /* Dot grid, faded out towards the bottom so it never fights the cards. */
@@ -820,12 +833,75 @@
     gap: 6px;
     padding: 7px 14px;
     border-radius: 999px;
-    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
     font-weight: 900;
     font-size: 13px;
     color: #fff;
     background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
     box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
     transform: rotate(-3deg);
+  }
+}
+
+/* Soft theme: landing-page pieces (wordmark, numerals, panels, CTA band). */
+@layer components {
+  /* The chunky voice: wide, rounded, slightly overweight. Used for the
+     wordmark and for one accent word per heading, never for running text. */
+  .soft-wordmark {
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .theme-soft .soft-word {
+    color: var(--color-accent-700);
+    font-weight: 600;
+  }
+
+  /* Big step numeral: hierarchy by opacity, not by another colour. */
+  /* Hidden on phones, where the card is too narrow for the numeral to sit
+     behind the copy without touching it. */
+  .soft-numeral {
+    display: none;
+    position: absolute;
+    bottom: -22px;
+    right: 8px;
+    font-family: var(--font-fredoka), system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 86px;
+    line-height: 1;
+    color: color-mix(in srgb, var(--color-accent) 13%, transparent);
+    pointer-events: none;
+  }
+  @media (min-width: 640px) {
+    .soft-numeral {
+      display: block;
+    }
+  }
+
+  /* 30% supporting surface. */
+  .soft-panel {
+    border-radius: var(--soft-r-lg);
+    background: color-mix(in srgb, var(--tone-support) 78%, white);
+    box-shadow: var(--soft-shadow);
+  }
+
+  .soft-bubble {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 999px;
+    color: var(--color-accent-700);
+    background: color-mix(in srgb, white 72%, transparent);
+  }
+
+  /* 10% colour, used once per page at full strength. */
+  .soft-cta {
+    border-radius: var(--soft-r-lg);
+    background:
+      radial-gradient(70% 120% at 85% 10%, color-mix(in srgb, white 22%, transparent), transparent 60%),
+      linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
+    box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--color-accent) 80%, transparent);
   }
 }

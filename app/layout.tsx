@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, DM_Sans, Nunito } from "next/font/google";
+import { Archivo, DM_Sans, Fredoka } from "next/font/google";
 import "./globals.css";
 
 const archivo = Archivo({
@@ -9,10 +9,10 @@ const archivo = Archivo({
 });
 
 /* Used by the soft theme prototype (.theme-soft) only. */
-const nunito = Nunito({
-  variable: "--font-nunito",
-  subsets: ["latin", "latin-ext"],
-  weight: ["700", "800", "900"],
+const fredoka = Fredoka({
+  variable: "--font-fredoka",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -38,7 +38,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${archivo.variable} ${nunito.variable} ${dmSans.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${fredoka.variable} ${dmSans.variable}`}>
       <body className="min-h-dvh flex flex-col">{children}</body>
     </html>
   );

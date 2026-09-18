@@ -109,14 +109,14 @@ export function SoftEvents({
             type="search"
           />
         </div>
-        <button type="button" className="soft-btn soft-btn-ghost" onClick={() => setCalOpen((v) => !v)} aria-expanded={calOpen}>
+        <button type="button" className="soft-btn soft-btn-tonal" onClick={() => setCalOpen((v) => !v)} aria-expanded={calOpen}>
           <CalendarIcon />
           {day ? formatLongDate(day) : "Any date"}
         </button>
         {filtersOn ? (
           <button
             type="button"
-            className="soft-btn soft-btn-ghost"
+            className="soft-btn soft-btn-tonal"
             onClick={() => {
               setQuery("");
               setDay(null);
@@ -140,7 +140,7 @@ export function SoftEvents({
             <div className="mb-3 flex items-center justify-between">
               <button
                 type="button"
-                className="soft-btn soft-btn-ghost h-11 w-11 !min-h-0 !p-0"
+                className="soft-btn soft-btn-tonal h-11 w-11 !min-h-0 !p-0"
                 onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
                 aria-label="Previous month"
               >
@@ -149,7 +149,7 @@ export function SoftEvents({
               <span className="soft-display text-[17px]">{month.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</span>
               <button
                 type="button"
-                className="soft-btn soft-btn-ghost h-11 w-11 !min-h-0 !p-0"
+                className="soft-btn soft-btn-tonal h-11 w-11 !min-h-0 !p-0"
                 onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
                 aria-label="Next month"
               >

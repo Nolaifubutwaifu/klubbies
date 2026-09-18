@@ -54,7 +54,7 @@ export async function SoftHeader({ ctx }: { ctx: ClubContext }) {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <Link href={`/c/${club.handle}`} className="soft-btn soft-btn-ghost !min-h-[38px] !px-3 !text-[13px] no-underline">
+          <Link href={`/c/${club.handle}`} className="soft-btn soft-btn-tonal !min-h-[38px] !px-3 !text-[13px] no-underline">
             Old design
             <ArrowRightIcon size={15} />
           </Link>
@@ -66,7 +66,7 @@ export async function SoftHeader({ ctx }: { ctx: ClubContext }) {
             {initials(displayName) || "?"}
           </Link>
           {perms.manage_club ? (
-            <Link href={`/admin/${club.handle}`} className="soft-btn soft-btn-ghost !min-h-[38px] !px-3 !text-[13px] no-underline">
+            <Link href={`/admin/${club.handle}`} className="soft-btn soft-btn-tonal !min-h-[38px] !px-3 !text-[13px] no-underline">
               Admin
             </Link>
           ) : null}
