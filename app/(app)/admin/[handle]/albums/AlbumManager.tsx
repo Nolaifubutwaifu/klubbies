@@ -21,24 +21,61 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/** The conventional six-dot drag grip. */
+function GripIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <circle cx="9" cy="5" r="1.7" />
+      <circle cx="15" cy="5" r="1.7" />
+      <circle cx="9" cy="12" r="1.7" />
+      <circle cx="15" cy="12" r="1.7" />
+      <circle cx="9" cy="19" r="1.7" />
+      <circle cx="15" cy="19" r="1.7" />
+    </svg>
+  );
+}
+
+/**
+ * Album state, at a glance. "Live" is deliberately the odd one out — a green
+ * pill with a lit dot, so the thing members can actually see doesn't look like
+ * every other chip on the page.
+ */
 function StatusChip({ album }: { album: StackedAlbum }) {
-  if (album.status === "hidden") return <span className="soft-chip soft-chip-muted">Hidden</span>;
-  if (album.status === "published") return <span className="soft-chip">Live</span>;
-  if (album.publishAt) return <span className="soft-chip">Scheduled</span>;
-  return <span className="soft-chip soft-chip-muted">Draft</span>;
+  if (album.status === "published") {
+    return (
+      <span className="inline-flex flex-none items-center gap-1.5 rounded-full bg-[#eaf5ea] px-3 py-1 text-[12px] font-bold text-[#245c2b]">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full rounded-full bg-[#2f6b36] opacity-60 motion-safe:animate-ping" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2f6b36]" />
+        </span>
+        Live
+      </span>
+    );
+  }
+  if (album.status === "hidden") return <span className="soft-chip soft-chip-muted flex-none">Hidden</span>;
+  if (album.publishAt) return <span className="soft-chip flex-none">Scheduled</span>;
+  return <span className="soft-chip soft-chip-muted flex-none">Draft</span>;
 }
 
 /**
  * The committee's control panel for one club's albums: order, state, and when
- * a draft goes live. Reordering sends the whole list, so two committee members
- * moving things at once can't interleave into a broken order.
+ * a draft goes live.
+ *
+ * Reordering is drag and drop from the grip. Native HTML5 drag isn't reachable
+ * from a keyboard, so the grip is also a real button that takes arrow keys —
+ * same gesture, no visible arrow buttons cluttering every row.
+ *
+ * A move sends the whole list, so it stays idempotent and two committee
+ * members dragging at once can't interleave into a broken order.
  */
 export function AlbumManager({ clubId, handle, albums }: { clubId: string; handle: string; albums: StackedAlbum[] }) {
   const router = useRouter();
-  // Only the *order* is held locally, so a drag feels instant. Everything else
-  // reads from props: holding the albums themselves in state meant a refresh
-  // after hiding or publishing left the row showing its old status.
+  // Only the order is held locally, so a drag feels instant. Everything else
+  // reads from props: holding the albums in state meant a refresh after hiding
+  // left the row showing its old status.
   const [localOrder, setLocalOrder] = useState<string[] | null>(null);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState<string | null>(null);
   const [when, setWhen] = useState("");
   const [message, setMessage] = useState("");
@@ -49,11 +86,7 @@ export function AlbumManager({ clubId, handle, albums }: { clubId: string; handl
     .map((id) => byId.get(id))
     .filter((a): a is StackedAlbum => a !== undefined);
 
-  const move = (index: number, delta: number) => {
-    const ids = order.map((a) => a.id);
-    const target = index + delta;
-    if (target < 0 || target >= ids.length) return;
-    [ids[index], ids[target]] = [ids[target], ids[index]];
+  const save = (ids: string[]) => {
     setLocalOrder(ids);
     startTransition(async () => {
       const res = await setAlbumOrderAction(clubId, ids);
@@ -64,6 +97,26 @@ export function AlbumManager({ clubId, handle, albums }: { clubId: string; handl
         router.refresh();
       }
     });
+  };
+
+  /** Lifts `fromId` out and drops it where `toId` currently sits. */
+  const moveTo = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const ids = order.map((a) => a.id);
+    const from = ids.indexOf(fromId);
+    const to = ids.indexOf(toId);
+    if (from < 0 || to < 0) return;
+    ids.splice(to, 0, ids.splice(from, 1)[0]);
+    save(ids);
+  };
+
+  const nudge = (id: string, delta: number) => {
+    const ids = order.map((a) => a.id);
+    const from = ids.indexOf(id);
+    const to = from + delta;
+    if (from < 0 || to < 0 || to >= ids.length) return;
+    [ids[from], ids[to]] = [ids[to], ids[from]];
+    save(ids);
   };
 
   const run = (fn: () => Promise<{ ok?: boolean; error?: string; message?: string }>) =>
@@ -83,136 +136,168 @@ export function AlbumManager({ clubId, handle, albums }: { clubId: string; handl
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="soft-display text-[19px]">Manage albums</h2>
         <span className="text-[13px] text-[color:var(--ink-70)]">
-          Order is what members see first. Hiding keeps the files.
+          Drag to reorder — the top one is what members see first. Hiding keeps the files.
         </span>
         {message ? <span className="soft-chip ml-auto">{message}</span> : null}
       </div>
 
       <ol className="m-0 flex list-none flex-col gap-2.5 p-0">
-        {order.map((album, index) => (
-          <li
-            key={album.id}
-            className="flex flex-wrap items-center gap-3 rounded-[16px] border border-[color-mix(in_srgb,var(--color-text)_7%,transparent)] bg-[color:var(--color-bg)] p-3"
-          >
-            <span className="flex flex-none flex-col gap-0.5">
+        {order.map((album, index) => {
+          const dragging = dragId === album.id;
+          const isTarget = overId === album.id && !dragging;
+          return (
+            <li
+              key={album.id}
+              onDragOver={(e) => {
+                // Only claim the drop if this is one of our rows being moved.
+                if (!e.dataTransfer.types.includes("text/plain")) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setOverId(album.id);
+              }}
+              onDragLeave={() => setOverId((current) => (current === album.id ? null : current))}
+              onDrop={(e) => {
+                e.preventDefault();
+                // The id travels on the drag itself rather than in state: that
+                // is what dataTransfer is for, and state set during dragstart
+                // isn't readable in the same tick.
+                const moving = e.dataTransfer.getData("text/plain") || dragId;
+                if (moving) moveTo(moving, album.id);
+                setDragId(null);
+                setOverId(null);
+              }}
+              className={`flex flex-wrap items-center gap-3 rounded-[16px] border bg-[color:var(--color-bg)] p-3 transition-[border-color,opacity,transform] ${
+                isTarget
+                  ? "border-accent shadow-[var(--soft-shadow)]"
+                  : "border-[color-mix(in_srgb,var(--color-text)_7%,transparent)]"
+              } ${dragging ? "opacity-45" : ""}`}
+            >
               <button
                 type="button"
-                onClick={() => move(index, -1)}
-                disabled={pending || index === 0}
-                aria-label={`Move ${album.title} up`}
-                className="flex h-6 w-8 items-center justify-center rounded-t-[8px] border-0 bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] disabled:opacity-35"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
-                  <path d="M6 15l6-6 6 6" />
-                </svg>
-              </button>
-              <button
-                type="button"
-                onClick={() => move(index, 1)}
-                disabled={pending || index === order.length - 1}
-                aria-label={`Move ${album.title} down`}
-                className="flex h-6 w-8 items-center justify-center rounded-b-[8px] border-0 bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] disabled:opacity-35"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
-            </span>
-
-            <span className="h-[56px] w-[84px] flex-none overflow-hidden rounded-[12px] bg-[color:var(--tone-support)]">
-              {album.coverUrl ? <img src={album.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" /> : null}
-            </span>
-
-            <span className="min-w-[180px] flex-1">
-              <Link href={`/c/${handle}/a/${album.id}`} className="soft-display block text-[17px] text-ink no-underline">
-                {album.title}
-              </Link>
-              <span className="block text-[12px] text-[color:var(--ink-70)]">
-                {[
-                  album.date ? formatDate(album.date) : null,
-                  album.photoCount ? `${album.photoCount.toLocaleString("en-AU")} photos` : null,
-                  album.videoCount ? `${album.videoCount.toLocaleString("en-AU")} videos` : null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </span>
-              {album.publishAt ? (
-                <span className="block text-[12px] text-accent-700">Goes live {formatLongDate(album.publishAt)}</span>
-              ) : null}
-            </span>
-
-            <StatusChip album={album} />
-
-            <span className="flex flex-wrap items-center gap-2">
-              {album.status === "draft" ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => run(() => setAlbumPublishedAction(album.id, true))}
-                  className="soft-btn soft-btn-primary !min-h-[40px] !px-4 !text-[13px]"
-                >
-                  Publish
-                </button>
-              ) : null}
-              {album.status === "draft" ? (
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => {
-                    setScheduling(scheduling === album.id ? null : album.id);
-                    setWhen(toLocalInput(album.publishAt));
-                  }}
-                  className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
-                >
-                  {album.publishAt ? "Reschedule" : "Schedule"}
-                </button>
-              ) : null}
-              <button
-                type="button"
+                draggable
+                onDragStart={(e) => {
+                  setDragId(album.id);
+                  e.dataTransfer.effectAllowed = "move";
+                  // Firefox needs data set or the drag never starts.
+                  e.dataTransfer.setData("text/plain", album.id);
+                }}
+                onDragEnd={() => {
+                  setDragId(null);
+                  setOverId(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    nudge(album.id, -1);
+                  }
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    nudge(album.id, 1);
+                  }
+                }}
                 disabled={pending}
-                onClick={() => run(() => setAlbumHiddenAction(album.id, album.status !== "hidden"))}
-                className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
+                aria-label={`Reorder ${album.title}. Position ${index + 1} of ${order.length}. Drag, or press the up and down arrow keys.`}
+                title="Drag to reorder"
+                className="flex h-11 w-8 flex-none cursor-grab items-center justify-center rounded-[10px] border-0 bg-transparent text-[color:var(--ink-35)] transition-colors hover:bg-[color-mix(in_srgb,var(--color-text)_6%,transparent)] hover:text-[color:var(--ink-70)] active:cursor-grabbing disabled:cursor-default"
               >
-                {album.status === "hidden" ? "Unhide" : "Hide"}
+                <GripIcon />
               </button>
-            </span>
 
-            {scheduling === album.id ? (
-              <span className="flex w-full flex-wrap items-end gap-2 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-3">
-                <label className="flex flex-col gap-1 text-[12px] font-bold text-[color:var(--ink-70)]">
-                  Go live at
-                  <input
-                    type="datetime-local"
-                    value={when}
-                    onChange={(e) => setWhen(e.target.value)}
-                    className="soft-input !min-h-[42px] !w-auto !px-3 !text-[13px]"
-                  />
-                </label>
-                <button
-                  type="button"
-                  disabled={pending || !when}
-                  onClick={() => run(() => scheduleAlbumAction(album.id, when))}
-                  className="soft-btn soft-btn-primary !min-h-[42px] !px-4 !text-[13px]"
-                >
-                  Save schedule
-                </button>
+              <span className="h-[56px] w-[84px] flex-none overflow-hidden rounded-[12px] bg-[color:var(--tone-support)]">
+                {album.coverUrl ? <img src={album.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" /> : null}
+              </span>
+
+              <span className="min-w-[180px] flex-1">
+                <Link href={`/c/${handle}/a/${album.id}`} className="soft-display block text-[17px] text-ink no-underline">
+                  {album.title}
+                </Link>
+                <span className="block text-[12px] text-[color:var(--ink-70)]">
+                  {[
+                    album.date ? formatDate(album.date) : null,
+                    album.photoCount ? `${album.photoCount.toLocaleString("en-AU")} photos` : null,
+                    album.videoCount ? `${album.videoCount.toLocaleString("en-AU")} videos` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </span>
                 {album.publishAt ? (
+                  <span className="block text-[12px] text-accent-700">Goes live {formatLongDate(album.publishAt)}</span>
+                ) : null}
+              </span>
+
+              <StatusChip album={album} />
+
+              <span className="flex flex-wrap items-center gap-2">
+                {album.status === "draft" ? (
                   <button
                     type="button"
                     disabled={pending}
-                    onClick={() => run(() => scheduleAlbumAction(album.id, null))}
-                    className="soft-btn soft-btn-tonal !min-h-[42px] !px-4 !text-[13px]"
+                    onClick={() => run(() => setAlbumPublishedAction(album.id, true))}
+                    className="soft-btn soft-btn-primary !min-h-[40px] !px-4 !text-[13px]"
                   >
-                    Clear
+                    Publish
                   </button>
                 ) : null}
-                <span className="text-[12px] text-[color:var(--ink-55)]">
-                  Publishing runs hourly, so it goes live on the hour after this time.
-                </span>
+                {album.status === "draft" ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => {
+                      setScheduling(scheduling === album.id ? null : album.id);
+                      setWhen(toLocalInput(album.publishAt));
+                    }}
+                    className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
+                  >
+                    {album.publishAt ? "Reschedule" : "Schedule"}
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => run(() => setAlbumHiddenAction(album.id, album.status !== "hidden"))}
+                  className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
+                >
+                  {album.status === "hidden" ? "Unhide" : "Hide"}
+                </button>
               </span>
-            ) : null}
-          </li>
-        ))}
+
+              {scheduling === album.id ? (
+                <span className="flex w-full flex-wrap items-end gap-2 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-3">
+                  <label className="flex flex-col gap-1 text-[12px] font-bold text-[color:var(--ink-70)]">
+                    Go live at
+                    <input
+                      type="datetime-local"
+                      value={when}
+                      onChange={(e) => setWhen(e.target.value)}
+                      className="soft-input !min-h-[42px] !w-auto !px-3 !text-[13px]"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={pending || !when}
+                    onClick={() => run(() => scheduleAlbumAction(album.id, when))}
+                    className="soft-btn soft-btn-primary !min-h-[42px] !px-4 !text-[13px]"
+                  >
+                    Save schedule
+                  </button>
+                  {album.publishAt ? (
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => run(() => scheduleAlbumAction(album.id, null))}
+                      className="soft-btn soft-btn-tonal !min-h-[42px] !px-4 !text-[13px]"
+                    >
+                      Clear
+                    </button>
+                  ) : null}
+                  <span className="text-[12px] text-[color:var(--ink-55)]">
+                    Publishing runs hourly, so it goes live on the hour after this time.
+                  </span>
+                </span>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );
