@@ -561,8 +561,148 @@ export async function setMemberRoleAction(clubId: string, membershipIds: string[
   if (!role) return { error: "Role not found" };
   if (role.manage_club && !ctx.perms.manage_club) return { error: "Only an admin can hand out admin roles" };
 
+  // Moving people off an admin role can orphan the club: nobody left who can
+  // add members, publish, or reach billing. The removal path already checks
+  // this; a role change has to as well.
+  if (!role.manage_club) {
+    const { data: targets } = await supabase
+      .from("memberships")
+      .select("id")
+      .eq("club_id", clubId)
+      .eq("role", "club_admin")
+      .eq("status", "active")
+      .in("id", ids.data);
+    const losing = targets?.length ?? 0;
+    if (losing > 0) {
+      const { count } = await supabase
+        .from("memberships")
+        .select("id", { count: "exact", head: true })
+        .eq("club_id", clubId)
+        .eq("role", "club_admin")
+        .eq("status", "active");
+      if ((count ?? 0) - losing < 1) return { error: "A club needs at least one admin" };
+    }
+  }
+
   const { error } = await supabase.from("memberships").update({ role_id: roleId }).eq("club_id", clubId).in("id", ids.data);
   if (error) return { error: "Could not change the role" };
   revalidatePath(`/admin/${ctx.club.handle}/members`);
   return { ok: true, message: `${ids.data.length} moved to ${role.name}` };
+}
+
+/** Hides an album from members, or puts it back. No files are touched. */
+export async function setAlbumHiddenAction(albumId: string, hidden: boolean): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: album } = await supabase.from("albums").select("id, club_id, status, published_at").eq("id", albumId).maybeSingle();
+  if (!album) return { error: "Album not found" };
+  const ctx = await permContext(album.club_id, "manage_albums");
+
+  // Unhiding returns it to whatever it was: published if it ever went live,
+  // otherwise back to draft.
+  const next = hidden ? "hidden" : album.published_at ? "published" : "draft";
+  const { error } = await supabase.from("albums").update({ status: next }).eq("id", albumId);
+  if (error) return { error: "Could not update the album" };
+
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  revalidatePath(`/c/${ctx.club.handle}`, "layout");
+  return { ok: true, message: hidden ? "Hidden from members" : "Back in the club" };
+}
+
+/**
+ * Queues a draft to publish itself. The hourly cron does the publishing, so a
+ * time in the past goes live on the next pass rather than immediately.
+ */
+export async function scheduleAlbumAction(albumId: string, publishAt: string | null): Promise<ActionState> {
+  const supabase = await createClient();
+  const { data: album } = await supabase.from("albums").select("id, club_id, status").eq("id", albumId).maybeSingle();
+  if (!album) return { error: "Album not found" };
+  const ctx = await permContext(album.club_id, "manage_albums");
+  if (album.status !== "draft") return { error: "Only a draft can be scheduled" };
+
+  let when: string | null = null;
+  if (publishAt) {
+    const parsed = new Date(publishAt);
+    if (Number.isNaN(parsed.getTime())) return { error: "That date didn't make sense" };
+    when = parsed.toISOString();
+  }
+
+  const { error } = await supabase.from("albums").update({ publish_at: when }).eq("id", albumId);
+  if (error) return { error: "Could not set the schedule" };
+
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  return {
+    ok: true,
+    message: when ? "Scheduled. It goes live on the hour after that time." : "Schedule cleared",
+  };
+}
+
+/**
+ * Writes an explicit order for a club's albums. The caller sends the full list
+ * in the order it wants, so a move is idempotent and can't interleave with
+ * another committee member's.
+ */
+export async function setAlbumOrderAction(clubId: string, orderedIds: string[]): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_albums");
+  const ids = z.array(z.uuid()).min(1).max(200).safeParse(orderedIds);
+  if (!ids.success) return { error: "Nothing to reorder" };
+
+  const supabase = await createClient();
+  const { data: owned } = await supabase.from("albums").select("id").eq("club_id", clubId).in("id", ids.data);
+  const ownedIds = new Set((owned ?? []).map((a) => a.id));
+  if (ownedIds.size !== ids.data.length) return { error: "Those albums aren't all in this club" };
+
+  // Descending, so first in the list sorts highest and new albums (0) fall to
+  // the bottom of the explicit ones.
+  const total = ids.data.length;
+  const results = await Promise.all(
+    ids.data.map((id, index) => supabase.from("albums").update({ sort_order: total - index }).eq("id", id)),
+  );
+  if (results.some((r) => r.error)) return { error: "Could not save the new order" };
+
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  revalidatePath(`/c/${ctx.club.handle}`, "layout");
+  return { ok: true, message: "Order saved" };
+}
+
+/**
+ * Hands the club to another member: they get an admin role, and the club's
+ * created_by follows so the record of who runs it stays true. The outgoing
+ * owner keeps their own role — stepping down is a separate, deliberate act.
+ */
+export async function transferOwnershipAction(clubId: string, membershipId: string): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_club");
+  if (!z.uuid().safeParse(membershipId).success) return { error: "Pick who takes over" };
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("memberships")
+    .select("id, user_id, roster_name, claimed_name, status")
+    .eq("id", membershipId)
+    .eq("club_id", clubId)
+    .maybeSingle();
+  if (!target) return { error: "That member isn't in this club" };
+  if (target.status !== "active") return { error: "They need to have signed in first" };
+  if (!target.user_id) return { error: "They need to have signed in first" };
+
+  const { data: adminRole } = await supabase
+    .from("club_roles")
+    .select("id")
+    .eq("club_id", clubId)
+    .eq("manage_club", true)
+    .order("sort_order")
+    .limit(1)
+    .maybeSingle();
+  if (!adminRole) return { error: "This club has no admin role to hand over" };
+
+  const { error: roleError } = await supabase
+    .from("memberships")
+    .update({ role_id: adminRole.id })
+    .eq("id", membershipId);
+  if (roleError) return { error: "Could not give them the admin role" };
+
+  const { error: clubError } = await supabase.from("clubs").update({ created_by: target.user_id }).eq("id", clubId);
+  if (clubError) return { error: "Handed over the role, but could not update the club record" };
+
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  return { ok: true, message: `${target.claimed_name ?? target.roster_name} now runs ${ctx.club.name}` };
 }
