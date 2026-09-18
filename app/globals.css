@@ -1298,9 +1298,20 @@
     overflow: hidden;
     pointer-events: none;
   }
-  /* Softer dot grid for white sections, where the page dots would shout. */
+  /* Softer dot grid for white sections, where the page dots would shout —
+     but not so soft it vanishes. */
   .soft-fx .soft-dots-faint {
-    opacity: 0.12;
+    opacity: 0.2;
+  }
+
+  /* The page grain uses soft-light, which over a white surface does almost
+     nothing: a grey noise and a white ground cancel out. Inside a section
+     layer it multiplies instead, so the flat areas actually get some tooth.
+     Only cream and white sections carry .soft-fx — the tinted photo bands use
+     .soft-photoband — so this never muddies a dark band. */
+  .soft-fx .soft-grain {
+    opacity: 0.22;
+    mix-blend-mode: multiply;
   }
 
   /* Section-scale blobs: fixed px, unlike the page blobs' viewport units. */

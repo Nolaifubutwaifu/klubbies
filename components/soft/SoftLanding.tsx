@@ -6,6 +6,7 @@ import { AudienceTabs } from "@/components/soft/landing/AudienceTabs";
 import { Comparison } from "@/components/soft/landing/Comparison";
 import { Handover } from "@/components/soft/landing/Handover";
 import { HowItWorks } from "@/components/soft/landing/HowItWorks";
+import { Pricing } from "@/components/soft/landing/Pricing";
 import { PrivacyPromise } from "@/components/soft/landing/PrivacyPromise";
 import { ProblemStrip } from "@/components/soft/landing/ProblemStrip";
 import { YearInTheLife } from "@/components/soft/landing/YearInTheLife";
@@ -202,43 +203,7 @@ export function SoftLanding() {
 
         <PrivacyPromise />
 
-        {/* Pricing */}
-        <section className="soft-fx-host">
-          <SectionFx blobs={["left"]} dots="full" />
-          <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 sm:px-6">
-          <Reveal>
-            <div className="soft-card flex flex-wrap items-center gap-8 p-8 sm:p-10">
-              <div className="min-w-[240px] flex-1">
-                <span className="soft-chip">One price</span>
-                <h2 className="mt-4 text-[clamp(28px,4vw,40px)]">
-                  A$20 a month, <span className="soft-word">per club</span>.
-                </h2>
-                <p className="mt-3 max-w-[44ch] text-[16px] leading-[1.5] text-[color:var(--ink-70)]">
-                  Every member, every album, every event of the year. The committee pays once and hands it over to next
-                  year&rsquo;s committee with the photos still in it.
-                </p>
-              </div>
-              <ul className="m-0 min-w-[240px] flex-1 list-none space-y-2 p-0 text-[15px]">
-                {["Unlimited members", "Unlimited albums", "Photos and video at full quality", "Roster import from CSV", "Cancel any time"].map(
-                  (line) => (
-                    <li key={line} className="flex items-center gap-2">
-                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-accent)_16%,transparent)] text-[12px] font-bold text-accent-700">
-                        ✓
-                      </span>
-                      {line}
-                    </li>
-                  ),
-                )}
-                <li className="pt-3">
-                  <Link href="/start" className="soft-btn soft-btn-primary no-underline">
-                    Start your club
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </Reveal>
-          </div>
-        </section>
+        <Pricing />
 
         {/* Quotes: placeholders until real committees give them. */}
         <section className="soft-fx-host">
