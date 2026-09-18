@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarIcon, CameraIcon, ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from "@/components/soft/icons";
+import { ConfettiArt, PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
 import { formatDate, formatLongDate } from "@/lib/format";
 import type { StackedAlbum } from "@/lib/media/album-list";
 
@@ -79,7 +80,8 @@ export function SoftEvents({
         <div>
           <span className="soft-chip">{clubName}</span>
           <h1 className="mt-3 text-[clamp(34px,5vw,50px)]">Events</h1>
-          <p className="mt-1 text-[15px] text-neutral-700">
+          <SquiggleUnderline />
+          <p className="mt-2 text-[15px] text-neutral-700">
             {albums.length
               ? `${albums.length} album${albums.length === 1 ? "" : "s"} · ${totals.toLocaleString("en-AU")} photos and videos`
               : "Everything the committee shares lands here."}
@@ -217,6 +219,9 @@ export function SoftEvents({
 
       {filtered.length === 0 ? (
         <div className="soft-card mt-6 flex flex-col items-start gap-3 p-8">
+          <span className="text-accent-400">
+            <ConfettiArt />
+          </span>
           <span className="soft-chip">
             <CameraIcon />
             {albums.length ? "No matches" : "Nothing yet"}
@@ -248,6 +253,7 @@ export function SoftEvents({
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
                 <img src={hero.coverUrl ?? ""} alt="" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[rgba(25,18,22,0.82)] via-[rgba(25,18,22,0.15)] to-transparent" />
+                <span className="soft-sticker absolute right-4 top-4 sm:right-6 sm:top-6">Latest album</span>
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 sm:p-7">
                   <span className="soft-chip bg-white/90 text-[--color-accent-700]">{formatDate(hero.date)}</span>
                   <span className="soft-display text-[clamp(26px,4.5vw,44px)] text-white">{hero.title}</span>
@@ -276,10 +282,12 @@ export function SoftEvents({
               <Link key={album.id} href={`${hrefBase}/${album.id}`} className="soft-card flex flex-col gap-3 p-4 no-underline">
                 {album.tiles.length === 0 ? (
                   <div
-                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-[var(--soft-r-sm)] text-[14px] text-neutral-600"
+                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-[var(--soft-r-sm)] text-[14px] text-neutral-600"
                     style={{ background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
                   >
-                    <CameraIcon size={22} />
+                    <span className="text-accent-400">
+                      <PhotoStackArt size={104} />
+                    </span>
                     Nothing uploaded yet
                   </div>
                 ) : (

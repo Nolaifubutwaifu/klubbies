@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 import { SoftEvents } from "@/components/soft/SoftEvents";
 import { SoftHeader } from "@/components/soft/SoftHeader";
 import { getClubContext } from "@/lib/auth/session";
@@ -22,9 +23,12 @@ export default async function SoftPreviewPage({ params }: { params: Promise<{ ha
   const albums = await listStackedAlbums(supabase, ctx.club.id, { includeDrafts: ctx.perms.manage_albums });
 
   return (
-    <div className="theme-soft flex flex-1 flex-col" style={accentStyle(ctx.club.accent_colour)}>
-      <SoftHeader ctx={ctx} />
-      <main className="flex flex-1 flex-col">
+    <div className="theme-soft relative flex flex-1 flex-col" style={accentStyle(ctx.club.accent_colour)}>
+      <SoftBackdrop />
+      <div className="relative z-10">
+        <SoftHeader ctx={ctx} />
+      </div>
+      <main className="relative z-10 flex flex-1 flex-col">
         <SoftEvents
           albums={albums}
           hrefBase={`/c/${handle}/a`}

@@ -698,3 +698,134 @@
     }
   }
 }
+
+/* Soft theme decoration: blobs, dot grid, grain, hand-drawn accents. */
+@layer components {
+  .soft-backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .soft-blob {
+    position: absolute;
+    display: block;
+    filter: blur(60px);
+    opacity: 0.5;
+    will-change: transform;
+  }
+  .soft-blob-a {
+    top: -14%;
+    left: -8%;
+    width: 46vw;
+    height: 46vw;
+    max-width: 620px;
+    max-height: 620px;
+    background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 70%);
+    border-radius: 58% 42% 47% 53% / 52% 45% 55% 48%;
+    animation: soft-drift-a 34s ease-in-out infinite;
+  }
+  .soft-blob-b {
+    top: 6%;
+    right: -12%;
+    width: 40vw;
+    height: 40vw;
+    max-width: 540px;
+    max-height: 540px;
+    background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--color-accent-2) 48%, transparent), transparent 72%);
+    border-radius: 44% 56% 58% 42% / 48% 52% 44% 56%;
+    animation: soft-drift-b 42s ease-in-out infinite;
+  }
+  .soft-blob-c {
+    bottom: 2%;
+    left: 22%;
+    width: 52vw;
+    height: 38vw;
+    max-width: 700px;
+    max-height: 480px;
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-accent-300) 60%, transparent), transparent 72%);
+    border-radius: 52% 48% 40% 60% / 56% 44% 56% 44%;
+    animation: soft-drift-c 50s ease-in-out infinite;
+    opacity: 0.4;
+  }
+
+  /* Dot grid, faded out towards the bottom so it never fights the cards. */
+  .soft-dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(color-mix(in srgb, var(--color-text) 22%, transparent) 1.2px, transparent 1.2px);
+    background-size: 22px 22px;
+    opacity: 0.22;
+    mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 85%);
+  }
+
+  /* Fine paper grain: keeps the large flat areas from looking like flat CSS. */
+  .soft-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  }
+
+  @keyframes soft-drift-a {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(3%, 4%, 0) scale(1.08);
+    }
+  }
+  @keyframes soft-drift-b {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1.04);
+    }
+    50% {
+      transform: translate3d(-4%, 3%, 0) scale(1);
+    }
+  }
+  @keyframes soft-drift-c {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(4%, -3%, 0) scale(1.06);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .soft-blob {
+      animation: none !important;
+    }
+  }
+
+  /* Hand-drawn underline that sits under a heading. */
+  .soft-squiggle {
+    display: block;
+    width: clamp(120px, 22vw, 190px);
+    height: 12px;
+    margin-top: 2px;
+    color: var(--color-accent);
+  }
+
+  /* Sticker: a small rotated label pinned to a card corner. */
+  .soft-sticker {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
+    transform: rotate(-3deg);
+  }
+}
