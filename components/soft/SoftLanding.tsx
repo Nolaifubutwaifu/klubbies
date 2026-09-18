@@ -91,7 +91,7 @@ const FAQS = [
 export function SoftLanding() {
   return (
     <div className="theme-soft relative flex flex-1 flex-col">
-      <SoftBackdrop photos />
+      <SoftBackdrop />
 
       <div className="relative z-10">
         <div className="mx-auto w-full max-w-[1100px] px-4 pt-5 sm:px-6">
