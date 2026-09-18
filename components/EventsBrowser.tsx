@@ -271,8 +271,14 @@ export function EventsBrowser({
               </div>
               <div className="flex gap-[2px]">
                 {album.tiles.length === 0 ? (
-                  <div className="panel flex aspect-[3/1] w-full items-center justify-center text-[13px] text-neutral-600">
-                    Nothing uploaded yet
+                  /* Kept small on purpose: an empty album shouldn't outweigh a full one. */
+                  <div className="flex w-full items-center gap-3 self-start border-2 border-dashed border-neutral-400 p-4 text-[13px] text-neutral-600">
+                    <span className="flex-1">Nothing uploaded yet</span>
+                    {canManage ? (
+                      <Link href={`${hrefBase}/${album.id}?add=1`} className="btn btn-secondary text-[13px]">
+                        Add photos
+                      </Link>
+                    ) : null}
                   </div>
                 ) : (
                   album.tiles.map((tile, tileIndex) => (

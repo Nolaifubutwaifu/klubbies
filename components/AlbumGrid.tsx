@@ -137,7 +137,7 @@ export function AlbumGrid({
         </div>
       ) : null}
 
-      <div className="grid gap-[2px] p-[2px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+      <div className="grid gap-[2px] px-6 pb-6 pt-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
         {items.map((item) =>
           selecting ? (
             <button

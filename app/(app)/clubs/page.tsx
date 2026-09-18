@@ -53,12 +53,12 @@ export default async function ClubsPage() {
               : `Ask your committee to add ${profile?.email ?? "your email"} to their member list, or start your own club.`}
           </EmptyState>
         ) : (
-          <div className="grid gap-[2px] border-2 border-divider bg-divider" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+          <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
             {clubs.map((club) => (
               <Link
                 key={club.membershipId}
                 href={`/c/${club.handle}`}
-                className="flex flex-col gap-2 bg-bg p-6 text-ink no-underline hover:bg-neutral-200"
+                className="flex flex-col gap-2 border-2 border-divider bg-bg p-6 text-ink no-underline transition-colors hover:border-accent hover:bg-neutral-200"
               >
                 <span className="kicker">{club.organisation ?? "Club"}</span>
                 <span className="font-heading text-[24px] font-black tracking-[-0.02em]">{club.name}</span>

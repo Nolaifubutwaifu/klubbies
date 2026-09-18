@@ -58,10 +58,13 @@ export function accentStyle(hex: string | null | undefined): Record<string, stri
     "--color-accent": toHex(rgb),
     "--color-accent-100": mix(rgb, white, 0.92),
     "--color-accent-200": mix(rgb, white, 0.84),
+    "--color-accent-300": mix(rgb, white, 0.66),
     "--color-accent-400": mix(rgb, white, 0.45),
+    "--color-accent-500": mix(rgb, white, 0.12),
     "--color-accent-600": mix(rgb, black, 0.18),
     "--color-accent-700": mix(rgb, black, 0.34),
     "--color-accent-800": mix(rgb, black, 0.52),
+    "--color-accent-900": mix(rgb, black, 0.68),
   } as Record<string, string>;
 }
 

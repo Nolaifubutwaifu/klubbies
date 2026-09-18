@@ -124,6 +124,22 @@
     padding: var(--space-2) calc(var(--space-3) * 1.2);
     border-radius: 0;
     white-space: nowrap;
+    min-height: 40px;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+  /* Touch devices get the full 44px target; desktop keeps its density. */
+  @media (pointer: coarse) {
+    .btn {
+      min-height: 44px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition: none;
+    }
   }
   .btn:disabled,
   .btn[aria-disabled="true"] {
@@ -510,5 +526,175 @@
   .masonry > * {
     break-inside: avoid;
     margin-bottom: 2px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Soft theme (prototype, scoped to .theme-soft)
+   A bubbly alternative to the modernist system: warm cream ground, rounded
+   cards, soft double shadows, pill controls. Tokens are redeclared on the
+   wrapper so Tailwind utilities inside it pick them up, and the per-club
+   accent still drives every highlight.
+   --------------------------------------------------------------------------- */
+.theme-soft {
+  --color-bg: #fff8f4;
+  --color-surface: #ffffff;
+  --color-text: #2b2228;
+  --color-divider: color-mix(in srgb, #2b2228 10%, transparent);
+  --color-neutral-600: #7a6e74;
+  --color-neutral-700: #5f545a;
+  --soft-r-lg: 28px;
+  --soft-r: 22px;
+  --soft-r-sm: 16px;
+  --soft-shadow: 0 1px 2px color-mix(in srgb, #2b2228 5%, transparent), 0 10px 24px -8px color-mix(in srgb, #2b2228 18%, transparent);
+  --soft-shadow-lift: 0 2px 4px color-mix(in srgb, #2b2228 6%, transparent), 0 18px 36px -10px color-mix(in srgb, #2b2228 26%, transparent);
+  --soft-ease: 200ms cubic-bezier(0.22, 0.68, 0.32, 1);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background:
+    radial-gradient(60% 45% at 8% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 100% 12%, color-mix(in srgb, var(--color-accent-2) 12%, transparent), transparent 70%),
+    var(--color-bg);
+  color: var(--color-text);
+}
+
+@layer components {
+  .theme-soft h1,
+  .theme-soft h2,
+  .theme-soft h3,
+  .theme-soft .soft-display {
+    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  .soft-card {
+    background: var(--color-surface);
+    border-radius: var(--soft-r);
+    box-shadow: var(--soft-shadow);
+    border: 1px solid color-mix(in srgb, #2b2228 6%, transparent);
+  }
+  a.soft-card,
+  button.soft-card {
+    transition:
+      transform var(--soft-ease),
+      box-shadow var(--soft-ease);
+  }
+  a.soft-card:hover,
+  button.soft-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--soft-shadow-lift);
+  }
+
+  .soft-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 999px;
+    font-family: var(--font-nunito), system-ui, sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    line-height: 1.2;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      transform var(--soft-ease),
+      box-shadow var(--soft-ease),
+      background-color var(--soft-ease);
+  }
+  .soft-btn:active {
+    transform: scale(0.97);
+  }
+  .soft-btn-primary {
+    color: #fff;
+    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
+    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  }
+  .soft-btn-primary:hover {
+    box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
+  }
+  .soft-btn-ghost {
+    color: var(--color-text);
+    background: var(--color-surface);
+    box-shadow: var(--soft-shadow);
+  }
+  .soft-btn-ghost:hover {
+    background: color-mix(in srgb, var(--color-accent) 7%, var(--color-surface));
+  }
+
+  .soft-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+    color: var(--color-accent-700);
+  }
+  .soft-chip-muted {
+    background: color-mix(in srgb, #2b2228 6%, transparent);
+    color: var(--color-neutral-700);
+  }
+
+  .soft-input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 16px;
+    font: inherit;
+    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: var(--soft-shadow);
+  }
+  .soft-input::placeholder {
+    color: var(--color-neutral-600);
+  }
+  .soft-input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .soft-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--soft-r-sm);
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  }
+  .soft-tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 400ms cubic-bezier(0.22, 0.68, 0.32, 1);
+  }
+  .soft-tile:hover img {
+    transform: scale(1.05);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-soft *,
+    .theme-soft *::before,
+    .theme-soft *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+    a.soft-card:hover,
+    button.soft-card:hover {
+      transform: none;
+    }
+    .soft-tile:hover img {
+      transform: none;
+    }
   }
 }
