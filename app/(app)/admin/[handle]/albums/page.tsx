@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { BillingGate } from "@/components/BillingGate";
-import { SoftEvents } from "@/components/soft/SoftEvents";
-import { AlbumManager } from "./AlbumManager";
-import { PageTitle } from "@/components/ui";
+import { EmptyState, PageTitle } from "@/components/ui";
+import { PhotoStackArt } from "@/components/soft/illustrations";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
-import { NewAlbumForm } from "./NewAlbumForm";
+import { AlbumManager, type AlbumStats } from "./AlbumManager";
 
 export const metadata: Metadata = { title: "Albums" };
 
@@ -15,30 +15,68 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
   const { handle } = await props.params;
   const ctx = await requireAdminContext(handle);
   const supabase = await createClient();
-  const albums = await listStackedAlbums(supabase, ctx.club.id, { includeDrafts: true });
+
+  const [albums, { data: engagement }] = await Promise.all([
+    listStackedAlbums(supabase, ctx.club.id, { includeDrafts: true }),
+    supabase.from("album_engagement").select("*").eq("club_id", ctx.club.id),
+  ]);
+
+  const stats: Record<string, AlbumStats> = {};
+  for (const row of engagement ?? []) {
+    if (!row.album_id) continue;
+    stats[row.album_id] = {
+      views: row.view_count ?? 0,
+      downloads: row.download_count ?? 0,
+      members: row.member_count ?? 0,
+    };
+  }
+
+  const live = albums.filter((a) => a.status === "published").length;
+  const drafts = albums.filter((a) => a.status === "draft" && !a.publishAt).length;
+  const scheduled = albums.filter((a) => a.status === "draft" && a.publishAt).length;
+  const hidden = albums.filter((a) => a.status === "hidden").length;
+  const summary = [
+    `${live} live`,
+    drafts ? `${drafts} draft` : null,
+    scheduled ? `${scheduled} scheduled` : null,
+    hidden ? `${hidden} hidden` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
-    <main className="flex flex-col">
-      <div className="mx-auto flex w-full max-w-[1100px] flex-col gap-6 px-4 pb-2 pt-8 sm:px-6">
-        <PageTitle kicker={ctx.club.name} title="Albums" />
-          {canWrite(ctx.club.billing_status) ? (
-          <NewAlbumForm clubId={ctx.club.id} />
-        ) : (
-          <BillingGate handle={handle} action="create albums" />
-        )}
-      </div>
-      <div className="mx-auto w-full max-w-[1100px] px-4 pb-2 sm:px-6">
-        <AlbumManager clubId={ctx.club.id} handle={handle} albums={albums} />
+    <main className="flex flex-col gap-6 px-4 py-8 sm:px-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <PageTitle kicker={ctx.club.name} title="Albums" underline>
+          {albums.length ? `${summary}. Drag to reorder what members see first.` : "Nothing here yet."}
+        </PageTitle>
+        <div className="flex flex-wrap gap-2">
+          <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
+            See it as a member
+          </Link>
+          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
+            New album
+          </Link>
+        </div>
       </div>
 
-      <SoftEvents
-        albums={albums}
-        hrefBase={`/c/${handle}/a`}
-        canManage
-        clubName={ctx.club.name}
-        newAlbumHref={`/admin/${handle}/albums`}
-        savedHref={`/c/${handle}/saved`}
-      />
+      {canWrite(ctx.club.billing_status) ? null : <BillingGate handle={handle} action="create albums" />}
+
+      {albums.length ? (
+        <AlbumManager clubId={ctx.club.id} handle={handle} albums={albums} stats={stats} />
+      ) : (
+        <EmptyState
+          title="No albums yet."
+          art={<PhotoStackArt size={120} />}
+          action={
+            <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
+              Make the first one
+            </Link>
+          }
+        >
+          Even last year&apos;s photos will do. Members land on this list, so one album is better than none.
+        </EmptyState>
+      )}
     </main>
   );
 }

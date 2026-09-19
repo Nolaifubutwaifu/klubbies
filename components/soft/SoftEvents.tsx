@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarIcon, CameraIcon, ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from "@/components/soft/icons";
 import { ConfettiArt, PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
+import { EmptyClub } from "@/components/soft/EmptyClub";
 import { formatDate, formatLongDate } from "@/lib/format";
 import { findAnniversary } from "@/lib/media/anniversary";
+import { eventTypeLabel } from "@/lib/media/event-types";
 import type { StackedAlbum } from "@/lib/media/album-list";
 
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -39,6 +41,14 @@ function countLabel(album: StackedAlbum): string {
   return parts.join(" · ") || "Nothing in here yet";
 }
 
+/** "Morning" until noon, "Afternoon" until six, "Evening" after that. */
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Morning";
+  if (hour < 18) return "Afternoon";
+  return "Evening";
+}
+
 export function SoftEvents({
   albums,
   hrefBase,
@@ -46,6 +56,8 @@ export function SoftEvents({
   clubName,
   newAlbumHref,
   savedHref,
+  firstName,
+  notifiesOnNewAlbums = false,
 }: {
   albums: StackedAlbum[];
   hrefBase: string;
@@ -53,6 +65,10 @@ export function SoftEvents({
   clubName: string;
   newAlbumHref: string;
   savedHref: string;
+  /** Used for the greeting; empty falls back to the club name. */
+  firstName?: string;
+  /** Whether this member already gets the new-album email. */
+  notifiesOnNewAlbums?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [day, setDay] = useState<string | null>(null);
@@ -76,48 +92,58 @@ export function SoftEvents({
   const hero = filtersOn ? null : (filtered.find((a) => a.coverUrl && a.photoCount + a.videoCount > 0) ?? null);
   const rows = hero ? filtered.filter((a) => a.id !== hero.id) : filtered;
   const totals = albums.reduce((sum, a) => sum + a.photoCount + a.videoCount, 0);
+  const newCount = albums.filter((a) => a.isNew).length;
   const memory = filtersOn ? null : findAnniversary(albums);
 
   return (
-    <div className="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-6 sm:px-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
+    <div className="w-full px-4 pb-16 pt-6 sm:px-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-[260px]">
           <span className="soft-chip">{clubName}</span>
-          <h1 className="mt-3 text-[clamp(34px,5vw,50px)]">Events</h1>
+          <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">
+            {firstName ? `${greeting()}, ${firstName}.` : "Events"}
+          </h1>
           <SquiggleUnderline />
           <p className="mt-2 text-[15px] text-neutral-700">
-            {albums.length
-              ? `${albums.length} album${albums.length === 1 ? "" : "s"} · ${totals.toLocaleString("en-AU")} photos and videos`
-              : "Everything the committee shares lands here."}
+            {newCount
+              ? `${newCount} album${newCount === 1 ? "" : "s"} landed since you were last here.`
+              : albums.length
+                ? `${albums.length} album${albums.length === 1 ? "" : "s"} · ${totals.toLocaleString("en-AU")} photos and videos`
+                : "Everything the committee shares lands here."}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={savedHref} className="soft-btn soft-btn-tonal no-underline">
-            Saved
-          </Link>
-          {canManage ? (
-            <Link href={newAlbumHref} className="soft-btn soft-btn-primary no-underline">
-              <PlusIcon />
-              New album
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:min-w-[300px]">
+          {albums.length === 0 ? null : (
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600">
+              <SearchIcon />
+            </span>
+            <input
+              className="soft-input pl-11"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search an event"
+              aria-label="Search event names"
+              type="search"
+            />
+          </div>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={savedHref} className="soft-btn soft-btn-tonal no-underline">
+              Saved
             </Link>
-          ) : null}
+            {canManage ? (
+              <Link href={newAlbumHref} className="soft-btn soft-btn-primary no-underline">
+                <PlusIcon />
+                New album
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
 
+      {albums.length === 0 ? null : (
       <div className="mt-6 flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[220px] flex-1">
-          <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600">
-            <SearchIcon />
-          </span>
-          <input
-            className="soft-input pl-11"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search ${clubName} events`}
-            aria-label="Search event names"
-            type="search"
-          />
-        </div>
         <button type="button" className="soft-btn soft-btn-tonal" onClick={() => setCalOpen((v) => !v)} aria-expanded={calOpen}>
           <CalendarIcon />
           {day ? formatLongDate(day) : "Any date"}
@@ -136,6 +162,7 @@ export function SoftEvents({
           </button>
         ) : null}
       </div>
+      )}
 
       {filtersOn ? (
         <p className="mt-3 text-[14px] text-neutral-700">
@@ -246,33 +273,31 @@ export function SoftEvents({
         </Link>
       ) : null}
 
-      {filtered.length === 0 ? (
+      {albums.length === 0 ? (
+        <EmptyClub clubName={clubName} alreadySubscribed={notifiesOnNewAlbums} />
+      ) : filtered.length === 0 ? (
         <div className="soft-card mt-6 flex flex-col items-start gap-3 p-8">
           <span className="text-accent-400">
             <ConfettiArt />
           </span>
           <span className="soft-chip">
             <CameraIcon />
-            {albums.length ? "No matches" : "Nothing yet"}
+            No matches
           </span>
-          <h2 className="text-[26px]">{albums.length ? "Nothing matches that" : "No albums yet"}</h2>
+          <h2 className="text-[26px]">Nothing matches that</h2>
           <p className="m-0 max-w-[44ch] text-[15px] text-neutral-700">
-            {albums.length
-              ? "Try a different name, or clear the date filter."
-              : "When the committee publishes an event album, it shows up here first."}
+            Try a different name, or clear the date filter.
           </p>
-          {filtersOn ? (
-            <button
-              type="button"
-              className="soft-btn soft-btn-primary"
-              onClick={() => {
-                setQuery("");
-                setDay(null);
-              }}
-            >
-              Clear filters
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className="soft-btn soft-btn-primary"
+            onClick={() => {
+              setQuery("");
+              setDay(null);
+            }}
+          >
+            Clear filters
+          </button>
         </div>
       ) : (
         <>
@@ -286,7 +311,12 @@ export function SoftEvents({
                   {hero.isNew ? "New since you were here" : "Latest album"}
                 </span>
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 sm:p-7">
-                  <span className="soft-chip bg-white/90 text-[--color-accent-700]">{formatDate(hero.date)}</span>
+                  <span className="flex flex-wrap items-center gap-2">
+                    {eventTypeLabel(hero.eventType) ? (
+                      <span className="soft-chip bg-white/90 text-[--color-accent-700]">{eventTypeLabel(hero.eventType)}</span>
+                    ) : null}
+                    <span className="soft-chip bg-white/90 text-[--color-accent-700]">{formatDate(hero.date)}</span>
+                  </span>
                   <span className="soft-display text-[clamp(26px,4.5vw,44px)] text-white">{hero.title}</span>
                   <span className="flex flex-wrap items-center gap-3 text-[14px] font-semibold text-white/90">
                     {hero.photoCount ? (
@@ -308,58 +338,69 @@ export function SoftEvents({
             </Link>
           ) : null}
 
-          <div className="mt-6 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
-            {rows.map((album) => (
-              <Link key={album.id} href={`${hrefBase}/${album.id}`} className="soft-card flex flex-col gap-3 p-4 no-underline">
-                {album.tiles.length === 0 ? (
+          <div className="mt-6 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+            {rows.map((album) => {
+              const total = album.photoCount + album.videoCount;
+              return (
+                <Link key={album.id} href={`${hrefBase}/${album.id}`} className="soft-card block overflow-hidden !p-0 no-underline">
+                  {/* One cover, badged — the way the card reads on the live
+                      site, and the way the design keeps it. */}
                   <div
-                    className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-[var(--soft-r-sm)] text-[14px] text-neutral-600"
+                    className="relative aspect-[16/10] w-full overflow-hidden"
                     style={{ background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
                   >
-                    <span className="text-accent-400">
-                      <PhotoStackArt size={104} />
-                    </span>
-                    Nothing uploaded yet
-                  </div>
-                ) : (
-                  <div className="grid aspect-[4/3] w-full grid-cols-3 grid-rows-2 gap-1.5">
-                    {album.tiles.slice(0, 3).map((tile, index) => {
-                      const last = index === Math.min(album.tiles.length, 3) - 1;
-                      const hidden = album.moreCount + Math.max(0, album.tiles.length - 3);
-                      return (
-                        <span key={tile.id} className={`soft-tile ${index === 0 ? "col-span-2 row-span-2" : ""}`}>
-                          {tile.url ? (
-                            // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                            <img src={tile.url} alt="" loading="lazy" />
-                          ) : null}
-                          {last && hidden > 0 ? (
-                            <span className="absolute inset-0 flex items-center justify-center bg-[rgba(25,18,22,0.55)] text-[15px] font-extrabold text-white">
-                              +{hidden}
-                            </span>
-                          ) : null}
+                    {album.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                      <img src={album.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-[14px] text-neutral-600">
+                        <span className="text-accent-400">
+                          <PhotoStackArt size={92} />
                         </span>
-                      );
-                    })}
+                        Nothing uploaded yet
+                      </span>
+                    )}
+                    {album.isNew ? (
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-accent px-2.5 py-1 text-[12px] font-bold text-white">
+                        New since you were here
+                      </span>
+                    ) : album.status === "draft" && canManage ? (
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                        Draft · only you
+                      </span>
+                    ) : album.status === "hidden" && canManage ? (
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                        Hidden
+                      </span>
+                    ) : null}
+                    {total > 0 ? (
+                      <span className="absolute bottom-2.5 right-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                        {countLabel(album)}
+                      </span>
+                    ) : null}
                   </div>
-                )}
-                <div className="flex flex-wrap items-center gap-2">
-                  {album.isNew ? (
-                    <span className="soft-chip !bg-accent !text-white">New</span>
-                  ) : null}
-                  <span className="soft-chip">{formatDate(album.date)}</span>
-                  {album.status === "draft" && canManage ? <span className="soft-chip soft-chip-muted">Draft</span> : null}
-                  {album.status === "hidden" && canManage ? <span className="soft-chip soft-chip-muted">Hidden</span> : null}
-                  {album.openToMembers ? <span className="soft-chip soft-chip-muted">Members can add</span> : null}
-                </div>
-                <div>
-                  <span className="soft-display block text-[22px] text-ink">{album.title}</span>
-                  <span className="mt-1 block text-[14px] text-neutral-700">{countLabel(album)}</span>
-                </div>
-                {album.description ? (
-                  <p className="m-0 line-clamp-2 text-[14px] text-neutral-700">{album.description}</p>
-                ) : null}
-              </Link>
-            ))}
+
+                  <div className="p-3.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {eventTypeLabel(album.eventType) ? <span className="soft-chip">{eventTypeLabel(album.eventType)}</span> : null}
+                      <span className="text-[12px] text-neutral-700">{formatDate(album.date)}</span>
+                      {album.openToMembers ? <span className="text-[12px] text-neutral-700">· members can add</span> : null}
+                      <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-neutral-700">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
+                          <rect x="4" y="10" width="16" height="11" rx="2" />
+                          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                        </svg>
+                        Members only
+                      </span>
+                    </div>
+                    <div className="soft-display mt-1.5 text-[20px] text-ink">{album.title}</div>
+                    {album.description ? (
+                      <p className="m-0 mt-1 line-clamp-2 text-[14px] text-neutral-700">{album.description}</p>
+                    ) : null}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </>
       )}

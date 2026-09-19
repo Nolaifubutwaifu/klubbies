@@ -66,3 +66,17 @@ export async function setPasswordAction(_prev: AccountResult, form: FormData): P
   if (error) return { error: error.message };
   return { ok: true, message: "Password set. You can now sign in with it." };
 }
+
+/**
+ * Turns on the new-album email from wherever a member is standing — the empty
+ * club screen asks for exactly this and nothing else, so it shouldn't send
+ * them to their profile to find one switch.
+ */
+export async function notifyOnNewAlbumsAction(): Promise<AccountResult> {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const { error } = await supabase.from("users").update({ notify_new_album: true }).eq("id", user.id);
+  if (error) return { error: "Could not turn that on. Try again." };
+  revalidatePath("/account");
+  return { ok: true, message: "We'll email you the morning after the first album lands." };
+}

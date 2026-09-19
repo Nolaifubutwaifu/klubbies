@@ -96,6 +96,25 @@ export async function updateClubAction(clubId: string, _prev: ActionState, form:
   return { ok: true, message: "Saved" };
 }
 
+/** The two club-wide switches the settings screen shows. */
+export async function setClubPrivacyAction(
+  clubId: string,
+  prefs: { allow_removal_requests: boolean; grace_period_enabled: boolean },
+): Promise<ActionState> {
+  const ctx = await permContext(clubId, "manage_club");
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("clubs")
+    .update({
+      allow_removal_requests: prefs.allow_removal_requests,
+      grace_period_enabled: prefs.grace_period_enabled,
+    })
+    .eq("id", clubId);
+  if (error) return { error: "Could not save that" };
+  revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  return { ok: true, message: "Saved" };
+}
+
 export async function setClubLogoAction(clubId: string, path: string | null): Promise<ActionState> {
   const ctx = await adminContext(clubId);
   if (path !== null && !path.startsWith(`clubs/${clubId}/logo/`)) return { error: "Invalid logo path" };
@@ -270,6 +289,7 @@ const albumSchema = z.object({
   allowDownload: z.boolean(),
   visibility: z.enum(["members", "admins"]),
   contributorScope: z.enum(["managers", "members"]),
+  eventType: z.union([z.literal(""), z.enum(["formal", "sport", "social", "camp", "night_out", "other"])]),
 });
 
 function albumInput(form: FormData) {
@@ -280,6 +300,7 @@ function albumInput(form: FormData) {
     allowDownload: form.get("allowDownload") === "on",
     visibility: text(form, "visibility") || "members",
     contributorScope: text(form, "contributorScope") || "managers",
+    eventType: text(form, "eventType"),
   });
 }
 
@@ -296,6 +317,7 @@ export async function createAlbumAction(clubId: string, _prev: ActionState, form
       club_id: clubId,
       title: parsed.data.title,
       event_date: parsed.data.eventDate || null,
+      event_type: parsed.data.eventType || null,
       description: parsed.data.description || null,
       allow_download: parsed.data.allowDownload,
       status: "draft",
@@ -306,7 +328,19 @@ export async function createAlbumAction(clubId: string, _prev: ActionState, form
     .select("id")
     .single();
   if (error || !data) return { error: "Could not create the album" };
-  redirect(`/admin/${ctx.club.handle}/albums/${data.id}`);
+
+  // A go-live time is part of making the album in the design, not a later
+  // errand, so the same form can set it.
+  const publishAt = text(form, "publishAt");
+  if (publishAt) {
+    const when = new Date(publishAt);
+    if (!Number.isNaN(when.getTime()) && when.getTime() > Date.now()) {
+      await supabase.from("albums").update({ publish_at: when.toISOString() }).eq("id", data.id);
+    }
+  }
+
+  // Straight into the uploader: an album with nothing in it is a dead end.
+  redirect(`/c/${ctx.club.handle}/a/${data.id}?add=1`);
 }
 
 export async function updateAlbumAction(albumId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
@@ -322,6 +356,7 @@ export async function updateAlbumAction(albumId: string, _prev: ActionState, for
     .update({
       title: parsed.data.title,
       event_date: parsed.data.eventDate || null,
+      event_type: parsed.data.eventType || null,
       description: parsed.data.description || null,
       allow_download: parsed.data.allowDownload,
       visibility: parsed.data.visibility,

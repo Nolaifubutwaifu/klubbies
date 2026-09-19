@@ -4,8 +4,22 @@
     {
       "name": "klubbies-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev", "--port", "3000"],
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "3000"
+      ],
       "port": 3000
+    },
+    {
+      "name": "klubbies-dev-3100",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dev",
+        "--port",
+        "3100"
+      ],
+      "port": 3100
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
 } from "@/app/(app)/admin/actions";
 import { Dialog } from "@/components/Dialog";
 import { FormMessage, SubmitButton } from "@/components/forms";
+import { EVENT_TYPES } from "@/lib/media/event-types";
 import { createClient } from "@/lib/supabase/client";
 
 type Album = {
@@ -17,6 +18,7 @@ type Album = {
   clubId: string;
   title: string;
   eventDate: string | null;
+  eventType: string | null;
   description: string | null;
   allowDownload: boolean;
   visibility: string;
@@ -116,6 +118,17 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
             <label className="field">
               Date
               <input className="input" name="eventDate" type="date" defaultValue={album.eventDate ?? ""} />
+            </label>
+            <label className="field">
+              Event type
+              <select className="input" name="eventType" defaultValue={album.eventType ?? ""}>
+                <option value="">No label</option>
+                {EVENT_TYPES.map((type) => (
+                  <option key={type.value} value={type.value}>
+                    {type.label}
+                  </option>
+                ))}
+              </select>
             </label>
             <label className="field">
               Description

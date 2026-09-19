@@ -111,3 +111,78 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
     so a club's pages take its colour.
 51. **`EventsBrowser` and the `/preview` routes are gone.** `SoftEvents` is the
     events page for both members and admins.
+
+## 2026-09-19 · Design artifact build-out (Klubbies Design canvas)
+
+52. **The committee app has a rail, the member app has one too.** `AdminNav` is
+    a sticky 248px sidebar on desktop (club badge, seven links with live counts,
+    plan chip, who you are) and a scrolling row of the same links on a phone.
+    `MemberSidebar` is its member twin: every club you're in, Saved, Club feed,
+    profile. Below `lg` the member app falls back to `AppHeader` plus
+    `MemberTabBar`, a four-tab bottom bar. The app shell widened from 1100px to
+    1320px so a rail plus a three-column album grid still fits.
+53. **Albums carry an event type.** `albums.event_type` is one of formal, sport,
+    social, camp, night_out, other. It is a label, not a filter: it appears as a
+    chip on every album card, the album header and the committee's album rows.
+54. **Guest photographer links.** `album_guest_links` holds a sha-256 of a
+    single-use upload token — never the token itself, so a leaked backup can't
+    be replayed. `/g/<token>` is the only signed-out page in the product: one
+    album, upload only, no roster and no other albums. The guest has no session,
+    so `/api/guest/[token]/ticket` mints per-object signed upload URLs with the
+    service role and the browser PUTs straight to storage; `media.guest_link_id`
+    records which link a file came in on.
+55. **Removal requests hide first and delete later.** A member's "Take it down"
+    sets `media.hidden_at` at once (through a server action with the service
+    role, so asking never becomes a way to edit a media row) and opens a
+    `media_removal_requests` row. The committee confirms or restores within
+    seven days; silence deletes it, swept by the same cron that publishes
+    scheduled albums. One open request per photo — a second person asking is the
+    same request.
+56. **Upload is its own screen.** `/admin/[handle]/upload` is the design's New
+    album: name, date, type, download and contribution switches, and a go-live
+    time, then straight into the album's drop zone. `/admin/[handle]/albums` is
+    now purely the list, with views, downloads and members per row from the new
+    `album_engagement` view.
+57. **Onboarding is a checklist you can come back to.** `/admin/[handle]/setup`
+    reads the club's real state — name, handle, logo, roster, first album — and
+    shows a progress bar instead of a wizard that traps you.
+58. **Billing and settings are one screen**, with the two club-wide privacy
+    switches (`clubs.allow_removal_requests`, `clubs.grace_period_enabled`)
+    saved per toggle. Stripe's card and receipts stay on `/billing`.
+59. **The lightbox is the one dark screen.** It pins itself to the window
+    (`fixed inset-0`) so the page behind can't add height underneath, drops the
+    rail, the tab bar and the footer, and carries its own filmstrip and four
+    actions: Favourite, Original, Details, Take it down.
+60. **Loading is a skeleton, never a spinner** (`.soft-skeleton`), in the shape
+    the page will keep.
+61. **`scripts/demo.ts` builds the design's fictional club** — UniMelb FC,
+    @umfc, six albums with real photos from `design/source-photos` — so the
+    screens can be checked with content in them. Safe to re-run.
+
+## 2026-09-19 · The last artboards
+
+62. **The sign-in screens follow the design, not the split.** `AuthShell`
+    replaces `AuthSplit`: one column, and on the screens someone arrives on
+    cold (`/signin`, `/start`) a band of event photos fading into the cream.
+    The code step drops the band — by then the photos have done their job.
+63. **Eight code boxes, because Supabase mints eight digits.** They advance as
+    you type, take a pasted code in any box, and submit themselves once full.
+    A wrong code clears the row and returns to the first box.
+64. **No "not on the roster" screen.** The neutral reply stays (masterfile
+    §5.2.3): an address that is on a list and one that isn't get the same
+    answer, which is what stops someone probing a roster. The help that screen
+    carried — try your uni email, then ask your committee — now sits on the
+    code screen under "Nothing arrived at all?", where it reaches the same
+    person without confirming anything.
+65. **Members see what is still processing.** RLS only admits `status =
+    'ready'` to a member, so the album page counts the unfinished files with
+    the service role *after* the membership check and renders a banner plus
+    placeholder tiles. A count of files in an album they can already open, and
+    no more than that.
+66. **Selecting several photos is everyone's.** "Select photos" is no longer
+    committee-only. The bar offers Favourite and Download to any member
+    (`favouriteManyAction`, and the `?only=` zip), and adds Use as cover and
+    Delete for people who can manage albums.
+67. **A club with no albums gets its own screen**, not a "no matches" card:
+    two empty photo cards and one button that turns on the new-album email
+    (`notifyOnNewAlbumsAction`) without sending anyone to their profile.

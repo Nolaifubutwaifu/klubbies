@@ -63,3 +63,27 @@ export async function toggleFavouriteAction(mediaId: string): Promise<{ favourit
     .insert({ media_id: id, user_id: user.id, club_id: media.club_id });
   return { favourited: !error };
 }
+
+/**
+ * Favourites a batch in one go, for the selection bar. Always adds rather than
+ * toggling: you picked five photos to keep, so unpicking two of them because
+ * they were already saved would be a surprise.
+ */
+export async function favouriteManyAction(mediaIds: string[]): Promise<{ saved: number; error?: string }> {
+  const ids = mediaIds.filter((id) => z.uuid().safeParse(id).success).slice(0, 200);
+  if (!ids.length) return { saved: 0 };
+  const user = await getSessionUser();
+  if (!user) return { saved: 0, error: "Sign in again to save these." };
+
+  const supabase = await createClient();
+  // The club comes from the media rows, so a caller can't favourite into a
+  // club they aren't in — the insert policy checks membership of that club.
+  const { data: media } = await supabase.from("media").select("id, club_id").in("id", ids);
+  if (!media?.length) return { saved: 0, error: "Those photos are no longer here." };
+
+  const { error } = await supabase
+    .from("favourites")
+    .upsert(media.map((m) => ({ media_id: m.id, user_id: user.id, club_id: m.club_id })));
+  if (error) return { saved: 0, error: "Could not save those. Try again." };
+  return { saved: media.length };
+}

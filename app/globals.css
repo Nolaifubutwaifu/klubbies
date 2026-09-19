@@ -712,6 +712,35 @@
   }
 }
 
+/* Loading is a skeleton, never a spinner: the page arrives in the shape it
+   will keep, so nothing jumps when the data lands. */
+@layer components {
+  .soft-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--soft-r-sm);
+    background: color-mix(in srgb, var(--color-text) 7%, transparent);
+  }
+  .soft-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 55%, transparent), transparent);
+    animation: soft-shimmer 1.4s infinite;
+  }
+  @keyframes soft-shimmer {
+    to {
+      transform: translateX(100%);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .soft-skeleton::after {
+      animation: none;
+    }
+  }
+}
+
 /* Soft theme decoration: blobs, dot grid, grain, hand-drawn accents. */
 @layer components {
   .soft-backdrop {

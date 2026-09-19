@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { loadAlbumPageAction } from "@/app/(app)/c/[handle]/actions";
+import { favouriteManyAction, loadAlbumPageAction } from "@/app/(app)/c/[handle]/actions";
+import { ProcessingTiles } from "@/components/ProcessingBanner";
 import { deleteMediaAction, setAlbumCoverAction } from "@/app/(app)/admin/actions";
 import { Dialog } from "@/components/Dialog";
 import type { GridItem } from "@/lib/media/queries";
@@ -60,6 +61,9 @@ export function AlbumGrid({
   photoCount,
   videoCount,
   savedIds,
+  savedTotal,
+  processingCount = 0,
+  canDownload = false,
 }: {
   albumId: string;
   hrefBase: string;
@@ -71,6 +75,11 @@ export function AlbumGrid({
   photoCount: number;
   videoCount: number;
   savedIds: string[];
+  /** Favourites across the whole album, not just the page that's loaded. */
+  savedTotal: number;
+  /** Files still being processed, which members can't read rows for. */
+  processingCount?: number;
+  canDownload?: boolean;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -80,9 +89,9 @@ export function AlbumGrid({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirm, setConfirm] = useState(false);
   const [message, setMessage] = useState("");
+  const [saved, setSaved] = useState<Set<string>>(new Set(savedIds));
   const [pending, startTransition] = useTransition();
-  const [kind, setKind] = useState<"all" | "photo" | "video">("all");
-  const saved = new Set(savedIds);
+  const [kind, setKind] = useState<"all" | "photo" | "video" | "saved">("all");
 
   const toggle = (id: string) =>
     setSelected((current) => {
@@ -93,7 +102,8 @@ export function AlbumGrid({
     });
 
   const selectedIds = [...selected];
-  const shown = kind === "all" ? items : items.filter((item) => item.kind === kind);
+  const shown =
+    kind === "all" ? items : kind === "saved" ? items.filter((item) => saved.has(item.id)) : items.filter((item) => item.kind === kind);
 
   const loadMore = () =>
     startTransition(async () => {
@@ -103,81 +113,135 @@ export function AlbumGrid({
       setPage(page + 1);
     });
 
-  if (items.length === 0) {
+  if (items.length === 0 && processingCount === 0) {
     return <p className="soft-card m-6 p-6 text-[14px] text-[color:var(--ink-70)]">Nothing in this album yet.</p>;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      {canManage ? (
-        <div className="flex min-h-[40px] flex-wrap items-center gap-2 px-4 text-[14px] sm:px-6">
-          {selecting ? (
-            <>
-              <strong>{selected.size} selected</strong>
-              {selected.size === 1 ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary text-[13px]"
-                  disabled={pending}
-                  onClick={() =>
-                    startTransition(async () => {
-                      const res = await setAlbumCoverAction(albumId, selectedIds[0]);
-                      setMessage(res.error ?? res.message ?? "");
-                      if (res.ok) router.refresh();
-                    })
-                  }
-                >
-                  Use as cover
-                </button>
-              ) : null}
-              <button type="button" className="btn btn-primary text-[13px]" disabled={!selected.size} onClick={() => setConfirm(true)}>
-                Delete
-              </button>
-              <button
-                type="button"
-                className="btn btn-ghost text-[13px]"
-                onClick={() => {
-                  setSelected(new Set());
-                  setSelecting(false);
-                }}
-              >
-                Done
-              </button>
-            </>
-          ) : (
-            <button type="button" className="btn btn-secondary text-[13px]" onClick={() => setSelecting(true)}>
-              Select photos
+      {/* "Select photos" is everyone's — the whole point of an album is
+          taking a handful home. What the bar then offers depends on who you
+          are: members favourite and download, the committee also recovers a
+          cover and deletes. */}
+      <div className="flex min-h-[40px] flex-wrap items-center gap-2 px-4 text-[14px] sm:px-6">
+        {selecting ? null : (
+          <button type="button" className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]" onClick={() => setSelecting(true)}>
+            Select photos
+          </button>
+        )}
+        {!selecting && message ? <span className="text-[13px] text-[color:var(--ink-70)]">{message}</span> : null}
+      </div>
+
+      {selecting ? (
+        <div className="sticky bottom-[84px] z-20 mx-4 flex flex-wrap items-center gap-2.5 rounded-[999px] bg-ink px-4 py-2.5 text-white shadow-[0_18px_36px_-10px_rgba(43,34,40,0.5)] sm:bottom-4 sm:mx-6">
+          <strong className="text-[14px] font-bold">
+            {selected.size} selected
+          </strong>
+
+          <button
+            type="button"
+            className="ml-auto min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white disabled:opacity-50"
+            disabled={pending || !selected.size}
+            onClick={() =>
+              startTransition(async () => {
+                const res = await favouriteManyAction(selectedIds);
+                if (res.error) return setMessage(res.error);
+                setSaved((current) => new Set([...current, ...selectedIds]));
+                setMessage(`Saved ${res.saved} to your favourites.`);
+                setSelected(new Set());
+                setSelecting(false);
+                router.refresh();
+              })
+            }
+          >
+            Favourite
+          </button>
+
+          {canDownload ? (
+            <a
+              href={`/api/albums/${albumId}/zip?only=${selectedIds.join(",")}`}
+              aria-disabled={!selected.size}
+              className={`flex min-h-[40px] items-center rounded-full bg-white px-4 text-[13px] font-bold text-accent-800 no-underline ${
+                selected.size ? "" : "pointer-events-none opacity-50"
+              }`}
+            >
+              Download
+            </a>
+          ) : null}
+
+          {canManage && selected.size === 1 ? (
+            <button
+              type="button"
+              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await setAlbumCoverAction(albumId, selectedIds[0]);
+                  setMessage(res.error ?? res.message ?? "");
+                  if (res.ok) router.refresh();
+                })
+              }
+            >
+              Use as cover
             </button>
-          )}
-          {message ? <span className="text-neutral-700">{message}</span> : null}
+          ) : null}
+
+          {canManage ? (
+            <button
+              type="button"
+              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white disabled:opacity-50"
+              disabled={!selected.size}
+              onClick={() => setConfirm(true)}
+            >
+              Delete
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            className="min-h-[40px] cursor-pointer rounded-full border-0 bg-transparent px-3 text-[13px] font-bold text-white/80"
+            onClick={() => {
+              setSelected(new Set());
+              setSelecting(false);
+            }}
+          >
+            Done
+          </button>
         </div>
       ) : null}
 
-      {videoCount > 0 ? (
-        <div className="mx-auto flex w-full max-w-[1100px] flex-wrap gap-2 px-4 sm:px-6">
-          {(
-            [
-              ["all", `All ${(photoCount + videoCount).toLocaleString("en-AU")}`],
-              ["photo", `Photos ${photoCount.toLocaleString("en-AU")}`],
-              ["video", `Videos ${videoCount.toLocaleString("en-AU")}`],
-            ] as const
-          ).map(([value, label]) => (
+      {/* The design's filter row: one pressed chip, the rest quiet. Counts are
+          on the chip so you know what you're about to see. */}
+      <div className="flex w-full flex-wrap gap-2 px-4 sm:px-6">
+        {(
+          [
+            ["all", `All ${(photoCount + videoCount).toLocaleString("en-AU")}`, true],
+            ["photo", `Photos ${photoCount.toLocaleString("en-AU")}`, photoCount > 0 && videoCount > 0],
+            ["video", `Videos ${videoCount.toLocaleString("en-AU")}`, videoCount > 0],
+            ["saved", `Favourites ${savedTotal.toLocaleString("en-AU")}`, savedTotal > 0],
+          ] as const
+        )
+          .filter(([, , show]) => show)
+          .map(([value, label]) => (
             <button
               key={value}
               type="button"
               aria-pressed={kind === value}
               onClick={() => setKind(value)}
-              className={`soft-btn !min-h-[40px] !px-4 !text-[13px] ${
+              className={`soft-btn !min-h-[38px] !px-4 !text-[13px] ${
                 kind === value ? "!bg-ink !text-white" : "soft-btn-tonal"
               }`}
             >
               {label}
             </button>
           ))}
-        </div>
-      ) : null}
+      </div>
 
-      <div className="mx-auto grid w-full max-w-[1100px] gap-2 px-4 pb-6 pt-4 sm:px-6" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}>
+      <div
+        className="grid w-full gap-1 px-1 pb-6 pt-3 sm:gap-1.5 sm:px-4"
+        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(104px, 14vw, 168px), 1fr))" }}
+      >
+        {kind !== "saved" ? <ProcessingTiles count={processingCount} /> : null}
         {shown.map((item) =>
           selecting ? (
             <button
@@ -185,18 +249,29 @@ export function AlbumGrid({
               type="button"
               onClick={() => toggle(item.id)}
               aria-pressed={selected.has(item.id)}
-              className="relative block aspect-square overflow-hidden rounded-[var(--soft-r-sm)] border-0 bg-bg p-0"
+              className="relative block aspect-square overflow-hidden rounded-[10px] border-0 bg-bg p-0"
               style={{ outline: selected.has(item.id) ? "3px solid var(--color-accent)" : undefined, outlineOffset: -3 }}
             >
               <Tile item={item} cover={item.id === coverMediaId} saved={saved.has(item.id)} />
             </button>
           ) : (
-            <Link key={item.id} href={`${hrefBase}/${item.id}`} className="soft-tile relative block aspect-square" scroll={false}>
+            <Link
+              key={item.id}
+              href={`${hrefBase}/${item.id}`}
+              className="soft-tile relative block aspect-square !rounded-[10px]"
+              scroll={false}
+            >
               <Tile item={item} cover={item.id === coverMediaId} saved={saved.has(item.id)} />
             </Link>
           ),
         )}
       </div>
+
+      {shown.length === 0 ? (
+        <p className="px-4 pb-6 text-[14px] text-[color:var(--ink-70)] sm:px-6">
+          Nothing in this album matches that filter.
+        </p>
+      ) : null}
 
       {hasMore ? (
         <button type="button" className="btn btn-secondary mb-6 self-center" disabled={pending} onClick={loadMore}>

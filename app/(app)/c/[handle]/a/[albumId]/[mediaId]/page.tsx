@@ -31,7 +31,15 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
   if (!data) notFound();
 
   await logAccess(ctx, data.media.id, "view");
-  const favourites = await favouritedIds(supabase, ctx.userId, [data.media.id]);
+  const [favourites, { data: openRequest }] = await Promise.all([
+    favouritedIds(supabase, ctx.userId, [data.media.id]),
+    supabase
+      .from("media_removal_requests")
+      .select("id")
+      .eq("media_id", data.media.id)
+      .eq("status", "open")
+      .maybeSingle(),
+  ]);
 
   const { media } = data;
   const details = [
@@ -64,6 +72,9 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
         width: media.width,
         height: media.height,
         duration: formatDuration(media.duration_seconds),
+        takenAt: media.captured_at
+          ? new Date(media.captured_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
+          : "",
       }}
       details={details}
       prevId={data.prevId}
@@ -73,6 +84,8 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
       strip={data.strip}
       canDownload={album.allow_download || ctx.isAdmin}
       favourited={favourites.has(data.media.id)}
+      canAskRemoval={ctx.club.allow_removal_requests && Boolean(ctx.membership)}
+      alreadyAsked={Boolean(openRequest)}
     />
   );
 }

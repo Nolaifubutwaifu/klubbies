@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
-import { formatBytes, formatDateTime } from "@/lib/format";
+import { formatBytes, formatDate, formatDateTime } from "@/lib/format";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
 
@@ -25,44 +26,66 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
     return q;
   };
 
-  const [onList, active, pending, grace, albums, published, usage, mismatches, activity, posts, stacked, viewsWeek] = await Promise.all([
-    count(),
-    count("active"),
-    count("pending"),
-    count("grace"),
-    supabase.from("albums").select("id", { count: "exact", head: true }).eq("club_id", clubId),
-    supabase.from("albums").select("id", { count: "exact", head: true }).eq("club_id", clubId).eq("status", "published"),
-    supabase.from("club_storage_usage").select("*").eq("club_id", clubId).maybeSingle(),
-    supabase
-      .from("memberships")
-      .select("id, roster_name, claimed_name, roster_email")
-      .eq("club_id", clubId)
-      .eq("name_mismatch", true)
-      .in("status", ["active", "grace"])
-      .limit(5),
-    supabase
-      .from("access_events")
-      .select("id, action, occurred_at, memberships(roster_name), media(original_filename)")
-      .eq("club_id", clubId)
-      .order("occurred_at", { ascending: false })
-      .limit(6),
-    supabase.from("posts").select("id", { count: "exact", head: true }).eq("club_id", clubId),
-    listStackedAlbums(supabase, clubId, { includeDrafts: true, limit: 4 }),
-    supabase
-      .from("access_events")
-      .select("id", { count: "exact", head: true })
-      .eq("club_id", clubId)
-      .eq("action", "view")
-      .gte("occurred_at", sevenDaysAgo()),
-  ]);
+  const [onList, active, pending, grace, albumCount, published, usage, mismatches, activity, stacked, viewsWeek, removals, engagement] =
+    await Promise.all([
+      count(),
+      count("active"),
+      count("pending"),
+      count("grace"),
+      supabase.from("albums").select("id", { count: "exact", head: true }).eq("club_id", clubId),
+      supabase.from("albums").select("id", { count: "exact", head: true }).eq("club_id", clubId).eq("status", "published"),
+      supabase.from("club_storage_usage").select("*").eq("club_id", clubId).maybeSingle(),
+      supabase
+        .from("memberships")
+        .select("id, roster_name, claimed_name, roster_email")
+        .eq("club_id", clubId)
+        .eq("name_mismatch", true)
+        .in("status", ["active", "grace"])
+        .limit(5),
+      supabase
+        .from("access_events")
+        .select("id, action, occurred_at, memberships(roster_name), media(original_filename)")
+        .eq("club_id", clubId)
+        .order("occurred_at", { ascending: false })
+        .limit(6),
+      listStackedAlbums(supabase, clubId, { includeDrafts: true, limit: 4 }),
+      supabase
+        .from("access_events")
+        .select("id", { count: "exact", head: true })
+        .eq("club_id", clubId)
+        .eq("action", "view")
+        .gte("occurred_at", sevenDaysAgo()),
+      supabase
+        .from("media_removal_requests")
+        .select("id", { count: "exact", head: true })
+        .eq("club_id", clubId)
+        .eq("status", "open"),
+      supabase.from("album_engagement").select("*").eq("club_id", clubId),
+    ]);
 
-  const drafts = (albums.count ?? 0) - (published.count ?? 0);
-  const recentTiles = stacked.flatMap((album) => album.tiles.map((t) => ({ ...t, albumId: album.id }))).slice(0, 12);
-  const firstRun = (onList.count ?? 0) <= 1 && (albums.count ?? 0) === 0;
+  const drafts = (albumCount.count ?? 0) - (published.count ?? 0);
+  const firstRun = (onList.count ?? 0) <= 1 && (albumCount.count ?? 0) === 0;
+  const openRemovals = removals.count ?? 0;
+
+  const views = new Map((engagement.data ?? []).map((row) => [row.album_id, row]));
+  const mostOpened = [...(engagement.data ?? [])].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))[0];
+  const mostOpenedTitle = mostOpened ? stacked.find((a) => a.id === mostOpened.album_id)?.title : null;
+
+  const today = new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
 
   // The committee screen is a control panel: what needs doing, then the
   // numbers, then the evidence.
   const tasks = [
+    openRemovals > 0
+      ? {
+          key: "removals",
+          title: `${openRemovals} photo${openRemovals === 1 ? "" : "s"} asked to come down`,
+          body: "Already hidden from members. Confirm or put back within seven days.",
+          href: `/admin/${handle}/removals`,
+          cta: "Review",
+          urgent: true,
+        }
+      : null,
     mismatches.data?.length
       ? {
           key: "names",
@@ -98,12 +121,16 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle kicker={ctx.club.name} title="Overview" underline />
+        <PageTitle kicker={ctx.club.name} title={today} underline>
+          {tasks.length
+            ? `${tasks.length} thing${tasks.length === 1 ? "" : "s"} need you. Everything else is running itself.`
+            : "Nothing needs you. Everything is running itself."}
+        </PageTitle>
         <div className="flex flex-wrap gap-2">
           <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
             See it as a member
           </Link>
-          <Link href={`/admin/${handle}/albums`} className="soft-btn soft-btn-primary no-underline">
+          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
             New album
           </Link>
         </div>
@@ -113,36 +140,28 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
         <div className="soft-bordered flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
             <span className="soft-chip">Getting started</span>
-            <div className="soft-display mt-2 text-[20px]">Add your members, then upload the first album.</div>
+            <div className="soft-display mt-2 text-[20px]">Five minutes, once. Then every event is a drag and drop.</div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href={`/admin/${handle}/members`} className="soft-btn soft-btn-primary no-underline">
-              Add members
-            </Link>
-            <Link href={`/admin/${handle}/albums`} className="soft-btn soft-btn-tonal no-underline">
-              New album
-            </Link>
-          </div>
+          <Link href={`/admin/${handle}/setup`} className="soft-btn soft-btn-primary no-underline">
+            Open the checklist
+          </Link>
         </div>
       ) : null}
 
-      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))" }}>
+      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(148px, 1fr))" }}>
         <Stat
           value={(onList.count ?? 0).toLocaleString("en-AU")}
           label="Members"
           hint={`${(active.count ?? 0).toLocaleString("en-AU")} signed in`}
         />
         <Stat
-          value={(albums.count ?? 0).toLocaleString("en-AU")}
+          value={(albumCount.count ?? 0).toLocaleString("en-AU")}
           label="Albums"
           hint={drafts > 0 ? `${drafts} draft` : "all published"}
           tone={drafts > 0 ? "attention" : "plain"}
         />
-        <Stat
-          value={(usage.data?.item_count ?? 0).toLocaleString("en-AU")}
-          label="Photos and videos"
-          hint={formatBytes(usage.data?.total_bytes ?? 0)}
-        />
+        <Stat value={(usage.data?.item_count ?? 0).toLocaleString("en-AU")} label="Photos and videos" hint="originals kept" />
+        <Stat value={formatBytes(usage.data?.total_bytes ?? 0)} label="Storage" hint="Included" />
         <Stat
           value={(viewsWeek.count ?? 0).toLocaleString("en-AU")}
           label="Views this week"
@@ -157,16 +176,12 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,330px)]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
         <div className="flex flex-col gap-6">
           <section className="soft-card flex flex-col gap-4 p-5">
             <div className="flex items-center gap-3">
               <h2 className="soft-display text-[19px]">Needs you</h2>
-              {tasks.length ? (
-                <span className="soft-chip">{tasks.length}</span>
-              ) : (
-                <span className="soft-chip soft-chip-muted">All clear</span>
-              )}
+              {tasks.length ? <span className="soft-chip">{tasks.length}</span> : <span className="soft-chip soft-chip-muted">All clear</span>}
             </div>
             {tasks.length ? (
               <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
@@ -198,75 +213,107 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
 
           <section className="soft-card flex flex-col gap-4 p-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="soft-display text-[19px]">Latest photos</h2>
+              <h2 className="soft-display text-[19px]">Recent albums</h2>
               <Link href={`/admin/${handle}/albums`} className="text-[13px] font-bold">
-                All albums
+                See all {(albumCount.count ?? 0).toLocaleString("en-AU")}
               </Link>
             </div>
-            {recentTiles.length ? (
-              <div className="grid gap-1.5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(84px, 1fr))" }}>
-                {recentTiles.map((tile, index) => (
-                  <Link
-                    key={tile.id}
-                    href={`/c/${handle}/a/${tile.albumId}/${tile.id}`}
-                    className="soft-tile aspect-square"
-                    style={index === 0 ? { gridColumn: "span 2", gridRow: "span 2" } : undefined}
-                  >
-                    {tile.url ? (
-                      // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                      <img src={tile.url} alt="" loading="lazy" />
-                    ) : null}
-                  </Link>
-                ))}
+            {stacked.length ? (
+              <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}>
+                {stacked.map((album) => {
+                  const row = views.get(album.id);
+                  return (
+                    <Link key={album.id} href={`/c/${handle}/a/${album.id}`} className="flex flex-col gap-2 text-ink no-underline">
+                      <span className="soft-tile relative block aspect-[4/3]">
+                        {album.coverUrl ? <img src={album.coverUrl} alt="" loading="lazy" /> : null}
+                        {album.status !== "published" ? (
+                          <span className="absolute left-2 top-2 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-0.5 text-[11px] font-bold text-white">
+                            {album.status === "hidden" ? "Hidden" : "Draft"}
+                          </span>
+                        ) : null}
+                      </span>
+                      <span>
+                        <span className="block truncate text-[14px] font-bold">{album.title}</span>
+                        <span className="block text-[12px] text-[color:var(--ink-70)]">
+                          {(album.photoCount + album.videoCount).toLocaleString("en-AU")} ·{" "}
+                          {album.status === "published"
+                            ? `${(row?.view_count ?? 0).toLocaleString("en-AU")} views`
+                            : "not live"}
+                        </span>
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
             ) : (
               <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
-                Nothing uploaded yet. Your newest photos will show up here.
+                Nothing uploaded yet. Your newest albums will show up here.
               </p>
             )}
           </section>
         </div>
 
-        <section className="soft-card flex flex-col gap-4 p-5">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="soft-display text-[19px]">Activity</h2>
-            <Link href={`/admin/${handle}/activity`} className="text-[13px] font-bold">
-              Full log
-            </Link>
-          </div>
-          {activity.data?.length ? (
-            <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
-              {activity.data.map((e, i) => (
-                <li key={e.id} className="flex gap-3">
-                  <span
-                    className={`mt-[7px] h-2 w-2 flex-none rounded-full ${i === 0 ? "bg-accent" : "bg-[color:var(--color-neutral-400)]"}`}
-                    aria-hidden
-                  />
-                  <span className="min-w-0">
-                    <span className="block text-[14px]">
-                      <strong className="font-bold">{e.memberships?.roster_name ?? "Admin"}</strong>{" "}
-                      {e.action === "download" ? "downloaded" : "viewed"} {e.media?.original_filename ?? "an item"}
+        <div className="flex flex-col gap-6">
+          <section className="soft-card flex flex-col gap-4 p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="soft-display text-[19px]">Activity</h2>
+              <Link href={`/admin/${handle}/activity`} className="text-[13px] font-bold">
+                Full log
+              </Link>
+            </div>
+            {activity.data?.length ? (
+              <ul className="m-0 flex list-none flex-col gap-3.5 p-0">
+                {activity.data.map((e, i) => (
+                  <li key={e.id} className="flex gap-3">
+                    <span
+                      className={`mt-[7px] h-2 w-2 flex-none rounded-full ${i === 0 ? "bg-accent" : "bg-[color:var(--color-neutral-400)]"}`}
+                      aria-hidden
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-[14px]">
+                        <strong className="font-bold">{e.memberships?.roster_name ?? "Admin"}</strong>{" "}
+                        {e.action === "download" ? "downloaded" : "viewed"} {e.media?.original_filename ?? "an item"}
+                      </span>
+                      <span className="block text-[12px] text-[color:var(--ink-55)]">{formatDateTime(e.occurred_at)}</span>
                     </span>
-                    <span className="block text-[12px] text-[color:var(--ink-55)]">{formatDateTime(e.occurred_at)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
-              No views yet. Once members open an album, you&apos;ll see who looked at what.
-            </p>
-          )}
-          <div className="mt-auto rounded-[16px] border border-dashed border-[color-mix(in_srgb,var(--color-text)_16%,transparent)] p-4">
-            <span className="block text-[13px] font-bold">Club feed</span>
-            <span className="block text-[13px] text-[color:var(--ink-70)]">
-              {(posts.count ?? 0).toLocaleString("en-AU")} posts so far.
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                No views yet. Once members open an album, you&apos;ll see who looked at what.
+              </p>
+            )}
+          </section>
+
+          {mostOpenedTitle ? (
+            <section className="rounded-[var(--soft-r)] bg-[color:var(--tone-support)] p-5 text-[color:var(--tone-support-ink)]">
+              <span className="block text-[12px] font-bold">Most opened album</span>
+              <span className="soft-display mt-1 block text-[21px] text-ink">{mostOpenedTitle}</span>
+              <span className="mt-1 block text-[13px]">
+                {(mostOpened?.view_count ?? 0).toLocaleString("en-AU")} views ·{" "}
+                {(mostOpened?.download_count ?? 0).toLocaleString("en-AU")} downloads ·{" "}
+                {(mostOpened?.member_count ?? 0).toLocaleString("en-AU")} members
+              </span>
+            </section>
+          ) : null}
+
+          <section className="soft-card flex flex-col gap-2 p-5">
+            <span className="text-[13px] font-bold">Guest links</span>
+            <span className="text-[13px] text-[color:var(--ink-70)]">
+              Hired a photographer? Give them a link that uploads into one album and shows them nothing else.
             </span>
-            <Link href={`/c/${handle}/feed`} className="soft-btn soft-btn-tonal !min-h-[40px] mt-3 !px-4 !text-[13px] no-underline">
-              Post to the feed
+            <Link href={`/admin/${handle}/guests`} className="soft-btn soft-btn-tonal !min-h-[40px] mt-2 !px-4 !text-[13px] no-underline self-start">
+              Make a guest link
             </Link>
-          </div>
-        </section>
+          </section>
+
+          {stacked[0] ? (
+            <p className="m-0 text-[12px] text-[color:var(--ink-55)]">
+              Newest album added {formatDate(stacked[0].date)}.
+            </p>
+          ) : null}
+        </div>
       </div>
     </main>
   );

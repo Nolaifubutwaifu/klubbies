@@ -15,7 +15,15 @@ export const PART_SIZE = 150;
 export async function GET(request: Request, ctx: RouteContext<"/api/albums/[id]/zip">) {
   const { id } = await ctx.params;
   if (!z.uuid().safeParse(id).success) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  const part = Math.max(0, Number(new URL(request.url).searchParams.get("part") ?? 0));
+  const params = new URL(request.url).searchParams;
+  const part = Math.max(0, Number(params.get("part") ?? 0));
+  // "Download these" on the Saved screen asks for a specific handful rather
+  // than the whole album, so the zip is just their favourites.
+  const only = (params.get("only") ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => z.uuid().safeParse(value).success)
+    .slice(0, PART_SIZE);
 
   const supabase = await createClient();
   const { data: album } = await supabase.from("albums").select("id, club_id, title, allow_download").eq("id", id).maybeSingle();
@@ -27,14 +35,15 @@ export async function GET(request: Request, ctx: RouteContext<"/api/albums/[id]/
     return NextResponse.json({ error: "Downloads are turned off for this album" }, { status: 403 });
   }
 
-  const { data: media } = await supabase
+  let query = supabase
     .from("media")
     .select("id, storage_path, original_filename, sort_at")
     .eq("album_id", album.id)
     .eq("status", "ready")
     .order("sort_at", { ascending: true })
-    .order("id", { ascending: true })
-    .range(part * PART_SIZE, (part + 1) * PART_SIZE - 1);
+    .order("id", { ascending: true });
+  query = only.length ? query.in("id", only) : query.range(part * PART_SIZE, (part + 1) * PART_SIZE - 1);
+  const { data: media } = await query;
   if (!media?.length) return NextResponse.json({ error: "Nothing to download" }, { status: 404 });
 
   const urls = await signPaths(
@@ -81,7 +90,11 @@ export async function GET(request: Request, ctx: RouteContext<"/api/albums/[id]/
   await logAccess(club, null, "zip");
 
   const safeTitle = album.title.replace(/[^a-zA-Z0-9 _-]/g, "").trim() || "album";
-  const filename = part > 0 ? `${safeTitle} (part ${part + 1}).zip` : `${safeTitle}.zip`;
+  const filename = only.length
+    ? `${safeTitle} (favourites).zip`
+    : part > 0
+      ? `${safeTitle} (part ${part + 1}).zip`
+      : `${safeTitle}.zip`;
 
   return new NextResponse(stream, {
     headers: {

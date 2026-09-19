@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <UploadProvider>
       <div className="theme-soft relative flex flex-1 flex-col">
         <SoftBackdrop />
-        <div className="relative z-10 mx-auto flex w-full max-w-[1100px] flex-1 flex-col">{children}</div>
+        <div className="relative z-10 mx-auto flex w-full max-w-[1320px] flex-1 flex-col">{children}</div>
         <AppFooter />
       </div>
       <UploadTray />

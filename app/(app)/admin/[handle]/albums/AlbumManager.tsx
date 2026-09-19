@@ -11,6 +11,7 @@ import {
   setAlbumPublishedAction,
 } from "@/app/(app)/admin/actions";
 import { formatDate, formatLongDate } from "@/lib/format";
+import { eventTypeLabel } from "@/lib/media/event-types";
 import type { StackedAlbum } from "@/lib/media/album-list";
 
 /** Local datetime string for an <input type="datetime-local">. */
@@ -68,7 +69,38 @@ function StatusChip({ album }: { album: StackedAlbum }) {
  * A move sends the whole list, so it stays idempotent and two committee
  * members dragging at once can't interleave into a broken order.
  */
-export function AlbumManager({ clubId, handle, albums }: { clubId: string; handle: string; albums: StackedAlbum[] }) {
+export type AlbumStats = { views: number; downloads: number; members: number };
+
+/** Three figures per row, the way the design reads an album's life. */
+function Figures({ stats }: { stats: AlbumStats }) {
+  const cells: [number, string][] = [
+    [stats.views, "views"],
+    [stats.downloads, "downloads"],
+    [stats.members, "members"],
+  ];
+  return (
+    <span className="hidden flex-none gap-5 xl:flex">
+      {cells.map(([value, label]) => (
+        <span key={label} className="w-[72px] text-center">
+          <span className="soft-display block text-[18px] leading-none">{value.toLocaleString("en-AU")}</span>
+          <span className="block text-[11px] text-[color:var(--ink-55)]">{label}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+export function AlbumManager({
+  clubId,
+  handle,
+  albums,
+  stats = {},
+}: {
+  clubId: string;
+  handle: string;
+  albums: StackedAlbum[];
+  stats?: Record<string, AlbumStats>;
+}) {
   const router = useRouter();
   // Only the order is held locally, so a drag feels instant. Everything else
   // reads from props: holding the albums in state meant a refresh after hiding
@@ -208,9 +240,14 @@ export function AlbumManager({ clubId, handle, albums }: { clubId: string; handl
               </span>
 
               <span className="min-w-[180px] flex-1">
-                <Link href={`/c/${handle}/a/${album.id}`} className="soft-display block text-[17px] text-ink no-underline">
-                  {album.title}
-                </Link>
+                <span className="flex flex-wrap items-center gap-2">
+                  <Link href={`/c/${handle}/a/${album.id}`} className="soft-display text-[17px] text-ink no-underline">
+                    {album.title}
+                  </Link>
+                  {eventTypeLabel(album.eventType) ? (
+                    <span className="soft-chip soft-chip-muted !py-0.5 !text-[11px]">{eventTypeLabel(album.eventType)}</span>
+                  ) : null}
+                </span>
                 <span className="block text-[12px] text-[color:var(--ink-70)]">
                   {[
                     album.date ? formatDate(album.date) : null,
@@ -224,6 +261,14 @@ export function AlbumManager({ clubId, handle, albums }: { clubId: string; handl
                   <span className="block text-[12px] text-accent-700">Goes live {formatLongDate(album.publishAt)}</span>
                 ) : null}
               </span>
+
+              {album.status === "published" ? (
+                <Figures stats={stats[album.id] ?? { views: 0, downloads: 0, members: 0 }} />
+              ) : (
+                <span className="hidden flex-none text-[12px] text-[color:var(--ink-55)] xl:block xl:w-[232px] xl:text-center">
+                  {album.status === "hidden" ? "Members can't see it, nothing deleted" : "Nobody can see this yet"}
+                </span>
+              )}
 
               <StatusChip album={album} />
 

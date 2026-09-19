@@ -23,7 +23,7 @@ export function ProfileForm({
 }) {
   const [state, action] = useActionState<AccountResult, FormData>(updateProfileAction, {});
   return (
-    <form action={action} className="flex max-w-[460px] flex-col gap-4">
+    <form action={action} className="flex flex-col gap-4">
       <label className="field">
         Display name
         <input className="input" name="displayName" defaultValue={displayName} maxLength={120} required />
@@ -47,7 +47,7 @@ export function ProfileForm({
         />
       </label>
       <FormMessage state={state} />
-      <SubmitButton className="btn btn-primary self-start" pendingText="Saving…">
+      <SubmitButton className="soft-btn soft-btn-primary self-start" pendingText="Saving…">
         Save profile
       </SubmitButton>
     </form>
@@ -85,12 +85,17 @@ export function AvatarUploader({ userId, avatarUrl }: { userId: string; avatarUr
     <div className="flex flex-wrap items-start gap-4">
       {avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-        <img src={avatarUrl} alt="" className="h-[104px] w-[104px] flex-none object-cover" />
+        <img src={avatarUrl} alt="" className="h-[104px] w-[104px] flex-none rounded-full object-cover" />
       ) : (
-        <span className="h-[104px] w-[104px] flex-none bg-neutral-400" />
+        <span
+          className="flex h-[104px] w-[104px] flex-none items-center justify-center rounded-full text-[13px] text-[color:var(--ink-55)]"
+          style={{ background: "var(--tone-support)" }}
+        >
+          No photo
+        </span>
       )}
       <div className="flex min-w-[180px] flex-1 flex-col gap-2">
-        <button type="button" className="btn btn-secondary text-[13px] self-start" onClick={() => input.current?.click()} disabled={busy}>
+        <button type="button" className="soft-btn soft-btn-tonal self-start !min-h-[40px] !px-4 !text-[13px]" onClick={() => input.current?.click()} disabled={busy}>
           {busy ? "Uploading…" : avatarUrl ? "Change photo" : "Add a photo"}
         </button>
         <span className="text-[13px] leading-normal text-neutral-700">
@@ -114,7 +119,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
   const [state, action] = useActionState<AccountResult, FormData>(setPasswordAction, {});
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-2 border-divider p-3">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--soft-r-sm)] border border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] p-3.5">
       <span className="text-[14px]">
         <strong>Password</strong>
         <br />
