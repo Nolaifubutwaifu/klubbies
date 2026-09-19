@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { AuthSplit } from "@/components/AuthSplit";
-import { NEUTRAL_MESSAGE, SIGNIN_COOKIE } from "@/lib/auth/flow";
+import { AuthShell } from "@/components/AuthShell";
+import { SIGNIN_COOKIE } from "@/lib/auth/flow";
 import { CodeForm } from "./CodeForm";
 
 export const metadata: Metadata = { title: "Enter your code" };
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split("@");
-  if (!domain) return email;
-  return `${local.slice(0, 2)}${"•".repeat(Math.max(1, Math.min(6, local.length - 2)))}@${domain}`;
-}
 
 export default async function CodePage(props: PageProps<"/signin/code">) {
   const params = await props.searchParams;
@@ -20,17 +14,38 @@ export default async function CodePage(props: PageProps<"/signin/code">) {
   if (!email) redirect(isCreate ? "/start" : "/signin");
 
   return (
-    <AuthSplit
-      kicker="Check your inbox"
-      headline={maskEmail(email)}
-      detail={isCreate ? "We've sent you a sign-in code. It expires in 10 minutes." : NEUTRAL_MESSAGE}
-      footnote="Codes work once. Nobody from your club or from Klubbies will ever ask you for one."
-    >
-      <div>
-        <h1 className="display mb-2 text-[32px]">Enter your code</h1>
-        <p className="text-[15px] text-neutral-700">Type the code from the email.</p>
+    <AuthShell footer="Codes work once. Nobody from your club or from Klubbies will ever ask you for one.">
+      <div className="mt-12 text-center">
+        <span
+          className="mx-auto flex h-[78px] w-[78px] items-center justify-center rounded-full"
+          style={{ background: "#eaf5ea" }}
+          aria-hidden
+        >
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2f6b36" strokeWidth="2.4" strokeLinecap="round">
+            <path d="M3.5 7.5 12 13l8.5-5.5" />
+            <rect x="3" y="5" width="18" height="14" rx="2.5" />
+          </svg>
+        </span>
+        <h1 className="mt-4 text-[clamp(24px,7vw,27px)]">Check your uni email.</h1>
+        {/* The address is theirs — they just typed it — so spelling it back is
+            a help, not a leak. */}
+        <p className="mt-2.5 text-[15px] text-[color:var(--color-neutral-700)]">
+          We sent an eight digit code to <strong className="font-bold text-ink">{email}</strong>. It works for ten
+          minutes.
+        </p>
       </div>
-      <CodeForm restartHref={isCreate ? "/start" : "/signin"} />
-    </AuthSplit>
+
+      <div className="mt-6">
+        <CodeForm restartHref={isCreate ? "/start" : "/signin"} />
+      </div>
+
+      <div className="mt-auto rounded-[18px] bg-[color:var(--color-surface)] px-4 py-3.5">
+        <span className="block text-[13px] font-bold">Nothing arrived at all?</span>
+        <p className="m-0 mt-1.5 text-[13px] text-[color:var(--color-neutral-700)]">
+          Two things usually fix it: try your uni email rather than a personal one, and if that&rsquo;s already what you
+          used, ask your committee to add you to the member list — it takes them about ten seconds.
+        </p>
+      </div>
+    </AuthShell>
   );
 }

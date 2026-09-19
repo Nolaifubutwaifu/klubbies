@@ -59,40 +59,38 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
   const submitLabel = pending
     ? mode === "password"
       ? "Signing in…"
-      : "Checking…"
+      : "Sending…"
     : mode === "password"
       ? "Sign in"
       : mode === "signup"
         ? "Create my account"
-        : flow === "create"
-          ? "Send me a code"
-          : "Check my access";
+        : "Send me a code";
 
   return (
-    <form onSubmit={onSubmit} className="flex max-w-[420px] flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
       {mode !== "password" ? (
-        <label className="field">
-          Full name
-          <input className="input" name="fullName" autoComplete="name" placeholder="Mara Lindqvist" required maxLength={200} />
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-bold text-[color:var(--color-neutral-700)]">Your name</span>
+          <input className="soft-input !min-h-[50px]" name="fullName" autoComplete="name" placeholder="Tilly Nguyen" required maxLength={200} />
         </label>
       ) : null}
-      <label className="field">
-        Email
+      <label className="flex flex-col gap-1.5">
+        <span className="text-[13px] font-bold text-[color:var(--color-neutral-700)]">Uni email</span>
         <input
-          className="input"
+          className="soft-input !min-h-[50px]"
           name="email"
           type="email"
           inputMode="email"
           autoComplete="email"
-          placeholder="m.lindqvist@uni.edu"
+          placeholder="you@student.unimelb.edu.au"
           required
           maxLength={254}
         />
       </label>
       {mode === "password" ? (
-        <label className="field">
-          Password
-          <input className="input" name="password" type="password" autoComplete="current-password" required minLength={8} />
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[13px] font-bold text-[color:var(--color-neutral-700)]">Password</span>
+          <input className="soft-input !min-h-[50px]" name="password" type="password" autoComplete="current-password" required minLength={8} />
         </label>
       ) : null}
       {error ? (
@@ -100,16 +98,16 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           {error}
         </div>
       ) : null}
-      <button type="submit" className="btn btn-primary btn-lg justify-start text-left" disabled={pending}>
+      <button type="submit" className="soft-btn soft-btn-primary !min-h-[54px] !text-[17px]" disabled={pending}>
         {submitLabel}
       </button>
 
       {flow === "member" ? (
-        <div className="flex flex-wrap gap-4 text-[13px]">
+        <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[13px]">
           {mode !== "signup" ? (
             <button
               type="button"
-              className="btn btn-ghost text-[13px]"
+              className="cursor-pointer border-0 bg-transparent p-0 font-bold text-accent-700 underline underline-offset-2"
               onClick={() => {
                 setMode("signup");
                 setError("");
@@ -120,7 +118,7 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           ) : (
             <button
               type="button"
-              className="btn btn-ghost text-[13px]"
+              className="cursor-pointer border-0 bg-transparent p-0 font-bold text-accent-700 underline underline-offset-2"
               onClick={() => {
                 setMode("code");
                 setError("");
@@ -132,7 +130,7 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           {mode !== "signup" ? (
             <button
               type="button"
-              className="btn btn-ghost text-[13px]"
+              className="cursor-pointer border-0 bg-transparent p-0 font-bold text-accent-700 underline underline-offset-2"
               onClick={() => {
                 setMode(mode === "code" ? "password" : "code");
                 setError("");
@@ -143,16 +141,6 @@ export function SignInForm({ flow, initialMode = "code" }: { flow: "member" | "c
           ) : null}
         </div>
       ) : null}
-
-      <div className="border-t-2 border-divider pt-3 text-[13px] leading-normal text-neutral-600">
-        {mode === "password"
-          ? "Set a password from your profile after signing in once."
-          : mode === "signup"
-            ? "We'll email you a code to confirm the address. Once you're in, any club that adds your email shows up as an invitation."
-            : flow === "create"
-              ? "We'll email you a sign-in code. No password to forget."
-              : "We'll email a sign-in code to the address your club has on file. No password to forget."}
-      </div>
     </form>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AuthSplit } from "@/components/AuthSplit";
+import { AuthHeadline, AuthNote, AuthShell } from "@/components/AuthShell";
 import { getSessionUser } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SignInForm } from "./SignInForm";
@@ -30,27 +30,44 @@ export default async function SignInPage(props: PageProps<"/signin">) {
   const user = await getSessionUser();
   if (user) redirect(clubHandle ? `/c/${clubHandle}` : "/clubs");
 
+  // Someone following a club's own link already knows which club they want;
+  // everyone else gets the line the design leads with.
   const club = await clubPreview(clubHandle);
 
   return (
-    <AuthSplit
-      kicker={club ? "You're joining" : "Members only"}
-      headline={club?.name ?? "Your club's photos"}
-      detail={club?.organisation ?? "Every event album your committee has shared with you, in one private place."}
+    <AuthShell
+      band
+      footer={
+        <>
+          Committee instead?{" "}
+          <Link href="/start" className="font-bold">
+            Set up your club
+          </Link>
+        </>
+      }
     >
-      <div>
-        <h1 className="display mb-2 text-[32px]">Log in</h1>
-        <p className="text-[15px] text-neutral-700">
-          Use the name and email your club has on file. Admins sign in here too.
-        </p>
-      </div>
-      <SignInForm flow="member" />
-      <p className="text-[13px] text-neutral-600">
-        Running a club?{" "}
-        <Link href="/start" className="font-semibold">
-          Start one here
-        </Link>
+      <AuthHeadline>
+        {club ? (
+          <>
+            Every photo from <span className="text-accent-700">{club.name}</span>, waiting for you.
+          </>
+        ) : (
+          <>
+            Every photo from <span className="text-accent-700">Friday</span>, waiting on Saturday.
+          </>
+        )}
+      </AuthHeadline>
+      <p className="mt-2.5 text-[15px] text-[color:var(--color-neutral-700)]">
+        Sign in with the email your club has on its list. No password to forget.
       </p>
-    </AuthSplit>
+
+      <div className="mt-5">
+        <SignInForm flow="member" />
+      </div>
+
+      <AuthNote>
+        Klubbies checks that email against your club&rsquo;s member list. If it&rsquo;s there, you&rsquo;re in.
+      </AuthNote>
+    </AuthShell>
   );
 }

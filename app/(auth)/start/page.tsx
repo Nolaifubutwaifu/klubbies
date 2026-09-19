@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AuthSplit } from "@/components/AuthSplit";
+import { AuthHeadline, AuthNote, AuthShell } from "@/components/AuthShell";
 import { getSessionUser } from "@/lib/auth/session";
 import { SignInForm } from "../signin/SignInForm";
 
@@ -10,17 +11,32 @@ export default async function StartPage() {
   if (await getSessionUser()) redirect("/admin/new");
 
   return (
-    <AuthSplit
-      kicker="For committees"
-      headline="Start a club in three steps"
-      detail="Name your club, drop in the member list you already keep, then upload the first event album."
-      footnote="Only people on your member list will ever see what you upload."
+    <AuthShell
+      band
+      footer={
+        <>
+          Already in a club?{" "}
+          <Link href="/signin" className="font-bold">
+            Log in instead
+          </Link>
+        </>
+      }
     >
-      <div>
-        <h1 className="display mb-2 text-[32px]">Start a club</h1>
-        <p className="text-[15px] text-neutral-700">First, confirm your email. You&apos;ll be the club&apos;s admin.</p>
+      <AuthHeadline>
+        Your club&rsquo;s nights, <span className="text-accent-700">off</span> the group chat.
+      </AuthHeadline>
+      <p className="mt-2.5 text-[15px] text-[color:var(--color-neutral-700)]">
+        Confirm your email and you&rsquo;re the club&rsquo;s admin. Nothing is charged until you publish your first
+        album.
+      </p>
+
+      <div className="mt-5">
+        <SignInForm flow="create" />
       </div>
-      <SignInForm flow="create" />
-    </AuthSplit>
+
+      <AuthNote>
+        Name the club, drop in the member list you already keep, upload the first event. Five minutes, once.
+      </AuthNote>
+    </AuthShell>
   );
 }
