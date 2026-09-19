@@ -264,3 +264,30 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
     — `.soft-word` is still colour-only.** Pick a face, add it to
     `app/layout.tsx`, and give `.soft-word` a `font-family`. Until then the
     headline emphasis carries one signal where it should carry two.
+77. **The red is Klubbies', the quiet layer is the club's.** The club colour
+    used to drive `--color-accent`, so a club that picked blue got blue
+    headlines, blue tags and blue eyebrows and stopped looking like Klubbies.
+    Vermillion is now fixed in every club — headline emphasis, tags, eyebrows,
+    section bands and the tier-2 button — and what a club picks styles the
+    *quiet* layer instead: the tier-3 button, the accessory labels and the
+    supporting surfaces. `accentStyle()` is now `clubToneStyle()` and emits
+    only `--tone-support`, `--tone-support-deep` and `--tone-support-ink`.
+    The tones mix the club's hue into the lilac rather than into white, which
+    keeps them calm enough to sit under a warm accent and, as a side effect,
+    lands the quiet tier at ~1.9:1 against white instead of the flat lilac's
+    1.45:1 — so this is a contrast gain as well as a brand one. Worst label
+    contrast across the ten swatches is 5.17:1.
+    *Gotcha:* `.theme-soft` sits above the element `clubToneStyle` is applied
+    to, so these tokens cannot be declared as `color-mix(… var(--color-accent) …)`
+    on `.theme-soft` — custom properties substitute at the declaring element,
+    not where they are read. They are computed in JS in `lib/theme.ts` for that
+    reason. The stylesheet keeps the neutral lilac as the no-club default.
+78. **Settings says "club tone", not "club colour",** because it no longer
+    changes the buttons and tags the old copy promised. The preview now shows
+    the two things that actually change beside the two that never do, and the
+    swatches are round with a check on the selected one instead of a hairline
+    square.
+79. **The date filter rides inside the search field.** It cost a whole row —
+    about 70px of an 812px phone screen — for a control most members never
+    touch. With that and the header changes the first album moved from 470px
+    to roughly 146px.

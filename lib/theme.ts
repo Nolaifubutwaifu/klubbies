@@ -1,5 +1,8 @@
-// Per-club accent colour. Settings stores one hex value and every red accent
-// in that club's pages follows it.
+// Per-club tone. Klubbies' vermillion is fixed brand — it carries headline
+// emphasis, tags, eyebrows and the tier-2 button in every club. What a club
+// picks is its *quiet* layer: the tier-3 button, the accessory labels and the
+// supporting surfaces. Settings stores one hex value and these three tokens
+// are mixed from it.
 
 const DEFAULT_ACCENT = "#ec3013";
 
@@ -44,27 +47,26 @@ export function isValidAccent(hex: string | null | undefined): boolean {
 }
 
 /**
- * Builds the accent ramp used by the component classes. Returns null for the
- * default colour so pages fall back to the stylesheet.
+ * Builds the supporting tones for a club. Returns undefined when the club has
+ * not picked one, so those pages fall back to the neutral lilac in the
+ * stylesheet. The club's colour never touches --color-accent: the red is
+ * Klubbies' own and stays the same in every club.
+ *
+ * Each token mixes the club's hue into the lilac rather than into white, which
+ * keeps the result calm enough to sit under the fixed vermillion and lands the
+ * quiet tier around 1.9:1 against white — better than the flat lilac's 1.45:1.
  */
-export function accentStyle(hex: string | null | undefined): Record<string, string> | undefined {
+export function clubToneStyle(hex: string | null | undefined): Record<string, string> | undefined {
   if (!hex) return undefined;
   const rgb = parse(hex);
   if (!rgb) return undefined;
-  if (toHex(rgb).toLowerCase() === DEFAULT_ACCENT) return undefined;
-  const white: [number, number, number] = [255, 255, 255];
-  const black: [number, number, number] = [32, 30, 29];
+  const lilac: [number, number, number] = [241, 233, 251];
+  const lilacDeep: [number, number, number] = [216, 200, 240];
+  const lilacInk: [number, number, number] = [67, 51, 92];
   return {
-    "--color-accent": toHex(rgb),
-    "--color-accent-100": mix(rgb, white, 0.92),
-    "--color-accent-200": mix(rgb, white, 0.84),
-    "--color-accent-300": mix(rgb, white, 0.66),
-    "--color-accent-400": mix(rgb, white, 0.45),
-    "--color-accent-500": mix(rgb, white, 0.12),
-    "--color-accent-600": mix(rgb, black, 0.18),
-    "--color-accent-700": mix(rgb, black, 0.34),
-    "--color-accent-800": mix(rgb, black, 0.52),
-    "--color-accent-900": mix(rgb, black, 0.68),
+    "--tone-support": mix(rgb, lilac, 0.9),
+    "--tone-support-deep": mix(rgb, lilacDeep, 0.84),
+    "--tone-support-ink": mix(rgb, lilacInk, 0.78),
   } as Record<string, string>;
 }
 

@@ -6,7 +6,7 @@ import { getClubContext, getProfile, listMyClubs } from "@/lib/auth/session";
 import { displayNameFor } from "@/lib/auth/display-name";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
-import { accentStyle } from "@/lib/theme";
+import { clubToneStyle } from "@/lib/theme";
 
 export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
   const { handle } = await props.params;
@@ -35,7 +35,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
     : null;
 
   return (
-    <div className="flex flex-1 flex-col" style={accentStyle(ctx.club.accent_colour)}>
+    <div className="flex flex-1 flex-col" style={clubToneStyle(ctx.club.accent_colour)}>
       {/* Wide screens get the rail instead of a top bar — the design puts every
           club you're in down the left and nothing above the photos. */}
       <div className="lg:hidden">

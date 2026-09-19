@@ -117,13 +117,24 @@ export function SoftEvents({
               <SearchIcon />
             </span>
             <input
-              className="soft-input pl-11"
+              className="soft-input pl-11 pr-[112px]"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search an event"
               aria-label="Search event names"
               type="search"
             />
+            {/* The date filter rides inside the field rather than taking a row
+                of its own — on a phone that row cost ~70px of the fold. */}
+            <button
+              type="button"
+              onClick={() => setCalOpen((v) => !v)}
+              aria-expanded={calOpen}
+              className="soft-btn soft-btn-tonal absolute right-1.5 top-1/2 !min-h-[34px] -translate-y-1/2 !px-3 !text-[13px]"
+            >
+              <CalendarIcon />
+              <span className="max-w-[86px] truncate">{day ? formatLongDate(day) : "Any date"}</span>
+            </button>
           </div>
           )}
           {canManage ? (
@@ -137,12 +148,8 @@ export function SoftEvents({
         </div>
       </div>
 
-      {albums.length === 0 ? null : (
-      <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6">
-        <button type="button" className="soft-btn soft-btn-tonal" onClick={() => setCalOpen((v) => !v)} aria-expanded={calOpen}>
-          <CalendarIcon />
-          {day ? formatLongDate(day) : "Any date"}
-        </button>
+      {albums.length === 0 || !filtersOn ? null : (
+      <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4">
         {filtersOn ? (
           <button
             type="button"

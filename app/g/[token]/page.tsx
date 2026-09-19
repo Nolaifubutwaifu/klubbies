@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 import { formatLongDate } from "@/lib/format";
 import { resolveGuestLink, type GuestLinkState } from "@/lib/guest/links";
-import { accentStyle } from "@/lib/theme";
+import { clubToneStyle } from "@/lib/theme";
 import { GuestUploader } from "./GuestUploader";
 
 // A guest link is the only part of Klubbies that works without an account, so
@@ -47,7 +47,7 @@ export default async function GuestUploadPage(props: PageProps<"/g/[token]">) {
   }
 
   return (
-    <div className="theme-soft relative flex min-h-dvh flex-col" style={accentStyle(session.clubAccent)}>
+    <div className="theme-soft relative flex min-h-dvh flex-col" style={clubToneStyle(session.clubAccent)}>
       <SoftBackdrop />
       <main className="relative z-10 mx-auto flex w-full max-w-[720px] flex-1 flex-col gap-6 px-5 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">

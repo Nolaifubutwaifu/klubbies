@@ -565,8 +565,15 @@
   --soft-ease: 200ms cubic-bezier(0.22, 0.68, 0.32, 1);
   /* 60/30/10: cream ground, lilac supporting surfaces, accent for action only. */
   --tone-base: #fff8f4;
+  /* Supporting tones — the quiet layer. This is the neutral default, used by
+     the marketing pages and by clubs that have not picked a tone; a club that
+     has one gets these three regenerated from it in lib/theme.ts. The club's
+     colour lives here and nowhere else: --color-accent stays Klubbies
+     vermillion in every club, so headlines, tags and the tier-2 button look
+     the same everywhere. Deepened from #ded0f4 (1.45:1 against white) so the
+     quiet button tier reads as a button rather than a ghost. */
   --tone-support: #f1e9fb;
-  --tone-support-deep: #ded0f4;
+  --tone-support-deep: #d8c8f0;
   --tone-support-ink: #43335c;
   --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
   --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -684,12 +691,12 @@
 
   /* Destructive: the odd one out, without shouting. */
   .soft-btn-danger {
-    color: var(--color-accent-800);
-    background: color-mix(in srgb, var(--color-accent) 22%, #fff);
+    color: var(--color-accent-900);
+    background: color-mix(in srgb, var(--color-accent) 30%, #fff);
     box-shadow: none;
   }
   .soft-btn-danger:hover {
-    background: color-mix(in srgb, var(--color-accent) 34%, #fff);
+    background: color-mix(in srgb, var(--color-accent) 42%, #fff);
   }
 
   .soft-btn-lg {
@@ -710,8 +717,8 @@
     color: var(--color-accent-700);
   }
   .soft-chip-muted {
-    background: color-mix(in srgb, #2b2228 6%, transparent);
-    color: var(--color-neutral-700);
+    background: var(--tone-support);
+    color: var(--tone-support-ink);
   }
 
   .soft-input {
@@ -1087,13 +1094,13 @@
 
   /* Destructive: reads as the odd one out without shouting. */
   .theme-soft .btn-danger {
-    color: var(--color-accent-800);
-    background: color-mix(in srgb, var(--color-accent) 22%, #fff);
+    color: var(--color-accent-900);
+    background: color-mix(in srgb, var(--color-accent) 30%, #fff);
     border: 0;
     box-shadow: none;
   }
   .theme-soft .btn-danger:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 34%, #fff);
+    background: color-mix(in srgb, var(--color-accent) 42%, #fff);
   }
 
   .theme-soft .btn-lg {

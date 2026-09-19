@@ -6,7 +6,7 @@ import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/statu
 import { formatDate } from "@/lib/format";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
-import { accentStyle } from "@/lib/theme";
+import { clubToneStyle } from "@/lib/theme";
 
 export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">) {
   const { handle } = await props.params;
@@ -39,7 +39,7 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
     : { line: BILLING_LABEL[status], hint: "Activate to upload" };
 
   return (
-    <div className="flex flex-1 flex-col" style={accentStyle(ctx.club.accent_colour)}>
+    <div className="flex flex-1 flex-col" style={clubToneStyle(ctx.club.accent_colour)}>
       <AppHeader ctx={ctx} forceAdmin />
       <div className="flex flex-1 flex-col gap-2 px-4 pt-3 sm:px-6 lg:flex-row lg:items-start lg:gap-6 lg:px-6">
         <AdminNav
