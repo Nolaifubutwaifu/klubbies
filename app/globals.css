@@ -30,8 +30,14 @@
   --color-accent-900: #4d170e;
   --color-accent-2-100: #fff2ef;
   --color-accent-2-800: #71261b;
-  --font-heading: var(--font-archivo), system-ui, sans-serif;
-  --font-body: var(--font-archivo), system-ui, sans-serif;
+  --font-heading: var(--font-fredoka), system-ui, sans-serif;
+  --font-body: var(--font-dm-sans), system-ui, sans-serif;
+  /* Ink tiers: one warm ramp, mixed from the page's own text colour. Declared
+     here so the Tailwind `text-ink-*` utilities always resolve, and redeclared
+     inside .theme-soft against that theme's ink. */
+  --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
+  --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
+  --ink-35: color-mix(in srgb, var(--color-text) 35%, transparent);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -233,14 +239,14 @@
 
   .display {
     font-family: var(--font-heading);
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.02;
   }
 
   .brand {
     font-family: var(--font-heading);
-    font-weight: 900;
+    font-weight: 700;
     font-size: 20px;
     letter-spacing: -0.02em;
     color: var(--color-text);
@@ -346,7 +352,7 @@
   }
   .dialog-title {
     font-family: var(--font-heading);
-    font-weight: 900;
+    font-weight: 700;
     font-size: 24px;
     letter-spacing: -0.02em;
   }
@@ -572,7 +578,7 @@
   .theme-soft h3,
   .theme-soft .soft-display {
     font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 900;
+    font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.1;
   }
@@ -863,7 +869,7 @@
     padding: 7px 14px;
     border-radius: 999px;
     font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 900;
+    font-weight: 700;
     font-size: 13px;
     color: #fff;
     background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));

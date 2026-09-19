@@ -80,7 +80,7 @@ function Inner({ clubId, doneHref }: { clubId: string; doneHref: string }) {
           Cancel
         </a>
       </div>
-      <span className="text-[12px] text-neutral-600">
+      <span className="text-[12px] text-ink-55">
         Card details go straight to Stripe. Klubbies only stores the brand and last four digits.
       </span>
     </form>
@@ -111,7 +111,7 @@ export function CardForm({ clubId, doneHref }: { clubId: string; doneHref: strin
 
   if (!stripePromise) return <div className="notice">Card updates need NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.</div>;
   if (error) return <div className="notice">{error}</div>;
-  if (!clientSecret) return <p className="text-[14px] text-neutral-700">Opening the secure card form…</p>;
+  if (!clientSecret) return <p className="text-[14px] text-ink-70">Opening the secure card form…</p>;
 
   return (
     <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>

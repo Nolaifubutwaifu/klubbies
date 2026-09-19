@@ -22,7 +22,7 @@ function Tile({ item, cover, saved }: { item: GridItem; cover: boolean; saved: b
         // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
         <img src={item.thumbUrl} alt={item.original_filename ?? ""} className="h-full w-full object-cover" loading="lazy" />
       ) : (
-        <span className="flex h-full w-full items-center justify-center bg-neutral-400 p-2 text-center text-[11px] text-neutral-900">
+        <span className="flex h-full w-full items-center justify-center bg-neutral-400 p-2 text-center text-[11px] text-ink">
           {item.status === "ready" ? "No preview" : item.original_filename || "Not finished"}
         </span>
       )}

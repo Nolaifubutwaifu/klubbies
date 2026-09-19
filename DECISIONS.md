@@ -186,3 +186,16 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
 67. **A club with no albums gets its own screen**, not a "no matches" card:
     two empty photo cards and one button that turns on the new-album email
     (`notifyOnNewAlbumsAction`) without sending anyone to their profile.
+
+## 2026-09-20 · First production deploy
+
+68. **The publishing cron is daily, under protest.** Vercel's Hobby plan
+    allows one cron run per day, so `vercel.json` is back to `0 23 * * *`
+    (9am Melbourne) rather than the hourly pass commit 87cac76 introduced.
+    The consequence is real: an album scheduled for Saturday 10am goes live
+    on Sunday morning, so the schedule control now offers 9am and the copy
+    promises "the first morning after this time" instead of "on the hour".
+    Grace expiry and the seven day removal sweep don't mind a daily pass;
+    scheduling is the only part that does. Restoring it is a one line change
+    in `vercel.json` plus the three strings named in the README, and there is
+    a `TODO(vercel-pro)` on the cron route.

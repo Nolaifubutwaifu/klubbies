@@ -14,6 +14,12 @@ function authorised(request: Request): boolean {
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
+// TODO(vercel-pro): put this back to hourly ("0 * * * *"). It runs once a day
+// only because Vercel's Hobby plan refuses more than one cron run per day, and
+// a daily pass means a scheduled album can wait until the next 9am Melbourne
+// rather than going live near the time the committee picked. Nothing else here
+// minds the delay; scheduling is the part that does.
+//
 // Via Vercel Cron (vercel.json): publishes albums whose scheduled time has
 // passed, deletes photos whose removal request nobody answered, revokes
 // expired grace memberships, and sends the day 7 and day 29 reminders.

@@ -31,12 +31,12 @@ export function ProfileForm({
       <label className="field">
         Email
         <input className="input" value={email} disabled />
-        <span className="text-[13px] font-normal leading-normal text-neutral-700">
+        <span className="text-[13px] font-normal leading-normal text-ink-70">
           This is the address your clubs have on file. Ask a club admin to change it.
         </span>
       </label>
       <label className="field">
-        About you <span className="font-normal text-neutral-600">optional</span>
+        About you <span className="font-normal text-ink-55">optional</span>
         <textarea
           className="input"
           name="bio"
@@ -98,7 +98,7 @@ export function AvatarUploader({ userId, avatarUrl }: { userId: string; avatarUr
         <button type="button" className="soft-btn soft-btn-tonal self-start !min-h-[40px] !px-4 !text-[13px]" onClick={() => input.current?.click()} disabled={busy}>
           {busy ? "Uploading…" : avatarUrl ? "Change photo" : "Add a photo"}
         </button>
-        <span className="text-[13px] leading-normal text-neutral-700">
+        <span className="text-[13px] leading-normal text-ink-70">
           Your photo and display name are visible to other members of clubs you&apos;re in.
         </span>
         {error ? <span className="notice">{error}</span> : null}
@@ -123,7 +123,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       <span className="text-[14px]">
         <strong>Password</strong>
         <br />
-        <span className="text-[13px] text-neutral-700">
+        <span className="text-[13px] text-ink-70">
           {hasPassword ? "Set. You can sign in with email and password." : "Faster if you sign in often."}
         </span>
       </span>
@@ -186,7 +186,7 @@ export function NotificationToggles({
           {label}
         </label>
       ))}
-      {message ? <span className="text-[12px] text-neutral-600">{message}</span> : null}
+      {message ? <span className="text-[12px] text-ink-55">{message}</span> : null}
     </div>
   );
 }

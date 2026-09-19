@@ -82,7 +82,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
             ) : null}
           </div>
           <h2 className="display text-[32px]">{justPaid ? "You're all set." : status === "past_due" ? "Your last payment failed." : "Your club is active."}</h2>
-          <p className="max-w-[56ch] text-[15px] text-neutral-800">
+          <p className="max-w-[56ch] text-[15px] text-ink-70">
             {status === "past_due"
               ? "Stripe will retry the card automatically. Update your payment details to avoid losing the ability to add members and upload."
               : status === "comped"
@@ -133,7 +133,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
           </div>
           <div className="flex flex-col gap-3">
             <span className="text-[13px] font-semibold">What happens next</span>
-            <ol className="flex flex-col gap-3 text-[15px] leading-normal text-neutral-800">
+            <ol className="flex flex-col gap-3 text-[15px] leading-normal text-ink-70">
               <li>
                 <strong>1.</strong> Pay on Stripe&apos;s secure checkout page.
               </li>

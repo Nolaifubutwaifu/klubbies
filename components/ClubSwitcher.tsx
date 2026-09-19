@@ -63,7 +63,7 @@ export function ClubSwitcher({
         )}
         <span className="soft-wordmark text-[17px]">{current?.name ?? "Your clubs"}</span>
         {invites.length ? <span className="tag tag-accent text-[10px]">{invites.length} new</span> : null}
-        <span className="text-[11px] text-neutral-600">▾</span>
+        <span className="text-[11px] text-ink-55">▾</span>
       </button>
 
       {open ? (
@@ -74,7 +74,7 @@ export function ClubSwitcher({
           <div className="label-caps px-4 pt-3">Your clubs</div>
           <div className="flex flex-col">
             {others.length === 0 && clubs.length <= 1 ? (
-              <p className="px-4 py-3 text-[13px] text-neutral-700">
+              <p className="px-4 py-3 text-[13px] text-ink-70">
                 You&apos;re only in this club. Ask another committee to add your email, or start your own.
               </p>
             ) : null}
@@ -91,7 +91,7 @@ export function ClubSwitcher({
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate font-heading text-[15px] font-extrabold">{club.name}</span>
-                  <span className="block text-[12px] text-neutral-700">
+                  <span className="block text-[12px] text-ink-70">
                     {club.roleName}
                     {club.status === "grace" ? " · access ending" : ""}
                   </span>

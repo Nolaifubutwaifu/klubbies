@@ -32,7 +32,7 @@ export function UnfinishedUploads({
         {items.map((item) => (
           <li key={item.id} className="flex flex-wrap items-center gap-2">
             <span className="font-semibold">{item.original_filename ?? "Unnamed file"}</span>
-            <span className="text-neutral-700">started {formatDateTime(item.created_at)}</span>
+            <span className="text-ink-70">started {formatDateTime(item.created_at)}</span>
             <button
               type="button"
               className="btn btn-ghost text-[12px]"

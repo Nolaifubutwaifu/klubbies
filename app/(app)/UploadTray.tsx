@@ -38,7 +38,7 @@ export function UploadTray() {
       <div className="mx-3 mt-2 h-[8px] bg-neutral-300">
         <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
       </div>
-      <p className="m-0 px-3 py-2 text-[12px] leading-normal text-neutral-700">
+      <p className="m-0 px-3 py-2 text-[12px] leading-normal text-ink-70">
         {done} of {jobs.length} done{failed.length ? ` · ${failed.length} failed` : ""}. Keep this tab open until it
         finishes; you can browse other pages.
       </p>

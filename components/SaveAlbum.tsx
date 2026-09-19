@@ -97,7 +97,7 @@ export function SaveAlbum({
           ))
         )}
       </div>
-      {progress ? <span className="text-[12px] text-neutral-600">{progress}</span> : null}
+      {progress ? <span className="text-[12px] text-ink-55">{progress}</span> : null}
       {error ? <span className="text-[12px] text-accent-700">{error}</span> : null}
     </div>
   );

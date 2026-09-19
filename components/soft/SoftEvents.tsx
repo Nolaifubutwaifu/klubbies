@@ -104,7 +104,7 @@ export function SoftEvents({
             {firstName ? `${greeting()}, ${firstName}.` : "Events"}
           </h1>
           <SquiggleUnderline />
-          <p className="mt-2 text-[15px] text-neutral-700">
+          <p className="mt-2 text-[15px] text-ink-70">
             {newCount
               ? `${newCount} album${newCount === 1 ? "" : "s"} landed since you were last here.`
               : albums.length
@@ -115,7 +115,7 @@ export function SoftEvents({
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:min-w-[300px]">
           {albums.length === 0 ? null : (
           <div className="relative">
-            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-55">
               <SearchIcon />
             </span>
             <input
@@ -165,7 +165,7 @@ export function SoftEvents({
       )}
 
       {filtersOn ? (
-        <p className="mt-3 text-[14px] text-neutral-700">
+        <p className="mt-3 text-[14px] text-ink-70">
           {filtered.length} of {albums.length} albums
         </p>
       ) : null}
@@ -194,7 +194,7 @@ export function SoftEvents({
             </div>
             <div className="grid grid-cols-7">
               {WEEKDAYS.map((w, i) => (
-                <span key={`${w}${i}`} className="p-1 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-neutral-600">
+                <span key={`${w}${i}`} className="p-1 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-ink-55">
                   {w}
                 </span>
               ))}
@@ -248,7 +248,7 @@ export function SoftEvents({
                 </button>
               ))}
             </div>
-            <p className="m-0 max-w-[36ch] text-[14px] text-neutral-700">Tinted days have photos. Tap a day to filter, tap again to clear.</p>
+            <p className="m-0 max-w-[36ch] text-[14px] text-ink-70">Tinted days have photos. Tap a day to filter, tap again to clear.</p>
           </div>
         </div>
       ) : null}
@@ -285,7 +285,7 @@ export function SoftEvents({
             No matches
           </span>
           <h2 className="text-[26px]">Nothing matches that</h2>
-          <p className="m-0 max-w-[44ch] text-[15px] text-neutral-700">
+          <p className="m-0 max-w-[44ch] text-[15px] text-ink-70">
             Try a different name, or clear the date filter.
           </p>
           <button
@@ -353,7 +353,7 @@ export function SoftEvents({
                       // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
                       <img src={album.coverUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                     ) : (
-                      <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-[14px] text-neutral-600">
+                      <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-[14px] text-ink-55">
                         <span className="text-accent-400">
                           <PhotoStackArt size={92} />
                         </span>
@@ -383,9 +383,9 @@ export function SoftEvents({
                   <div className="p-3.5">
                     <div className="flex flex-wrap items-center gap-2">
                       {eventTypeLabel(album.eventType) ? <span className="soft-chip">{eventTypeLabel(album.eventType)}</span> : null}
-                      <span className="text-[12px] text-neutral-700">{formatDate(album.date)}</span>
-                      {album.openToMembers ? <span className="text-[12px] text-neutral-700">· members can add</span> : null}
-                      <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-neutral-700">
+                      <span className="text-[12px] text-ink-70">{formatDate(album.date)}</span>
+                      {album.openToMembers ? <span className="text-[12px] text-ink-70">· members can add</span> : null}
+                      <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-ink-70">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
                           <rect x="4" y="10" width="16" height="11" rx="2" />
                           <path d="M8 10V7a4 4 0 0 1 8 0v3" />
@@ -395,7 +395,7 @@ export function SoftEvents({
                     </div>
                     <div className="soft-display mt-1.5 text-[20px] text-ink">{album.title}</div>
                     {album.description ? (
-                      <p className="m-0 mt-1 line-clamp-2 text-[14px] text-neutral-700">{album.description}</p>
+                      <p className="m-0 mt-1 line-clamp-2 text-[14px] text-ink-70">{album.description}</p>
                     ) : null}
                   </div>
                 </Link>

@@ -44,7 +44,7 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
           <h1 className="display" style={{ fontSize: "clamp(30px, 4vw, 44px)" }}>
             Club feed
           </h1>
-          <p className="mt-2 text-[15px] text-neutral-700">
+          <p className="mt-2 text-[15px] text-ink-70">
             Notices from the committee. Only members of {ctx.club.name} can read this.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
                 <span className="block aspect-[4/3] w-full rounded-[var(--soft-r-sm)] bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-surface))]" />
               )}
               <span className="mt-2 block font-heading text-[16px] font-extrabold">{latest.title}</span>
-              <span className="block text-[12px] text-neutral-700">
+              <span className="block text-[12px] text-ink-70">
                 {latest.photoCount} photos · {latest.videoCount} videos
               </span>
             </Link>
@@ -98,14 +98,14 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
               {committeeList.map((m) => (
                 <span key={m.id} className="text-[14px]">
                   {m.claimed_name ?? m.roster_name}{" "}
-                  <span className="text-[12px] text-neutral-600">{m.club_roles.name}</span>
+                  <span className="text-[12px] text-ink-55">{m.club_roles.name}</span>
                 </span>
               ))}
             </div>
           </div>
         ) : null}
 
-        <p className="border-t-2 border-divider pt-4 text-[13px] text-neutral-700">
+        <p className="border-t-2 border-divider pt-4 text-[13px] text-ink-70">
           Comments are visible to every member of the club. Admins can remove any comment.
         </p>
       </aside>

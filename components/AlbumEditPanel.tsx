@@ -156,13 +156,13 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
                   <span className="w-[150px] border-2 border-neutral-300 bg-neutral-400" style={{ aspectRatio: "4 / 3" }} />
                 )}
                 <div className="flex min-w-[160px] flex-1 flex-col gap-2">
-                  <span className="text-[13px] leading-normal text-neutral-700">{album.coverSource}</span>
+                  <span className="text-[13px] leading-normal text-ink-70">{album.coverSource}</span>
                   <a href={onPickCover} className="btn btn-ghost border-2 border-divider text-[13px]">
                     Pick from this album
                   </a>
                   <button
                     type="button"
-                    className="dropzone p-3 text-[13px] text-neutral-700"
+                    className="dropzone p-3 text-[13px] text-ink-70"
                     onClick={() => coverInput.current?.click()}
                     disabled={coverBusy}
                   >
@@ -188,7 +188,7 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
             <div className="flex flex-col gap-2">
               <span className="text-[13px] font-semibold">Who can add photos to this album</span>
               <Choice name="contributorScope" value={contributorScope} onChange={setContributorScope} options={CONTRIBUTORS} />
-              <span className="max-w-[46ch] text-[13px] leading-normal text-neutral-700">
+              <span className="max-w-[46ch] text-[13px] leading-normal text-ink-70">
                 {contributorScope === "members"
                   ? "Every member can add their own photos, so the album fills up from everyone's phones."
                   : "Only people whose role can manage albums or upload may add photos."}

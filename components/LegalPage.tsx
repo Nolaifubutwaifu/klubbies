@@ -39,7 +39,7 @@ export function LegalPage({
       {sections.map((section) => (
         <section key={section.title} className="flex flex-col gap-2">
           <h2 className="font-heading text-[22px] font-extrabold">{section.title}</h2>
-          <div className="flex flex-col gap-3 text-[16px] leading-normal text-neutral-800">{section.body}</div>
+          <div className="flex flex-col gap-3 text-[16px] leading-normal text-ink-70">{section.body}</div>
         </section>
       ))}
       <nav className="flex flex-wrap gap-4 border-t-2 border-divider pt-4 text-[13px]">

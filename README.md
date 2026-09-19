@@ -54,4 +54,11 @@ Clubs pay through Stripe Checkout before they can add members or upload.
 
 ## Deploying
 
-Deploy to Vercel in the `syd1` region (`vercel.json`). Set every variable from `.env.example`. `CRON_SECRET` enables the daily grace-period job at `/api/cron/grace`.
+Deploy to Vercel in the `syd1` region (`vercel.json`). Set every variable from `.env.example`. `CRON_SECRET` enables the daily job at `/api/cron/grace`, which publishes scheduled albums, sweeps unanswered removal requests and expires grace memberships.
+
+> **On the Pro plan, put the cron back to hourly.** It is `0 23 * * *` (9am
+> Melbourne) only because Hobby refuses more than one cron run per day. Until
+> then a committee that schedules an album for Saturday 10am gets it on Sunday
+> morning, and the UI says so. On Pro, change the schedule in `vercel.json` to
+> `0 * * * *` and restore the wording in `AlbumManager`, `NewAlbumPanel` and
+> `scheduleAlbumAction`.

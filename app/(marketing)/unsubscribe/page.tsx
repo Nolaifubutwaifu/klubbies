@@ -31,7 +31,7 @@ export default async function UnsubscribePage(props: PageProps<"/unsubscribe">) 
       {done ? (
         <>
           <h1 className="display text-[32px]">That&apos;s switched off.</h1>
-          <p className="text-[15px] leading-normal text-neutral-800">
+          <p className="text-[15px] leading-normal text-ink-70">
             You won&apos;t get those emails again. Sign-in codes and anything about your access ending still come
             through, because you need those.
           </p>
@@ -40,7 +40,7 @@ export default async function UnsubscribePage(props: PageProps<"/unsubscribe">) 
         <>
           <span className="kicker">Email settings</span>
           <h1 className="display text-[32px]">Turn off {LABELS[kind]}?</h1>
-          <p className="text-[15px] leading-normal text-neutral-800">
+          <p className="text-[15px] leading-normal text-ink-70">
             You can turn them back on any time from your profile.
           </p>
           <UnsubscribeButton userId={userId} kind={kind} token={token} label={`Turn off ${LABELS[kind]}`} />
@@ -48,7 +48,7 @@ export default async function UnsubscribePage(props: PageProps<"/unsubscribe">) 
       ) : (
         <>
           <h1 className="display text-[32px]">That link has expired.</h1>
-          <p className="text-[15px] leading-normal text-neutral-800">
+          <p className="text-[15px] leading-normal text-ink-70">
             Open your profile to change which emails you get.
           </p>
         </>

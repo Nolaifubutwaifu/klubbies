@@ -8,7 +8,7 @@ export default function NotFound() {
       <div className="flex max-w-[520px] flex-col gap-3 py-12">
         <span className="kicker">Not here</span>
         <h1 className="display text-[40px]">This page isn&apos;t available.</h1>
-        <p className="text-[15px] text-neutral-700">
+        <p className="text-[15px] text-ink-70">
           It may not exist, or it belongs to a club your account isn&apos;t on. If you think you should have access, ask
           your committee to check the member list.
         </p>

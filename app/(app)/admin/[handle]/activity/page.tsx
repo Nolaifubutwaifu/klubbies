@@ -42,7 +42,7 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
       <PageTitle kicker={ctx.club.name} title="Activity">
         Every view and download, newest first. Members are told this log exists.
       </PageTitle>
-      <div className="flex flex-col gap-2 soft-card p-4 text-[14px] leading-normal text-neutral-800">
+      <div className="flex flex-col gap-2 soft-card p-4 text-[14px] leading-normal text-ink-70">
         <span className="soft-display text-[16px]">What this is for</span>
         <p className="m-0 max-w-[70ch]">
           If a photo from your club turns up somewhere it shouldn&apos;t, this is how you find out who opened or

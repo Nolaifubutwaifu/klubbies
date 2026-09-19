@@ -644,7 +644,7 @@ export async function setAlbumHiddenAction(albumId: string, hidden: boolean): Pr
 }
 
 /**
- * Queues a draft to publish itself. The hourly cron does the publishing, so a
+ * Queues a draft to publish itself. The daily cron does the publishing, so a
  * time in the past goes live on the next pass rather than immediately.
  */
 export async function scheduleAlbumAction(albumId: string, publishAt: string | null): Promise<ActionState> {
@@ -667,7 +667,7 @@ export async function scheduleAlbumAction(albumId: string, publishAt: string | n
   revalidatePath(`/admin/${ctx.club.handle}`, "layout");
   return {
     ok: true,
-    message: when ? "Scheduled. It goes live on the hour after that time." : "Schedule cleared",
+    message: when ? "Scheduled. It goes live the first morning after that time." : "Schedule cleared",
   };
 }
 

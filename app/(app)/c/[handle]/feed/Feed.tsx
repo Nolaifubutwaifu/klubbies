@@ -68,7 +68,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
             </span>
             <span className="text-[14px] font-semibold">{post.authorName}</span>
             {post.authorRole ? <span className="tag tag-accent text-[10px]">{post.authorRole}</span> : null}
-            <span className="text-[13px] text-neutral-600">{formatDateTime(post.createdAt)}</span>
+            <span className="text-[13px] text-ink-55">{formatDateTime(post.createdAt)}</span>
             {post.pinned ? <span className="tag tag-outline text-[10px]">Pinned</span> : null}
             <span className="ml-auto flex gap-2">
               {canPin ? (
@@ -109,7 +109,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
               )}
               <span>
                 <span className="block font-heading text-[15px] font-extrabold">{post.album.title}</span>
-                <span className="block text-[12px] text-neutral-700">{post.album.meta}</span>
+                <span className="block text-[12px] text-ink-70">{post.album.meta}</span>
               </span>
             </Link>
           ) : null}

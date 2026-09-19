@@ -20,7 +20,7 @@ export default async function ClubsPage() {
       <header className="soft-card mx-4 mt-5 flex flex-wrap items-center justify-between gap-4 !rounded-[28px] px-5 py-2.5 sm:mx-6">
         <Brand href="/clubs" />
         <div className="flex items-center gap-3">
-          <Link href="/account" className="text-[13px] text-neutral-700">
+          <Link href="/account" className="text-[13px] text-ink-70">
             {profile?.display_name ?? profile?.email}
           </Link>
           <form action="/api/auth/signout" method="post">
