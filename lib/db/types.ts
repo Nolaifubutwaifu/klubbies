@@ -70,6 +70,123 @@ export type Database = {
           },
         ];
       };
+      album_guest_links: {
+        Row: {
+          album_id: string;
+          byte_total: number;
+          club_id: string;
+          created_at: string;
+          created_by: string | null;
+          expires_at: string;
+          file_count: number;
+          first_used_at: string | null;
+          id: string;
+          label: string;
+          last_used_at: string | null;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          token_hash: string;
+        };
+        Insert: {
+          album_id: string;
+          byte_total?: number;
+          club_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at: string;
+          file_count?: number;
+          first_used_at?: string | null;
+          id?: string;
+          label: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          token_hash: string;
+        };
+        Update: {
+          album_id?: string;
+          byte_total?: number;
+          club_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          expires_at?: string;
+          file_count?: number;
+          first_used_at?: string | null;
+          id?: string;
+          label?: string;
+          last_used_at?: string | null;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          token_hash?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "album_guest_links_album_id_fkey";
+            columns: ["album_id"];
+            isOneToOne: false;
+            referencedRelation: "albums";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "album_guest_links_club_id_fkey";
+            columns: ["club_id"];
+            isOneToOne: false;
+            referencedRelation: "clubs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      media_removal_requests: {
+        Row: {
+          auto_delete_at: string;
+          club_id: string;
+          id: string;
+          media_id: string;
+          requested_at: string;
+          requested_by: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: string;
+        };
+        Insert: {
+          auto_delete_at?: string;
+          club_id: string;
+          id?: string;
+          media_id: string;
+          requested_at?: string;
+          requested_by?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          auto_delete_at?: string;
+          club_id?: string;
+          id?: string;
+          media_id?: string;
+          requested_at?: string;
+          requested_by?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_removal_requests_club_id_fkey";
+            columns: ["club_id"];
+            isOneToOne: false;
+            referencedRelation: "clubs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "media_removal_requests_media_id_fkey";
+            columns: ["media_id"];
+            isOneToOne: false;
+            referencedRelation: "media";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       albums: {
         Row: {
           allow_download: boolean;
@@ -81,6 +198,7 @@ export type Database = {
           created_by: string | null;
           description: string | null;
           event_date: string | null;
+          event_type: string | null;
           id: string;
           published_at: string | null;
           publish_at: string | null;
@@ -100,6 +218,7 @@ export type Database = {
           created_by?: string | null;
           description?: string | null;
           event_date?: string | null;
+          event_type?: string | null;
           id?: string;
           published_at?: string | null;
           publish_at?: string | null;
@@ -119,6 +238,7 @@ export type Database = {
           created_by?: string | null;
           description?: string | null;
           event_date?: string | null;
+          event_type?: string | null;
           id?: string;
           published_at?: string | null;
           publish_at?: string | null;
@@ -211,10 +331,12 @@ export type Database = {
       clubs: {
         Row: {
           accent_colour: string | null;
+          allow_removal_requests: boolean;
           billing_status: string;
           created_at: string;
           created_by: string | null;
           description: string | null;
+          grace_period_enabled: boolean;
           handle: string;
           id: string;
           logo_path: string | null;
@@ -230,6 +352,7 @@ export type Database = {
         };
         Insert: {
           accent_colour?: string | null;
+          allow_removal_requests?: boolean;
           billing_status?: string;
           paid_at?: string | null;
           stripe_checkout_session_id?: string | null;
@@ -238,6 +361,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
+          grace_period_enabled?: boolean;
           handle: string;
           id?: string;
           logo_path?: string | null;
@@ -249,6 +373,7 @@ export type Database = {
         };
         Update: {
           accent_colour?: string | null;
+          allow_removal_requests?: boolean;
           billing_status?: string;
           paid_at?: string | null;
           stripe_checkout_session_id?: string | null;
@@ -257,6 +382,7 @@ export type Database = {
           created_at?: string;
           created_by?: string | null;
           description?: string | null;
+          grace_period_enabled?: boolean;
           handle?: string;
           id?: string;
           logo_path?: string | null;
@@ -328,7 +454,9 @@ export type Database = {
           created_at: string;
           display_path: string | null;
           duration_seconds: number | null;
+          guest_link_id: string | null;
           height: number | null;
+          hidden_at: string | null;
           id: string;
           kind: string;
           mime_type: string | null;
@@ -350,7 +478,9 @@ export type Database = {
           created_at?: string;
           display_path?: string | null;
           duration_seconds?: number | null;
+          guest_link_id?: string | null;
           height?: number | null;
+          hidden_at?: string | null;
           id?: string;
           kind: string;
           mime_type?: string | null;
@@ -371,7 +501,9 @@ export type Database = {
           created_at?: string;
           display_path?: string | null;
           duration_seconds?: number | null;
+          guest_link_id?: string | null;
           height?: number | null;
+          hidden_at?: string | null;
           id?: string;
           kind?: string;
           mime_type?: string | null;
@@ -870,6 +1002,24 @@ export type Database = {
       };
     };
     Views: {
+      album_engagement: {
+        Row: {
+          album_id: string | null;
+          club_id: string | null;
+          download_count: number | null;
+          member_count: number | null;
+          view_count: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "media_album_id_fkey";
+            columns: ["album_id"];
+            isOneToOne: false;
+            referencedRelation: "albums";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       album_media_counts: {
         Row: {
           album_id: string | null;
@@ -946,7 +1096,10 @@ export type Post = Tables<"posts">;
 export type Membership = Tables<"memberships">;
 export type Album = Tables<"albums">;
 export type Media = Tables<"media">;
+export type GuestLink = Tables<"album_guest_links">;
+export type RemovalRequest = Tables<"media_removal_requests">;
 
 export type MembershipStatus = "pending" | "active" | "grace" | "revoked";
 export type MembershipRole = "club_admin" | "club_member";
 export type MediaKind = "photo" | "video";
+export type EventType = "formal" | "sport" | "social" | "camp" | "night_out" | "other";
