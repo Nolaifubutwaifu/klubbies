@@ -23,8 +23,7 @@ function PermissionFields({ role }: { role?: Role }) {
           <input
             type="checkbox"
             name={perm}
-            defaultChecked={role?.[perm] ?? false}
-            style={{ width: 18, height: 18, accentColor: "var(--color-accent)", marginTop: 2 }}
+            defaultChecked={role?.[perm] ?? false} style={{ marginTop: 2 }}
           />
           <span>
             <span className="font-semibold">{PERMISSION_LABELS[perm].label}</span>
@@ -95,7 +94,6 @@ function RoleCard({ clubId, role }: { clubId: string; role: Role }) {
               type="checkbox"
               name="is_default"
               defaultChecked={role.is_default}
-              style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
             />
             Give this role to new members
           </label>
@@ -128,7 +126,7 @@ export function RoleEditor({ clubId, roles }: { clubId: string; roles: Role[] })
           </label>
           <PermissionFields />
           <label className="flex items-center gap-3 text-[14px]">
-            <input type="checkbox" name="is_default" style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }} />
+            <input type="checkbox" name="is_default" />
             Give this role to new members
           </label>
           <FormMessage state={state} />

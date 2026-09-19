@@ -36,7 +36,6 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
         canManage={ctx.perms.manage_albums}
         clubName={ctx.club.name}
         newAlbumHref={`/admin/${handle}/upload`}
-        savedHref={`/c/${handle}/saved`}
         firstName={displayName.trim().split(/\s+/)[0] ?? ""}
         notifiesOnNewAlbums={profile?.notify_new_album ?? false}
       />

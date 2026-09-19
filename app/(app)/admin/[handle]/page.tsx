@@ -130,7 +130,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
             See it as a member
           </Link>
-          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
+          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-accent no-underline">
             New album
           </Link>
         </div>
@@ -198,7 +198,10 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                       <span className="block text-[14px] font-bold">{task.title}</span>
                       <span className="block truncate text-[12px] text-[color:var(--ink-70)]">{task.body}</span>
                     </span>
-                    <Link href={task.href} className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px] no-underline">
+                    <Link
+                      href={task.href}
+                      className={`soft-btn ${task.urgent ? "soft-btn-primary" : "soft-btn-accent"} !min-h-[40px] !px-4 !text-[13px] no-underline`}
+                    >
                       {task.cta}
                     </Link>
                   </li>

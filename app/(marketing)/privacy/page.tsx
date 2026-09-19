@@ -38,7 +38,7 @@ export default function PrivacyPage() {
       <div className="hr" />
       {SECTIONS.map(([title, body]) => (
         <section key={title} className="flex flex-col gap-2">
-          <h2 className="font-heading text-[22px] font-extrabold">{title}</h2>
+          <h2 className="font-heading text-[22px] font-bold">{title}</h2>
           <p className="text-[16px] leading-normal text-ink-70">{body}</p>
         </section>
       ))}

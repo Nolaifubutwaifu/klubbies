@@ -81,17 +81,17 @@ export function SaveAlbum({
     <div className="flex flex-col items-start gap-1">
       <div className="flex flex-wrap gap-2">
         {canShareFiles && mediaIds.length > 0 ? (
-          <button type="button" className="btn btn-secondary text-[14px]" onClick={saveToPhotos} disabled={busy}>
+          <button type="button" className="btn btn-ghost text-[14px]" onClick={saveToPhotos} disabled={busy}>
             {busy ? "Saving…" : "Save to Photos"}
           </button>
         ) : null}
         {parts <= 1 ? (
-          <a href={`/api/albums/${albumId}/zip`} className="btn btn-secondary text-[14px]">
+          <a href={`/api/albums/${albumId}/zip`} className="btn btn-ghost text-[14px]">
             Download all
           </a>
         ) : (
           Array.from({ length: parts }, (_, i) => (
-            <a key={i} href={`/api/albums/${albumId}/zip?part=${i}`} className="btn btn-secondary text-[14px]">
+            <a key={i} href={`/api/albums/${albumId}/zip?part=${i}`} className="btn btn-ghost text-[14px]">
               Download part {i + 1}
             </a>
           ))

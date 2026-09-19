@@ -55,7 +55,6 @@ export function SoftEvents({
   canManage,
   clubName,
   newAlbumHref,
-  savedHref,
   firstName,
   notifiesOnNewAlbums = false,
 }: {
@@ -64,7 +63,6 @@ export function SoftEvents({
   canManage: boolean;
   clubName: string;
   newAlbumHref: string;
-  savedHref: string;
   /** Used for the greeting; empty falls back to the club name. */
   firstName?: string;
   /** Whether this member already gets the new-album email. */
@@ -99,17 +97,17 @@ export function SoftEvents({
     <div className="w-full px-4 pb-16 pt-6 sm:px-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-[260px]">
-          <span className="soft-chip">{clubName}</span>
-          <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">
-            {firstName ? `${greeting()}, ${firstName}.` : "Events"}
-          </h1>
+          {/* The club is the identity; the greeting is a nicety. A member in
+              four clubs needs to know which one this is at a glance. */}
+          <h1 className="text-[clamp(30px,4.5vw,44px)]">{clubName}</h1>
           <SquiggleUnderline />
-          <p className="mt-2 text-[15px] text-ink-70">
+          <p className="mt-2 text-[15px] text-ink-55">
             {newCount
               ? `${newCount} album${newCount === 1 ? "" : "s"} landed since you were last here.`
               : albums.length
                 ? `${albums.length} album${albums.length === 1 ? "" : "s"} · ${totals.toLocaleString("en-AU")} photos and videos`
                 : "Everything the committee shares lands here."}
+            {firstName ? ` · ${greeting().toLowerCase()}, ${firstName}` : ""}
           </p>
         </div>
         <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:min-w-[300px]">
@@ -128,22 +126,19 @@ export function SoftEvents({
             />
           </div>
           )}
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href={savedHref} className="soft-btn soft-btn-tonal no-underline">
-              Saved
-            </Link>
-            {canManage ? (
+          {canManage ? (
+            <div className="hidden flex-wrap items-center gap-2 sm:flex">
               <Link href={newAlbumHref} className="soft-btn soft-btn-primary no-underline">
                 <PlusIcon />
                 New album
               </Link>
-            ) : null}
-          </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
       {albums.length === 0 ? null : (
-      <div className="mt-6 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-6">
         <button type="button" className="soft-btn soft-btn-tonal" onClick={() => setCalOpen((v) => !v)} aria-expanded={calOpen}>
           <CalendarIcon />
           {day ? formatLongDate(day) : "Any date"}
@@ -338,7 +333,9 @@ export function SoftEvents({
             </Link>
           ) : null}
 
-          <div className="mt-6 grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+          {/* 2-up on a phone: four albums a screen instead of one and a half,
+              and 4:5 is the better crop for photos shot on a phone. */}
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-5 sm:[grid-template-columns:repeat(auto-fill,minmax(280px,1fr))]">
             {rows.map((album) => {
               const total = album.photoCount + album.videoCount;
               return (
@@ -346,7 +343,7 @@ export function SoftEvents({
                   {/* One cover, badged — the way the card reads on the live
                       site, and the way the design keeps it. */}
                   <div
-                    className="relative aspect-[16/10] w-full overflow-hidden"
+                    className="relative aspect-[4/5] w-full overflow-hidden sm:aspect-[16/10]"
                     style={{ background: "color-mix(in srgb, var(--color-accent) 8%, transparent)" }}
                   >
                     {album.coverUrl ? (
@@ -380,20 +377,23 @@ export function SoftEvents({
                     ) : null}
                   </div>
 
-                  <div className="p-3.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      {eventTypeLabel(album.eventType) ? <span className="soft-chip">{eventTypeLabel(album.eventType)}</span> : null}
-                      <span className="text-[12px] text-ink-70">{formatDate(album.date)}</span>
-                      {album.openToMembers ? <span className="text-[12px] text-ink-70">· members can add</span> : null}
-                      <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-ink-70">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-                          <rect x="4" y="10" width="16" height="11" rx="2" />
-                          <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                        </svg>
-                        Members only
+                  {/* Title leads — it is the only thing anyone scans for. The
+                      old "Members only" line is gone: every album in a club is
+                      members-only, so repeating it on all six taught nothing. */}
+                  <div className="p-3 sm:p-3.5">
+                    <div className="soft-display line-clamp-2 text-[16px] text-ink sm:text-[20px]">{album.title}</div>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                      {eventTypeLabel(album.eventType) ? (
+                        <span className="soft-chip soft-chip-muted">{eventTypeLabel(album.eventType)}</span>
+                      ) : null}
+                      <span className="text-[13px] text-ink-55 sm:text-[14px]">
+                        {formatDate(album.date)}
+                        {total > 0 ? ` · ${total.toLocaleString("en-AU")}` : ""}
                       </span>
+                      {album.openToMembers ? (
+                        <span className="text-[13px] text-ink-55 sm:text-[14px]">· members can add</span>
+                      ) : null}
                     </div>
-                    <div className="soft-display mt-1.5 text-[20px] text-ink">{album.title}</div>
                     {album.description ? (
                       <p className="m-0 mt-1 line-clamp-2 text-[14px] text-ink-70">{album.description}</p>
                     ) : null}
@@ -404,6 +404,21 @@ export function SoftEvents({
           </div>
         </>
       )}
+
+      {/* On a phone the header row is worth more as content than as chrome, so
+          the one action that isn't in the tab bar floats instead. Sits above
+          the 84px tab bar and its safe-area padding. */}
+      {canManage ? (
+        <Link
+          href={newAlbumHref}
+          aria-label="New album"
+          className="soft-btn soft-btn-primary fixed right-4 z-30 no-underline shadow-lg sm:hidden"
+          style={{ bottom: "calc(84px + env(safe-area-inset-bottom, 0px))" }}
+        >
+          <PlusIcon />
+          Album
+        </Link>
+      ) : null}
     </div>
   );
 }

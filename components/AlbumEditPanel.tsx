@@ -107,7 +107,7 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
 
   return (
     <div className="flex flex-col gap-6 border-b-2 border-divider p-6">
-      <span className="font-heading text-[22px] font-black tracking-[-0.02em]">Album details</span>
+      <span className="font-heading text-[22px] font-bold tracking-[-0.02em]">Album details</span>
       <form action={action} className="flex flex-col gap-6">
         <div className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
           <div className="flex flex-col gap-4">
@@ -139,7 +139,6 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
                 type="checkbox"
                 name="allowDownload"
                 defaultChecked={album.allowDownload}
-                style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
               />
               Members may download originals
             </label>

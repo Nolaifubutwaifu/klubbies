@@ -90,7 +90,7 @@ export function ClubSwitcher({
                   {initials(club.name)}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate font-heading text-[15px] font-extrabold">{club.name}</span>
+                  <span className="block truncate font-heading text-[15px] font-bold">{club.name}</span>
                   <span className="block text-[12px] text-ink-70">
                     {club.roleName}
                     {club.status === "grace" ? " · access ending" : ""}

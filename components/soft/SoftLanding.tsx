@@ -87,12 +87,15 @@ export function SoftLanding() {
             <Link href="/" className="soft-wordmark text-[22px] text-ink no-underline">
               klubbies
             </Link>
-            <nav className="ml-auto flex items-center gap-2">
-              <Link href="/how-it-works" className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[14px] no-underline">
+            <nav className="ml-auto flex items-center gap-3">
+              <Link href="/how-it-works" className="text-[14px] text-[color:var(--ink-70)] no-underline hover:text-[color:var(--color-text)]">
                 How it works
               </Link>
-              <Link href="/signin" className="soft-btn soft-btn-primary !min-h-[40px] !px-5 !text-[14px] no-underline">
+              <Link href="/signin" className="text-[14px] text-[color:var(--ink-70)] no-underline hover:text-[color:var(--color-text)]">
                 Log in
+              </Link>
+              <Link href="/start" className="soft-btn soft-btn-primary !min-h-[40px] !px-5 !text-[14px] no-underline">
+                Start your club
               </Link>
             </nav>
           </header>
@@ -113,7 +116,7 @@ export function SoftLanding() {
               <Link href="/start" className="soft-btn soft-btn-primary soft-btn-lg no-underline">
                 Start your club
               </Link>
-              <Link href="/signin" className="soft-btn soft-btn-tonal soft-btn-lg no-underline">
+              <Link href="/signin" className="soft-btn soft-btn-accent soft-btn-lg no-underline">
                 I&rsquo;m a member
               </Link>
             </div>
@@ -275,7 +278,7 @@ export function SoftLanding() {
                 </Link>
                 <Link
                   href="/signin"
-                  className="soft-btn soft-btn-lg !bg-transparent !text-white no-underline ring-2 ring-inset ring-white/60 hover:!bg-white/10"
+                  className="soft-btn soft-btn-lg !bg-white/20 !text-white no-underline backdrop-blur-sm hover:!bg-white/30"
                 >
                   I&rsquo;m a member
                 </Link>

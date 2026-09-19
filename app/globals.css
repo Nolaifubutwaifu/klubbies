@@ -38,6 +38,14 @@
   --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
   --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
   --ink-35: color-mix(in srgb, var(--color-text) 35%, transparent);
+  /* 60/30/10. Cream is the 60, the club's accent is the 30, and this violet is
+     the 10: it means "this is the action" and is used for nothing else. It is
+     the lilac's own ink (#43335c) pushed to full saturation, so it already
+     belongs to the family under every tonal chip. Global, not per-club. */
+  --brand: #5b2bd6;
+  --brand-deep: #4a22b8;
+  --brand-tint: #ede7fc;
+  --brand-ink: #3d1f8f;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -558,6 +566,7 @@
   /* 60/30/10: cream ground, lilac supporting surfaces, accent for action only. */
   --tone-base: #fff8f4;
   --tone-support: #f1e9fb;
+  --tone-support-deep: #ded0f4;
   --tone-support-ink: #43335c;
   --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
   --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -611,7 +620,7 @@
     border: 0;
     border-radius: 999px;
     font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 800;
+    font-weight: 600;
     font-size: 15px;
     line-height: 1.2;
     cursor: pointer;
@@ -625,23 +634,64 @@
   .soft-btn:active {
     transform: scale(0.97);
   }
+  /* Three filled tiers. No outlines, no transparent buttons — they separate
+     on colour, size and type weight so the ladder survives greyscale.
+     Tier 1 is the global brand violet (the 10%), tier 2 the club's own accent
+     (the 30%), tier 3 the supporting lilac. Rule: a tier-3 button is never the
+     only button in a group; a lone action is tier 2 or higher. */
+
+  /* Tier 1 — the single action of the screen. */
   .soft-btn-primary {
     color: #fff;
-    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
-    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+    background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+    box-shadow: 0 8px 20px -7px color-mix(in srgb, var(--brand) 55%, transparent);
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 16px;
   }
   .soft-btn-primary:hover {
-    box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
+    box-shadow: 0 12px 26px -7px color-mix(in srgb, var(--brand) 65%, transparent);
   }
-  /* Low-emphasis button: filled tonal, never a ghost/outline. */
+
+  /* Tier 2 — the club's accent, tinted to 55% so accent-800 ink clears 4.5:1. */
+  .soft-btn-accent {
+    color: var(--color-accent-800);
+    background: color-mix(in srgb, var(--color-accent) 55%, #fff);
+  }
+  .soft-btn-accent:hover {
+    background: color-mix(in srgb, var(--color-accent) 68%, #fff);
+  }
+
+  /* Tier 3 — the long tail. Deepened from #f1e9fb, which sat at 1.12:1
+     against the page and read as a ghost button. */
   .soft-btn-tonal {
     color: var(--tone-support-ink);
-    background: var(--tone-support);
-    box-shadow: var(--soft-shadow);
+    background: var(--tone-support-deep);
+    box-shadow: none;
+    min-height: 40px;
+    padding: 9px 16px;
+    font-weight: 600;
+    font-size: 14px;
   }
   .soft-btn-tonal:hover {
-    background: color-mix(in srgb, var(--color-accent) 12%, var(--tone-support));
+    background: color-mix(in srgb, var(--color-text) 8%, var(--tone-support-deep));
   }
+  @media (pointer: coarse) {
+    .soft-btn-tonal {
+      min-height: 44px;
+    }
+  }
+
+  /* Destructive: the odd one out, without shouting. */
+  .soft-btn-danger {
+    color: var(--color-accent-800);
+    background: color-mix(in srgb, var(--color-accent) 22%, #fff);
+    box-shadow: none;
+  }
+  .soft-btn-danger:hover {
+    background: color-mix(in srgb, var(--color-accent) 34%, #fff);
+  }
+
   .soft-btn-lg {
     min-height: 56px;
     padding: 14px 28px;
@@ -887,6 +937,13 @@
     font-weight: 600;
     letter-spacing: -0.015em;
   }
+  /* TODO(display-voice): the emphasised word in a headline is marked by colour
+     alone. That disappears in greyscale and competes with the category chips,
+     which use the same red. It should carry a second signal: a display face of
+     its own, set here as `font-family: var(--font-accent)` once one is picked
+     and added to app/layout.tsx. Fraunces, Syne, Big Shoulders Display,
+     Unbounded, Archivo Black, Familjen Grotesk and Instrument Serif were all
+     rejected on looks — see DECISIONS.md #76. */
   .theme-soft .soft-word {
     color: var(--color-accent-700);
     font-weight: 600;
@@ -949,7 +1006,7 @@
 @layer components {
   .theme-soft .btn {
     min-height: 44px;
-    padding: 10px 18px;
+    padding: 10px 20px;
     border: 0;
     border-radius: 999px;
     font-family: var(--font-fredoka), system-ui, sans-serif;
@@ -963,28 +1020,82 @@
   .theme-soft .btn:active:not(:disabled) {
     transform: scale(0.97);
   }
+
+  /* Three tiers, all solid fills — no outlines and no transparent buttons.
+     They separate on colour, size and type weight, so the ladder survives
+     greyscale. Tier 3 is the one compromise: on a cream ground no pale fill
+     can clear the 3:1 WCAG threshold for a control edge, so the rule is that
+     a tier-3 button is never the only button in a group. A lone action is
+     tier 2 or higher. */
+
+  /* Tier 1 — the single action of the screen. */
   .theme-soft .btn-primary {
     color: #fff;
-    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
-    box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--color-accent) 60%, transparent);
+    background: linear-gradient(135deg, var(--brand), var(--brand-deep));
+    box-shadow: 0 8px 20px -7px color-mix(in srgb, var(--brand) 55%, transparent);
+    min-height: 48px;
+    padding: 12px 24px;
+    font-size: 16px;
   }
-  /* Secondary and ghost both become filled tonal buttons: no outlines, no
-     text-only buttons that disappear into the page. */
-  .theme-soft .btn-secondary,
-  .theme-soft .btn-ghost {
-    color: var(--tone-support-ink);
-    background: var(--tone-support);
+  .theme-soft .btn-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--brand-deep), var(--brand-deep));
+  }
+
+  /* Tier 2 — the club's accent, tinted so dark accent ink clears 4.5:1 on it. */
+  .theme-soft .btn-secondary {
+    color: var(--color-accent-800);
+    background: color-mix(in srgb, var(--color-accent) 55%, #fff);
     border: 0;
-    box-shadow: var(--soft-shadow);
+    box-shadow: none;
+    min-height: 44px;
+    font-size: 15px;
   }
-  .theme-soft .btn-secondary:hover:not(:disabled),
-  .theme-soft .btn-ghost:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 12%, var(--tone-support));
+  .theme-soft .btn-secondary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent) 68%, #fff);
   }
   .theme-soft .btn-secondary[aria-pressed="true"] {
     color: #fff;
     background: var(--color-accent-700);
   }
+
+  /* Tier 3 — the long tail. Deepened from the old #f1e9fb, which sat at
+     1.12:1 against the page and read as a ghost. */
+  .theme-soft .btn-ghost {
+    color: var(--tone-support-ink);
+    background: var(--tone-support-deep);
+    border: 0;
+    box-shadow: none;
+    min-height: 40px;
+    padding: 8px 16px;
+    font-weight: 500;
+    font-size: 14px;
+  }
+  .theme-soft .btn-ghost:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-text) 8%, var(--tone-support-deep));
+  }
+  .theme-soft .btn-ghost[aria-pressed="true"] {
+    color: #fff;
+    background: var(--color-accent-700);
+  }
+
+  /* Every tier still clears the 44px touch target on a finger. */
+  @media (pointer: coarse) {
+    .theme-soft .btn-ghost {
+      min-height: 44px;
+    }
+  }
+
+  /* Destructive: reads as the odd one out without shouting. */
+  .theme-soft .btn-danger {
+    color: var(--color-accent-800);
+    background: color-mix(in srgb, var(--color-accent) 22%, #fff);
+    border: 0;
+    box-shadow: none;
+  }
+  .theme-soft .btn-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-accent) 34%, #fff);
+  }
+
   .theme-soft .btn-lg {
     min-height: 56px;
     padding: 14px 28px;
@@ -1001,6 +1112,127 @@
     border-radius: 14px;
     background: var(--color-surface);
     box-shadow: var(--soft-shadow);
+  }
+
+  /* ---------------------------------------------------------------------
+     Native controls, wearing the soft system.
+     Styled on the element rather than a class, so every select, checkbox,
+     radio and date field in the app is covered without touching components.
+     The native element is kept in all cases — mobile still gets the OS
+     picker wheel and the OS date sheet.
+     --------------------------------------------------------------------- */
+  .theme-soft select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 46px;
+    padding: 10px 42px 10px 16px;
+    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
+    border-radius: 14px;
+    background-color: var(--color-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2343335c' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    box-shadow: var(--soft-shadow);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--color-text);
+    line-height: 1.3;
+  }
+  .theme-soft select:disabled {
+    opacity: 0.5;
+  }
+
+  .theme-soft input[type="date"],
+  .theme-soft input[type="datetime-local"],
+  .theme-soft input[type="time"] {
+    min-height: 46px;
+    padding: 10px 16px;
+    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
+    border-radius: 14px;
+    background: var(--color-surface);
+    box-shadow: var(--soft-shadow);
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--color-text);
+  }
+  .theme-soft input[type="date"]::-webkit-calendar-picker-indicator,
+  .theme-soft input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    opacity: 0.55;
+    cursor: pointer;
+  }
+
+  .theme-soft input[type="checkbox"],
+  .theme-soft input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    flex: none;
+    margin: 0;
+    border: 1.5px solid var(--ink-35);
+    background: var(--color-surface);
+    cursor: pointer;
+    display: inline-grid;
+    place-content: center;
+    transition: background-color var(--soft-ease), border-color var(--soft-ease);
+  }
+  .theme-soft input[type="checkbox"] {
+    border-radius: 7px;
+  }
+  .theme-soft input[type="radio"] {
+    border-radius: 50%;
+  }
+  .theme-soft input[type="checkbox"]::before {
+    content: "";
+    width: 11px;
+    height: 11px;
+    transform: scale(0);
+    transition: transform var(--soft-ease);
+    background: #fff;
+    clip-path: polygon(14% 45%, 0 60%, 39% 100%, 100% 22%, 84% 8%, 39% 70%);
+  }
+  .theme-soft input[type="radio"]::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform var(--soft-ease);
+    background: #fff;
+  }
+  .theme-soft input[type="checkbox"]:checked,
+  .theme-soft input[type="radio"]:checked {
+    background: var(--brand);
+    border-color: var(--brand);
+  }
+  .theme-soft input[type="checkbox"]:checked::before,
+  .theme-soft input[type="radio"]:checked::before {
+    transform: scale(1);
+  }
+  .theme-soft input[type="checkbox"]:disabled,
+  .theme-soft input[type="radio"]:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  /* A 22px control needs a 44px target: the label row carries the rest. */
+  .theme-soft label:has(> input[type="checkbox"]),
+  .theme-soft label:has(> input[type="radio"]) {
+    min-height: 44px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-soft input[type="checkbox"],
+    .theme-soft input[type="radio"],
+    .theme-soft input[type="checkbox"]::before,
+    .theme-soft input[type="radio"]::before {
+      transition: none;
+    }
+  }
+
+  /* Focus belongs to the brand, like every other action signal. */
+  .theme-soft :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
   }
 
   .theme-soft .panel,
@@ -1101,8 +1333,9 @@
   /* Buttons: lift and deepen on hover, like the reference site's fills. */
   .soft-btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 14px 26px -8px color-mix(in srgb, var(--color-accent) 75%, transparent);
+    box-shadow: 0 14px 28px -8px color-mix(in srgb, var(--brand) 70%, transparent);
   }
+  .soft-btn-accent:hover,
   .soft-btn-tonal:hover {
     transform: translateY(-2px);
   }
@@ -1239,6 +1472,7 @@
     .soft-bordered:hover,
     .soft-offset:hover,
     .soft-btn-primary:hover,
+    .soft-btn-accent:hover,
     .soft-btn-tonal:hover {
       transform: none;
     }

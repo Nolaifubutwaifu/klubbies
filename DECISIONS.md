@@ -199,3 +199,68 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
     scheduling is the only part that does. Restoring it is a one line change
     in `vercel.json` plus the three strings named in the README, and there is
     a `TODO(vercel-pro)` on the cron route.
+
+## 2026-09-20 · Design system v2
+
+69. **Fredoka stops at 700, so headings must too.** `globals.css` asked for
+    `font-weight: 900` on every heading, `.soft-sticker` and `.soft-btn`, and
+    `next/font` only loads Fredoka 400–700. Every heading in the app was a
+    browser-synthesised faux bold — thickened strokes with the rounded
+    terminals smeared off, which is the one thing you should never do to a
+    rounded face. All 900s are now 700, and the `font-extrabold`/`font-black`
+    utilities sitting on `font-heading` came down with them.
+70. **Archivo is gone, and it was not unused.** `--font-heading` pointed at
+    Archivo, so the seven `font-heading` utilities in ClubSwitcher, BillingGate,
+    LegalPage, the feed and AlbumEditPanel were rendering a third typeface
+    nobody intended, inside pages set in Fredoka. `--font-heading` now points
+    at Fredoka and `--font-body` at DM Sans, so the Tailwind aliases mean what
+    they say.
+71. **One warm ink at four depths, replacing two neutral systems.** The
+    Tailwind `neutral` scale was hardcoded hex from the deleted Modernist
+    theme, so `text-neutral-700` emitted a cold `#605d5d` and ignored
+    `.theme-soft`'s warm override — three different inks were rendering on the
+    club home at once. The scale now points at the CSS variables, `ink` is
+    theme-aware, and `text-ink / ink-70 / ink-55 / ink-35` replaced every
+    `text-neutral-*` across 21 files.
+72. **60 / 30 / 10, with a brand colour that is not the accent.** Cream is the
+    60 and the club's own accent keeps the 30 — it still drives headline
+    emphasis, chips, eyebrows and section bands. The 10 is a new global violet
+    `--brand: #5b2bd6`, used for primary buttons, checked controls and focus
+    rings and nothing else. It is the lilac's own ink `#43335c` at full
+    saturation, so it already belonged to the family. It also fixes a real
+    failure: the old primary gradient started at `#ff563c`, which is 3.16:1
+    with white text and below AA. The violet runs 7.6:1.
+    *Consequence:* the club colour no longer drives primary buttons, so the
+    Settings copy that promises "buttons, tags and highlights" needs a pass.
+73. **Three button tiers, all solid fills.** No outlines and no transparent
+    buttons — they separate on colour, size and weight, so the ladder survives
+    greyscale. Tier 1 is brand violet at 48px, tier 2 the club accent mixed to
+    55% with white (accent-800 ink on it clears 4.5:1) at 44px, tier 3 the
+    lilac deepened to `#ded0f4` at 40px, 44px on a coarse pointer. The honest
+    limit: on a cream ground no pale fill can clear WCAG's 3:1 for a control
+    edge — tier 3 reaches 1.45:1, up from the old `#f1e9fb`'s 1.12:1. So the
+    rule is **a tier-3 button is never the only button in a group**; a lone
+    action is tier 2 or higher.
+74. **Native controls are styled on the element, not per component.** One block
+    inside `.theme-soft` restyles every `select`, `checkbox`, `radio` and date
+    input in the app, which is why the inline `accentColor`/`width`/`height`
+    styles came out of thirteen components. The native element is kept in all
+    cases, so mobile still gets the OS picker wheel and date sheet.
+75. **The club home opens on content, not chrome.** On a 375px screen the first
+    album used to start at 470px of 812, behind a greeting, a search field, two
+    buttons and a date filter on three separate rows. The club name now takes
+    the H1 (the greeting folds into the meta line, since a member in four clubs
+    needs to know which one this is), the date filter shares the search row,
+    *Saved* leaves the header because it is already in the sidebar and the tab
+    bar, and *New album* becomes a floating button on phones. The grid is 2-up
+    at 4:5 on mobile. First album now lands at ~250px.
+76. **TODO — the second display voice is still unresolved.** The audit found
+    that the emphasised word in every headline is marked by colour alone, which
+    disappears in greyscale and competes with the category chips using the same
+    red. The fix is a second display face applied to that word via a
+    `--font-accent` token and the existing `.soft-word` class. Fraunces,
+    Syne, Big Shoulders Display, Unbounded, Archivo Black, Familjen Grotesk and
+    Instrument Serif were all rejected on looks. **Nothing has been implemented
+    — `.soft-word` is still colour-only.** Pick a face, add it to
+    `app/layout.tsx`, and give `.soft-word` a `font-family`. Until then the
+    headline emphasis carries one signal where it should carry two.

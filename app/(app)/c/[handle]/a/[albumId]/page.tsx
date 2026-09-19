@@ -204,12 +204,12 @@ export default async function AlbumPage(props: Props) {
               </span>
             ) : null}
             {canManage ? (
-              <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="soft-btn soft-btn-tonal !min-h-[44px] !text-[14px] no-underline">
+              <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="soft-btn soft-btn-accent !min-h-[44px] !text-[14px] no-underline">
                 {editing ? "Close details" : "Edit details"}
               </Link>
             ) : null}
             {canAdd ? (
-              <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-tonal !min-h-[44px] !text-[14px] no-underline">
+              <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-primary !min-h-[44px] !text-[14px] no-underline">
                 {adding ? "Close uploader" : "Add photos"}
               </Link>
             ) : null}

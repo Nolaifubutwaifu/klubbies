@@ -85,7 +85,7 @@ export function AudienceTabs() {
               aria-selected={members}
               aria-controls={`${id}-members`}
               onClick={() => setTab("members")}
-              className={`soft-btn ${members ? "soft-btn-primary" : "!bg-transparent !text-[color:var(--ink-70)] !shadow-none"}`}
+              className={`soft-btn ${members ? "soft-btn-primary" : "soft-btn-tonal"}`}
             >
               For members
             </button>
@@ -96,7 +96,7 @@ export function AudienceTabs() {
               aria-selected={!members}
               aria-controls={`${id}-committees`}
               onClick={() => setTab("committees")}
-              className={`soft-btn ${!members ? "soft-btn-primary" : "!bg-transparent !text-[color:var(--ink-70)] !shadow-none"}`}
+              className={`soft-btn ${!members ? "soft-btn-primary" : "soft-btn-tonal"}`}
             >
               For committees
             </button>

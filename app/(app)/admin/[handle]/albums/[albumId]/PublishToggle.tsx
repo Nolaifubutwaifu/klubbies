@@ -13,7 +13,7 @@ export function PublishToggle({ albumId, published, readyCount }: { albumId: str
     <div className="flex flex-col items-end gap-1">
       <button
         type="button"
-        className={published ? "btn btn-secondary" : "btn btn-primary"}
+        className={published ? "btn btn-danger" : "btn btn-primary"}
         disabled={pending || (!published && readyCount === 0)}
         onClick={() =>
           startTransition(async () => {

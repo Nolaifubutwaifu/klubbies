@@ -172,7 +172,6 @@ export function NotificationToggles({
           <input
             type="checkbox"
             checked={prefs[key]}
-            style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
             disabled={pending}
             onChange={(e) => {
               const next = { ...prefs, [key]: e.target.checked };

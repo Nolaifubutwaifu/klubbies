@@ -41,7 +41,6 @@ export function PrivacySwitches({ clubId, initial }: { clubId: string; initial: 
             type="checkbox"
             checked={prefs[row.key]}
             disabled={pending}
-            style={{ width: 22, height: 22, accentColor: "var(--color-accent)" }}
             onChange={(e) => {
               const next = { ...prefs, [row.key]: e.target.checked };
               setPrefs(next);

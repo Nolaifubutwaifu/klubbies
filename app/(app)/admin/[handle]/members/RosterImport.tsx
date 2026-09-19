@@ -327,7 +327,6 @@ export function RosterImport({ clubId }: { clubId: string }) {
                         type="checkbox"
                         checked={removeMissing}
                         onChange={(e) => setRemoveMissing(e.target.checked)}
-                        style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
                       />
                       Remove these {summary.missing.length} after importing
                     </label>

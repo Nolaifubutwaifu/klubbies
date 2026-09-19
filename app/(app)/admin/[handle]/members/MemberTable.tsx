@@ -199,7 +199,6 @@ export function MemberTable({
                   aria-label="Select all"
                   checked={selectable.length > 0 && selectable.every((m) => selected.has(m.id))}
                   onChange={(e) => setSelected(e.target.checked ? new Set(selectable.map((m) => m.id)) : new Set())}
-                  style={{ accentColor: "var(--color-accent)" }}
                 />
               </th>
               <th>Name</th>
@@ -220,7 +219,6 @@ export function MemberTable({
                       aria-label={`Select ${member.name}`}
                       checked={selected.has(member.id)}
                       onChange={() => toggle(member.id)}
-                      style={{ accentColor: "var(--color-accent)" }}
                     />
                   ) : null}
                 </td>

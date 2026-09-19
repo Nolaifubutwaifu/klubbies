@@ -54,7 +54,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
 
       <div className="flex flex-col gap-2.5">
         <label className="flex items-center gap-3 text-[14px]">
-          <input type="checkbox" name="allowDownload" defaultChecked style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }} />
+          <input type="checkbox" name="allowDownload" defaultChecked />
           Members can download the originals
         </label>
         <label className="flex items-center gap-3 text-[14px]">
@@ -62,7 +62,6 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
             type="checkbox"
             name="contributorScope"
             value="members"
-            style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
           />
           Let members add their own photos to this album
         </label>
@@ -76,7 +75,6 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
             name="when"
             checked={when === "now"}
             onChange={() => setWhen("now")}
-            style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
           />
           When I publish it, the second the upload finishes
         </label>
@@ -86,7 +84,6 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
             name="when"
             checked={when === "later"}
             onChange={() => setWhen("later")}
-            style={{ width: 18, height: 18, accentColor: "var(--color-accent)" }}
           />
           Schedule it for
           <input

@@ -108,7 +108,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
                 <span className="h-11 w-11 bg-neutral-400" />
               )}
               <span>
-                <span className="block font-heading text-[15px] font-extrabold">{post.album.title}</span>
+                <span className="block font-heading text-[15px] font-bold">{post.album.title}</span>
                 <span className="block text-[12px] text-ink-70">{post.album.meta}</span>
               </span>
             </Link>

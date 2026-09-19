@@ -83,7 +83,7 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
               ) : (
                 <span className="block aspect-[4/3] w-full rounded-[var(--soft-r-sm)] bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-surface))]" />
               )}
-              <span className="mt-2 block font-heading text-[16px] font-extrabold">{latest.title}</span>
+              <span className="mt-2 block font-heading text-[16px] font-bold">{latest.title}</span>
               <span className="block text-[12px] text-ink-70">
                 {latest.photoCount} photos · {latest.videoCount} videos
               </span>
