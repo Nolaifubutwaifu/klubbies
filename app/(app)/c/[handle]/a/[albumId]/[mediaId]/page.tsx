@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { getClubContext } from "@/lib/auth/session";
 import { formatBytes, formatDuration, formatLongDate } from "@/lib/format";
+import { matchForMedia } from "@/lib/faces/queries";
 import { logAccess } from "@/lib/media/access";
 import { favouritedIds } from "@/lib/media/favourites";
 import { getViewerData } from "@/lib/media/queries";
@@ -31,8 +32,10 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
   if (!data) notFound();
 
   await logAccess(ctx, data.media.id, "view");
-  const [favourites, { data: openRequest }] = await Promise.all([
+  const [favourites, faceMatch, { data: openRequest }] = await Promise.all([
     favouritedIds(supabase, ctx.userId, [data.media.id]),
+    // RLS means this only ever returns the viewer's own match.
+    matchForMedia(supabase, data.media.id),
     supabase
       .from("media_removal_requests")
       .select("id")
@@ -86,6 +89,7 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
       favourited={favourites.has(data.media.id)}
       canAskRemoval={ctx.club.allow_removal_requests && Boolean(ctx.membership)}
       alreadyAsked={Boolean(openRequest)}
+      faceMatchId={faceMatch?.matchId ?? null}
     />
   );
 }

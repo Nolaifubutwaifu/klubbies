@@ -20,12 +20,15 @@ export function MemberSidebar({
   clubs,
   savedCount,
   newCount,
+  facesCount,
   person,
 }: {
   handle: string;
   clubs: MyClub[];
   savedCount: number;
   newCount: number;
+  /** Null when this club has face recognition off, so the row is hidden. */
+  facesCount: number | null;
   person: { name: string; role: string; avatarUrl: string | null };
 }) {
   const pathname = usePathname();
@@ -35,6 +38,16 @@ export function MemberSidebar({
   const inLightbox = /^\/c\/[^/]+\/a\/[^/]+\/[^/]+/.test(pathname);
 
   const rows = [
+    ...(facesCount === null
+      ? []
+      : [
+          {
+            href: `${base}/me`,
+            label: "Photos of you",
+            badge: facesCount,
+            active: pathname.startsWith(`${base}/me`),
+          },
+        ]),
     { href: `${base}/saved`, label: "Saved", badge: savedCount, active: pathname.startsWith(`${base}/saved`) },
     { href: `${base}/feed`, label: "Club feed", badge: 0, active: pathname.startsWith(`${base}/feed`) },
     { href: "/account", label: "Your profile", badge: 0, active: pathname.startsWith("/account") },

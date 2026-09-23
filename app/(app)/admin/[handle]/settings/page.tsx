@@ -4,9 +4,13 @@ import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
 import { appUrl } from "@/lib/env";
+import { backfillProgress } from "@/lib/faces/backfill";
+import { facesConfigured } from "@/lib/faces/client";
+import { clubFaceState } from "@/lib/faces/collections";
 import { formatLongDate } from "@/lib/format";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
+import { FaceRecognition } from "./FaceRecognition";
 import { LogoUploader } from "./LogoUploader";
 import { PrivacySwitches } from "./PrivacySwitches";
 import { SettingsForm } from "./SettingsForm";
@@ -19,6 +23,12 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
   const { club } = ctx;
   const supabase = await createClient();
   const logoUrl = club.logo_path ? ((await signPaths(supabase, [club.logo_path], SIGNED_URL_TTL.display)).get(club.logo_path) ?? null) : null;
+
+  const [faceState, faceBackfill, { count: enrolledCount }] = await Promise.all([
+    clubFaceState(club.id),
+    backfillProgress(club.id),
+    supabase.from("member_face_profiles").select("id", { count: "exact", head: true }).eq("club_id", club.id),
+  ]);
 
   const status = club.billing_status as BillingStatus;
   const active = canWrite(status);
@@ -73,6 +83,18 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
               Who can add photos is set per album, when you create it. Nothing here is ever public: every album needs a
               signed-in member on your list.
             </p>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h2 className="soft-display text-[19px]">Find yourself in photos</h2>
+            <FaceRecognition
+              clubId={club.id}
+              clubName={club.name}
+              configured={facesConfigured()}
+              enabled={Boolean(faceState?.enabled)}
+              enrolledCount={enrolledCount ?? 0}
+              backfill={faceBackfill}
+            />
           </section>
         </div>
 

@@ -1,0 +1,154 @@
+/* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PhotoStackArt } from "@/components/soft/illustrations";
+import { SectionFx } from "@/components/soft/SectionFx";
+import { Placeholder } from "@/components/ui";
+import { getClubContext } from "@/lib/auth/session";
+import { backfillProgress } from "@/lib/faces/backfill";
+import { faceStateFor, listFaceSuggestions, listPhotosOfYou } from "@/lib/faces/queries";
+import { createClient } from "@/lib/supabase/server";
+import { Enrol, TurnOff } from "./Enrol";
+import { Suggestions } from "./Suggestions";
+
+export async function generateMetadata(props: PageProps<"/c/[handle]/me">): Promise<Metadata> {
+  const { handle } = await props.params;
+  const ctx = await getClubContext(handle);
+  return { title: ctx ? `Photos of you · ${ctx.club.name}` : "Photos of you" };
+}
+
+export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">) {
+  const { handle } = await props.params;
+  const ctx = await getClubContext(handle);
+  if (!ctx) notFound();
+
+  const supabase = await createClient();
+  const state = await faceStateFor(supabase, ctx.club.id, ctx.userId);
+  if (!state.enabled) notFound();
+
+  const enrolled = state.profile?.status === "ready";
+  const [{ items }, suggestions, progress] = await Promise.all([
+    enrolled ? listPhotosOfYou(supabase, ctx.club.id) : Promise.resolve({ items: [], hasMore: false }),
+    enrolled ? listFaceSuggestions(supabase, ctx.club.id) : Promise.resolve([]),
+    backfillProgress(ctx.club.id),
+  ]);
+
+  const stillLooking = state.backfillRunning || progress.remaining > 0;
+
+  return (
+    <main className="flex flex-1 flex-col">
+      <section className="soft-fx-host">
+        <SectionFx blobs={["left"]} />
+        <div className="flex w-full flex-col gap-7 px-4 pb-16 pt-6 sm:px-6">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <span className="soft-chip">{ctx.club.name}</span>
+              <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">Photos of you</h1>
+              <p className="mt-2 max-w-[52ch] text-[15px] text-[color:var(--ink-70)]">
+                Only you see this page. Nobody else can search this club&rsquo;s photos for a person, including the
+                committee.
+              </p>
+            </div>
+            <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
+              All events
+            </Link>
+          </div>
+
+          {/* Not enrolled: the pitch and the consent screen. */}
+          {!state.profile ? <Enrol clubId={ctx.club.id} /> : null}
+
+          {/* The selfie was unusable. Say so rather than leaving them waiting. */}
+          {state.profile?.status === "failed" ? (
+            <div className="soft-card flex max-w-[56ch] flex-col gap-3 p-5">
+              <span className="soft-display text-[18px]">That photo didn&rsquo;t work</span>
+              <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                {state.profile.failure_reason ?? "We could not find a clear face in it."}
+              </p>
+              <Enrol clubId={ctx.club.id} />
+            </div>
+          ) : null}
+
+          {state.profile?.status === "pending" ? (
+            <div className="soft-card flex max-w-[56ch] flex-col gap-2 p-5">
+              <span className="soft-display text-[18px]">Looking now</span>
+              <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                We&rsquo;re comparing your selfie against this club&rsquo;s photos. Come back in a minute.
+              </p>
+            </div>
+          ) : null}
+
+          {enrolled ? (
+            <>
+              <Suggestions handle={handle} suggestions={suggestions} />
+
+              {items.length > 0 ? (
+                <section className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 className="soft-display text-[19px]">
+                      {items.length.toLocaleString("en-AU")} {items.length === 1 ? "photo" : "photos"}
+                    </h2>
+                    {stillLooking ? (
+                      <span className="text-[13px] text-[color:var(--ink-55)]">
+                        Still looking through {progress.remaining.toLocaleString("en-AU")} more
+                      </span>
+                    ) : null}
+                  </div>
+                  <div
+                    className="grid gap-2"
+                    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(104px, 18vw, 168px), 1fr))" }}
+                  >
+                    {items.map((item) => (
+                      <Link
+                        key={item.matchId}
+                        href={item.albumId ? `/c/${handle}/a/${item.albumId}/${item.mediaId}` : `/c/${handle}`}
+                        className="block aspect-square overflow-hidden rounded-[14px] no-underline"
+                        title={item.albumTitle}
+                      >
+                        {item.thumbUrl ? (
+                          <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                        ) : (
+                          <Placeholder seed={item.mediaId} className="h-full w-full" />
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ) : stillLooking ? (
+                /* Enrolled, backfill still running: silence would read as failure. */
+                <div className="soft-dashed flex max-w-[56ch] flex-col items-start gap-2 p-7">
+                  <span className="text-accent-400">
+                    <PhotoStackArt size={96} />
+                  </span>
+                  <span className="soft-display text-[19px]">Still looking through this club&rsquo;s photos</span>
+                  <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                    {progress.remaining.toLocaleString("en-AU")} of {progress.total.toLocaleString("en-AU")} to go.
+                    Photos appear here as we find them.
+                  </p>
+                </div>
+              ) : (
+                /* Enrolled, backfill done, nothing found. Say it plainly. */
+                <div className="soft-dashed flex max-w-[56ch] flex-col items-start gap-2 p-7">
+                  <span className="soft-display text-[19px]">We didn&rsquo;t find you in anything yet</span>
+                  <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                    That happens: dim rooms, crowds and motion blur all hide faces, and we skip anything we are not
+                    reasonably sure about. A brighter selfie facing the camera usually helps.
+                  </p>
+                  <Enrol clubId={ctx.club.id} />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-5">
+                <p className="m-0 max-w-[60ch] text-[13px] leading-normal text-[color:var(--ink-70)]">
+                  Face recognition is not reliable. It misses people and it sometimes matches the wrong person. Matches
+                  are suggestions, not statements of fact. Tap &ldquo;Not me&rdquo; on anything wrong.
+                </p>
+                <TurnOff clubId={ctx.club.id} />
+              </div>
+            </>
+          ) : null}
+        </div>
+      </section>
+    </main>
+  );
+}

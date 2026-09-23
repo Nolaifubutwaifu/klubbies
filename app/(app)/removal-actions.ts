@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getClubContextById } from "@/lib/auth/session";
+import { drainFacePurgeQueue } from "@/lib/faces/purge";
 import { removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -100,6 +101,10 @@ export async function confirmRemovalAction(requestId: string): Promise<ActionSta
         (p): p is string => Boolean(p),
       ),
     ).catch(() => undefined);
+    // The media_faces rows cascaded away and their trigger queued the
+    // faceprints. Draining here rather than waiting for the daily cron means
+    // "the faceprint goes when the photo goes" is true in the same request.
+    await drainFacePurgeQueue().catch((purgeError) => console.error("face purge after removal", purgeError));
   }
 
   revalidatePath(`/admin/${ctx.club.handle}`, "layout");

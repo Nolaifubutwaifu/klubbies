@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { pruneRateEvents } from "@/lib/auth/rate-limit";
 import { serverEnv } from "@/lib/env";
+import { runFaceJobs } from "@/lib/faces/jobs";
 import { runRemovalSweep } from "@/lib/media/removals";
 import { runScheduledPublishJob } from "@/lib/media/schedule";
 import { runGraceJob } from "@/lib/membership/grace";
@@ -25,11 +26,17 @@ function authorised(request: Request): boolean {
 // expired grace memberships, and sends the day 7 and day 29 reminders.
 // Publishing runs first so a scheduled album is live as early in the pass as
 // possible.
+//
+// Face jobs run last and are the one part that would rather be hourly: on
+// Hobby this pass is also the backstop that deletes revoked faceprints from
+// AWS, so the consent copy's 24 hours is its outer bound. Uploads kick their
+// own drain, so in practice this catches backfill and anything that errored.
 export async function GET(request: Request) {
   if (!authorised(request)) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   const scheduled = await runScheduledPublishJob();
   const removals = await runRemovalSweep();
   const grace = await runGraceJob();
+  const faces = await runFaceJobs();
   await pruneRateEvents();
-  return NextResponse.json({ scheduled, removals, grace });
+  return NextResponse.json({ scheduled, removals, grace, faces });
 }

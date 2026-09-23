@@ -8,6 +8,7 @@ import { getClubContextById, requireUser } from "@/lib/auth/session";
 import { ACTIVATE_MESSAGE, canWrite } from "@/lib/billing/status";
 import type { Permission } from "@/lib/permissions";
 import { graceWindow, sendDueGraceNotice } from "@/lib/membership/grace";
+import { drainFacePurgeQueue } from "@/lib/faces/purge";
 import { notifyNewAlbum } from "@/lib/notify";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { generateHandleBase } from "@/lib/roster/handle";
@@ -453,6 +454,10 @@ export async function deleteMediaAction(mediaIds: string[]): Promise<ActionState
   await removeObjects(items.flatMap((m) => [m.storage_path, m.thumb_path ?? "", m.display_path ?? "", m.poster_path ?? ""]));
   const { error } = await supabase.from("media").delete().in("id", items.map((m) => m.id));
   if (error) return { error: "Could not delete" };
+  // Deleting the photos cascaded their media_faces rows, whose trigger queued
+  // each faceprint. Draining now keeps "the faceprint goes with the photo"
+  // true immediately rather than by tomorrow's cron.
+  await drainFacePurgeQueue().catch((purgeError) => console.error("face purge after delete", purgeError));
 
   for (const ctx of contexts) {
     revalidatePath(`/admin/${ctx.club.handle}`, "layout");
@@ -481,6 +486,7 @@ export async function deleteAlbumAction(albumId: string, typedTitle: string): Pr
     await supabase.from("media").delete().in("id", batch.map((m) => m.id));
   }
   await supabase.from("albums").delete().eq("id", albumId);
+  await drainFacePurgeQueue().catch((purgeError) => console.error("face purge after album delete", purgeError));
 
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
   redirect(`/admin/${ctx.club.handle}/albums`);

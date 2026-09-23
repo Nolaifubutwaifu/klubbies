@@ -638,8 +638,16 @@
       box-shadow var(--soft-ease),
       background-color var(--soft-ease);
   }
-  .soft-btn:active {
+  .soft-btn:active:not(:disabled) {
     transform: scale(0.97);
+  }
+  /* A disabled soft button has to look disabled. The consent gates lean on
+     this: a filled primary button that cannot be pressed, with no visual
+     difference, reads as a broken screen rather than as "tick the box". */
+  .soft-btn:disabled,
+  .soft-btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
   /* Three filled tiers. No outlines, no transparent buttons — they separate
      on colour, size and type weight so the ladder survives greyscale.

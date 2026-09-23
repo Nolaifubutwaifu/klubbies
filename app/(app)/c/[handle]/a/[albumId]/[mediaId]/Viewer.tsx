@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { decideFaceMatchAction } from "@/app/(app)/face-actions";
 import { requestRemovalAction } from "@/app/(app)/removal-actions";
 import { toggleFavouriteAction } from "@/app/(app)/c/[handle]/actions";
 
@@ -84,6 +85,7 @@ export function Viewer({
   favourited,
   canAskRemoval,
   alreadyAsked,
+  faceMatchId,
 }: {
   albumHref: string;
   albumTitle: string;
@@ -99,12 +101,15 @@ export function Viewer({
   favourited: boolean;
   canAskRemoval: boolean;
   alreadyAsked: boolean;
+  /** Set when face recognition has matched the viewer to this photo. */
+  faceMatchId: string | null;
 }) {
   const router = useRouter();
   const touchX = useRef<number | null>(null);
   const [saved, setSaved] = useState(favourited);
   const [sheet, setSheet] = useState<"none" | "removal" | "details">("none");
   const [asked, setAsked] = useState(alreadyAsked);
+  const [matched, setMatched] = useState(faceMatchId);
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -271,6 +276,24 @@ export function Viewer({
           <circle cx="12" cy="12" r="9" />
           <path d="M12 11v5M12 7.6v.1" />
         </Action>
+        {/* Getting it wrong has to be one tap to correct, wherever you are
+            when you notice — not only on the Photos of you page. */}
+        {matched ? (
+          <Action
+            label="Not me"
+            quiet
+            onClick={() =>
+              startTransition(async () => {
+                const res = await decideFaceMatchAction(matched, "reject");
+                setMatched(null);
+                setMessage(res.error ?? "Thanks. We won't suggest this one again.");
+              })
+            }
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9 9l6 6M15 9l-6 6" />
+          </Action>
+        ) : null}
         {canAskRemoval ? (
           <Action label={asked ? "Asked" : "Take it down"} quiet onClick={() => setSheet("removal")}>
             <path d="M12 3 2.5 20h19z" />

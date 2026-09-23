@@ -10,9 +10,11 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "backfill-faces": "tsx --env-file=.env.local scripts/backfill-faces.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.1136.0",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "@stripe/react-stripe-js": "^6.10.0",
@@ -27,6 +29,7 @@
     "react-dom": "19.2.8",
     "resend": "^6.28.0",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.4",
     "stripe": "^22.6.2",
     "tus-js-client": "^4.3.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
@@ -42,7 +45,6 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
-    "sharp": "^0.35.4",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5",

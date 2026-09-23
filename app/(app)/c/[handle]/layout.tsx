@@ -4,6 +4,7 @@ import { MemberSidebar } from "@/components/MemberSidebar";
 import { MemberTabBar } from "@/components/MemberTabBar";
 import { getClubContext, getProfile, listMyClubs } from "@/lib/auth/session";
 import { displayNameFor } from "@/lib/auth/display-name";
+import { countPhotosOfYou, faceStateFor } from "@/lib/faces/queries";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { clubToneStyle } from "@/lib/theme";
@@ -14,7 +15,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
   if (!ctx) notFound();
 
   const supabase = await createClient();
-  const [{ clubs }, profile, displayName, saved, fresh] = await Promise.all([
+  const [{ clubs }, profile, displayName, saved, fresh, faceState] = await Promise.all([
     listMyClubs(),
     getProfile(),
     displayNameFor(ctx),
@@ -28,7 +29,15 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
           .eq("status", "published")
           .gt("published_at", ctx.membership.last_seen_at)
       : Promise.resolve({ count: 0 }),
+    faceStateFor(supabase, ctx.club.id, ctx.userId),
   ]);
+
+  // The rail shows the row only where the feature exists for this member:
+  // off for the club, or never enrolled, and it is not there at all.
+  const facesCount =
+    faceState.enabled && faceState.profile?.status === "ready"
+      ? await countPhotosOfYou(supabase, ctx.club.id)
+      : null;
 
   const avatarUrl = profile?.avatar_url
     ? ((await signPaths(supabase, [profile.avatar_url], SIGNED_URL_TTL.display)).get(profile.avatar_url) ?? null)
@@ -47,6 +56,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
           clubs={clubs}
           savedCount={saved.count ?? 0}
           newCount={fresh.count ?? 0}
+          facesCount={facesCount}
           person={{ name: displayName, role: ctx.role?.name ?? "Member", avatarUrl }}
         />
         <div className="min-w-0 flex-1">{props.children}</div>
