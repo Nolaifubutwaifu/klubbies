@@ -291,3 +291,212 @@ Choices made during the v1 build that `klubbies_masterfile.md` did not settle. N
     about 70px of an 812px phone screen — for a control most members never
     touch. With that and the header changes the first album moved from 470px
     to roughly 146px.
+
+## 2026-09-20 · Face recognition (AWS Rekognition, opt-in)
+
+Built from the spec in `Untitled.md`. Three forks were settled before the
+build and each is load-bearing: every detected face is indexed (not only
+enrolled members'), rollout is admin opt-in per club, and enabling a club
+backfills its whole library.
+
+80. **Rekognition, not pgvector.** Postgres holds ids and decisions; AWS holds
+    the faceprints. One collection per club, `{prefix}-club-{clubId}`, holding
+    media faces and reference faces together and telling them apart by
+    `ExternalImageId` (`media:` / `ref:`). Two collections would look tidier
+    and break the design: `SearchFaces` only searches the collection its
+    `FaceId` lives in, so splitting them forces an image-bytes search per face.
+81. **The privacy guarantee lives in RLS, not in application code.**
+    `media_faces` has no member policy and no grant, which is what stops a
+    member correlating face ids across photos to work out who else is in them.
+    `face_matches_select_own` has two halves — your own profile, and a live
+    membership — so a revoked member stops seeing their matches the way the
+    rest of the app already behaves. 17 checks in
+    `supabase/tests/face_rls.sql`, run inside a transaction that rolls back.
+82. **"Not me" is keyed on (profile, photo), not on the face row.** The spec
+    put rejections in `face_matches.state` and claimed the unique constraint
+    made them permanent. It does not: `face_matches` cascades from
+    `media_faces`, so re-indexing a photo would forget every rejection, and
+    the constraint stops duplicate rows rather than a state being flipped
+    back. `face_rejections` survives a re-index, the matcher consults it
+    before writing, and every insert is `ignoreDuplicates` so a decided
+    pairing is never quietly re-suggested.
+83. **A confirmed match is promoted by reusing its faceprint, not by indexing
+    a crop.** Strictly less biometric data for the same result. The cost is a
+    lifetime problem — the faceprint belongs to a photo — so
+    `member_face_references.media_face_id` is a real FK with cascade, and a
+    `check` constraint says a selfie reference has none and a promoted one
+    always does.
+84. **The bounding box is copied onto `face_matches`.** "Is this you?" crops
+    client-side and needs the box, but `media_faces` is the table nobody may
+    read. The box discloses nothing — it says where, in a photo already shown
+    to this member, their own face is — and copying it keeps "Photos of you" a
+    plain RLS query instead of a service-role read inside a page.
+85. **The selfie lives outside `clubs/`.** Every branch of
+    `club_media_select` keyed off `storage_club_id()` lets a committee read
+    anything under their club's prefix. `faces/{membershipId}/selfie.jpg` is
+    outside it and is read and written only with the service role. While
+    there: that branch now requires `storage_club_id(name) is not null`,
+    because `club_perm(null, …)` was true for a super admin, which handed the
+    platform account a read on every non-club path.
+86. **The drain is callable from three places** — the daily cron,
+    fire-and-forget at the end of both finalize routes, and an admin "Run
+    now". Without the second, "Photos of you" lags up to 24 hours on Hobby and
+    reads as broken. `claim_face_jobs` uses `for update skip locked`, so two
+    running at once take different work.
+87. **Revocation drains the purge queue inline.** On Hobby a queue-only purge
+    lands exactly on the 24 hours the consent copy promises, which is not a
+    promise worth testing. Photo and album deletes drain inline too, so "the
+    faceprint goes when the photo goes" is true in the same request.
+88. **One rule covers every way a membership ends.** Deleting a membership
+    cascades; a membership that merely changes to `revoked` does not, and the
+    profile would outlive the access it was granted under.
+    `revokeOrphanedProfiles()` in the drain handles both, including ways added
+    later.
+89. **`.soft-btn` got a `:disabled` style.** The design system never had one.
+    Both consent gates are a filled primary button that cannot be pressed
+    until a box is ticked, and with no visual difference that reads as a
+    broken screen rather than as "tick the box".
+
+*Not done, and deliberately:* the thresholds in `lib/faces/constants.ts` are
+starting points, not findings. Step 13 of the spec — backfill the demo club,
+review the matches against the bands, tune, re-run as `rematch` — has to come
+from real photos, and needs AWS credentials this deployment does not have yet.
+
+## 2026-09-23 · Face recognition thresholds, tuned against real photos
+
+Step 13 of the spec, done properly. Ground truth came from Lightroom Classic:
+335 face names a human had *confirmed* in the catalog (`userPick = 1` — the
+other 401 named faces are Lightroom's own unconfirmed suggestions, and using
+those would have measured Rekognition against Adobe's guesses). 274 unique
+photos, ARW and DNG converted through `sips`. Each Rekognition face was
+labelled by overlapping its box with the Lightroom box, which located 97% of
+the confirmed faces. Every labelled face was then used as a search probe, and
+each hit scored against the human's name.
+
+90. **The similarity threshold barely matters. The minimum face size does
+    almost all the work.** Per-photo recall was flat at ~96% from similarity
+    82 all the way to 94 — moving it changed nothing. What changed everything
+    was `minBoundingBoxWidth`: at the spec's 4% the tuning set produced about
+    50 cross-person false positives; at 6% it produced **zero**, at every
+    threshold tested. `minBoundingBoxWidth` is now 0.06.
+91. **The worst false positive was a 99.9% match between two different
+    people** — a face 5.2% of the image wide, small and blurred, against a
+    clear frontal photo of someone else. That is the failure mode the floor
+    exists to prevent, and 4% did not prevent it. A face that small carries
+    too little signal to identify but plenty to be confidently wrong.
+92. **The floor costs about a fifth of a person's photos** — those where they
+    appear small — and is still the right trade. At 4%: 205 of 213 findable
+    photos matched, plus ~50 wrong ones. At 6%: 182 of 184, plus none. Twenty
+    fewer correct photos against fifty fewer wrong ones, and the spec's own
+    stated bias is that a wrong confirmed match costs more trust than a miss.
+93. **92 / 85 stay, now with evidence instead of a guess behind them.** At the
+    6% floor, 98.5% of genuine matches land at 92 or above, 1.0% in the
+    suggested band, 0.5% below 85. The bands cost almost nothing and the
+    suggested strip stays as a cheap safety valve for the uncertain 1%.
+
+*What this does not cover:* six people, one photographer, one camera, mostly
+daylight and travel. Club photography is dim rooms, crowds and motion blur,
+which is harder — so read these as a ceiling on quality, not a floor. Re-run
+the survey against a real club's library before trusting the numbers there.
+
+The tuning photos and their Rekognition collection were deleted immediately
+after the run; `tuning-photos/` keeps only its README.
+
+## 2026-09-23 · Face matching, from per-face to per-batch
+
+94. **Matching now runs once per batch, in whichever direction is cheaper.**
+    `indexMedia` used to search Rekognition once per detected face, so a photo
+    cost one IndexFaces plus one SearchFaces per face — about 3.2 calls on a
+    library averaging 2.2 kept faces, not the 1 the spec's cost estimate
+    assumed. That put a 50,000 photo club nearer US$160 than US$50.
+
+    Similarity is symmetric, so searching from each reference face returns the
+    same pairs as searching from each media face. `lib/faces/match.ts` counts
+    both sides and takes the smaller: a single upload with three faces still
+    searches per face, while a nightly drain of hundreds of photos searches
+    once per enrolled reference instead. Measured on the demo club: 22 photos,
+    49 faces, one reference — **1 search instead of 49**, and 23 Rekognition
+    calls for the pass instead of 71.
+
+95. **Indexing and matching are separate steps, and that is load-bearing.** A
+    failed match now leaves the faces indexed, so the retry costs a search
+    rather than a re-index. It also means `rematch_media` has nothing to do
+    but confirm the faces exist — the batch matcher re-scores whatever it is
+    handed, however the photo got into the batch.
+
+96. **Enrolment shares the same matcher.** The back-catalogue sweep was a
+    second, near-identical implementation of matching; it is now the
+    per-reference direction with the batch set to the whole club, which is one
+    search for a newly enrolled member either way. One matching path, one
+    place for the bands and the rejection check to be honoured.
+
+## 2026-09-23 · Face recognition, second pass on the copy
+
+Reviewing the three pieces of copy against what the code actually does turned
+up three claims that were not true. Fixed regardless of what a lawyer later
+says about the rest.
+
+97. **"Neither can we" is gone.** The notice and the privacy policy both said
+    no one at Klubbies could search a club's photos for a person. The service
+    role bypasses every policy in this schema and `SearchFacesByImage` is in
+    the IAM policy, so that was a claim about intent dressed up as a claim
+    about capability. It now says there is no such feature and none has been
+    built, which is true and still reassuring.
+98. **The consent tickbox said less than it did.** It covered "a faceprint
+    from my selfie", when by the time a member sees it a faceprint of their
+    face usually already exists from the club's photos. The screen disclosed
+    that two paragraphs up; the sentence people actually tick now says what it
+    is for.
+99. **The committee is no longer told it carries the responsibility.** "You
+    are responsible for telling your members" reads as moving a legal duty
+    onto a student committee, and a tickbox does not move it — Klubbies is the
+    entity making and holding the faceprints. It now says members should know,
+    and that we show them a notice ourselves.
+
+100. **Every member of a face-enabled club is now told, and has to
+     acknowledge it.** A dismissible banner inviting enrolment was the only
+     thing a non-enrolling member ever saw, and a faceprint is made of their
+     face either way. `memberships.face_notice_ack_at` records the
+     acknowledgement — on the membership, not the profile, because it applies
+     to the members who never create a profile, which is most of them.
+
+     It is shown at the door and inside: joining a face-enabled club puts the
+     notice in the invite card with the Accept button disabled until it is
+     ticked, and a member who joined before the club switched it on gets a
+     persistent (not dismissible, not modal) notice on the club page until
+     they acknowledge. The notice outranks the enrol prompt — told first,
+     invited second.
+
+     It is an acknowledgement, not consent, and the column names and copy both
+     say so. Consent is enrolment, which stays entirely optional. This closes
+     the disclosure gap for members. It does **not** close the consent gap for
+     guests and plus-ones, who never see a Klubbies screen at all — that one
+     is a question for a lawyer, and it is the question that decides whether
+     this design ships as built.
+
+## 2026-09-23 · What the first real backfill taught
+
+101. **A claimed job that never finished was invisible and permanent.**
+     `claim_face_jobs` only looked at `status = 'pending'`, so a job whose
+     function timed out stayed `running` for ever: never retried, never
+     failed, never surfaced. Three appeared within an hour of the first real
+     backfill. Ten minutes in `running` — past the 300s any run can
+     legitimately take — now makes a job reclaimable, and `attempts` still
+     increments so a photo that reliably kills its worker eventually gives up.
+
+102. **`settleBackfills` could not re-open a finished backfill.** It only
+     examined clubs already marked queued or running, so a reclaimed job or a
+     later rematch left the panel claiming the library was done while photos
+     sat unprocessed. Every enabled club is checked now, in both directions.
+
+103. **The admin panel was a snapshot.** Turn it on, then nothing moves until
+     you reload — which on a 191 photo library reads as broken. It polls every
+     four seconds while work remains, shows a pulsing dot, the running face
+     count and the progress, and stops polling on its own. The tell that this
+     was wrong came from using it, not from reading it.
+
+104. **"Photos of you" is stacked by album.** A flat run of forty thumbnails
+     from four different nights reads as a pile; nobody remembers their photos
+     as a chronology, they remember them as the ball, then the grand final.
+     Same shape the Saved page already uses, one signing call for the page,
+     and each album links through to itself.

@@ -28,6 +28,30 @@ const SECTIONS: [string, string][] = [
     "Removing a photo of you",
     "Ask the club's committee to remove it; admins can delete any item. A built-in report button is coming soon.",
   ],
+  // The masterfile's rule about the access log applies here too: say the
+  // uncomfortable part plainly rather than burying it. The uncomfortable part
+  // is that we create a faceprint for everyone in a photo, not only for
+  // people who opted in.
+  [
+    "Face recognition: what we collect",
+    "When a club turns on face recognition, we send that club's photos to Amazon Rekognition, operated by Amazon Web Services in Sydney, Australia. Rekognition finds faces and creates a faceprint, a mathematical description of a face, for each one. This happens for every face in the photo, including people who are not Klubbies members. If you choose to enrol, we also create a faceprint from a selfie you give us, and we store that selfie. A faceprint is biometric information, which is sensitive information under the Privacy Act 1988. We only create one from your selfie with your express consent, given on the enrolment screen, and you can withdraw it at any time.",
+  ],
+  [
+    "Face recognition: what we use it for",
+    "To show you photos you appear in. Nothing else. Only you can see your own matches: no other member, no club committee and no Klubbies staff can search a club's photos for a particular person.",
+  ],
+  [
+    "Face recognition: accuracy",
+    "Face recognition is not reliable. It misses people, and it sometimes matches the wrong person, particularly in dim light, in crowds, and where a photo is blurred or someone is turned away. Matches are suggestions, not statements of fact, and should never be treated as evidence that someone was or was not somewhere. You can reject any wrong match, and a rejected match is never suggested to you again.",
+  ],
+  [
+    "Face recognition: how long we keep it",
+    "A faceprint made from a photo is deleted when that photo is deleted. Your reference faceprint and your selfie are deleted when you withdraw consent, when your membership ends, or when the club turns the feature off: within 24 hours in each case. When a club turns it off, every faceprint for that club is deleted.",
+  ],
+  [
+    "Face recognition: who else sees it",
+    "Amazon Web Services processes faceprints on our behalf, in the ap-southeast-2 (Sydney) region. We do not sell face data and we do not share it with anyone else.",
+  ],
 ];
 
 export default function PrivacyPage() {

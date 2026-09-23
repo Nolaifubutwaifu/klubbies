@@ -1,4 +1,5 @@
 import "server-only";
+import { drainFacePurgeQueue } from "@/lib/faces/purge";
 import { removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -46,6 +47,12 @@ export async function runRemovalSweep(now = new Date()): Promise<RemovalSweepRes
       ).catch((sweepError) => console.error("removal sweep could not delete objects", media.id, sweepError));
     }
     deleted += 1;
+  }
+
+  // Each deleted photo cascaded its media_faces rows, whose trigger queued
+  // the faceprints for removal from AWS.
+  if (deleted > 0) {
+    await drainFacePurgeQueue().catch((error) => console.error("face purge after removal sweep", error));
   }
 
   return { due: rows.length, deleted };

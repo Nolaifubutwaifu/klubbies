@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { MEMBER_NOTICE_VERSION } from "@/lib/faces/constants";
 import { AREA_COOKIE } from "@/lib/area";
 import { getSessionUser, requireUser } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +29,7 @@ export async function setAreaAction(area: "member" | "admin", path: string): Pro
   redirect(safePath);
 }
 
-export async function acceptInviteAction(membershipId: string): Promise<Result> {
+export async function acceptInviteAction(membershipId: string, acknowledgedFaceNotice = false): Promise<Result> {
   const user = await getSessionUser();
   if (!user) return { error: "Sign in first" };
   if (!z.uuid().safeParse(membershipId).success) return { error: "Unknown invitation" };
@@ -36,7 +37,15 @@ export async function acceptInviteAction(membershipId: string): Promise<Result> 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("memberships")
-    .update({ accepted_at: new Date().toISOString(), declined_at: null })
+    .update({
+      accepted_at: new Date().toISOString(),
+      declined_at: null,
+      // Stamped in the same write as the join, so a member who was told at
+      // the door is never asked again inside.
+      ...(acknowledgedFaceNotice
+        ? { face_notice_ack_at: new Date().toISOString(), face_notice_version: MEMBER_NOTICE_VERSION }
+        : {}),
+    })
     .eq("id", membershipId)
     .eq("user_id", user.id)
     .select("clubs(handle, name)")

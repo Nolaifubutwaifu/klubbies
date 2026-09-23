@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getClubContextById } from "@/lib/auth/session";
+import { clubFacesEnabled } from "@/lib/faces/collections";
+import { enqueueMediaJob, kickFaceJobs } from "@/lib/faces/jobs";
 import { derivativePaths, listFolder } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
@@ -54,6 +56,19 @@ export async function POST(request: Request, ctx: RouteContext<"/api/media/[id]/
     })
     .eq("id", id);
   if (error) return NextResponse.json({ error: "Could not finish the upload" }, { status: 500 });
+
+  // Face recognition, when the club has turned it on. Wrapped so it can never
+  // fail the upload: a missing face job is a nuisance, a failed upload is not.
+  // The drain is kicked here rather than left to the daily cron, or "Photos of
+  // you" would lag by up to 24 hours on Hobby and read as broken.
+  try {
+    if (await clubFacesEnabled(media.club_id)) {
+      await enqueueMediaJob(media.club_id, id);
+      kickFaceJobs();
+    }
+  } catch (faceError) {
+    console.error("could not queue face indexing", id, faceError);
+  }
 
   return NextResponse.json({ ok: true });
 }

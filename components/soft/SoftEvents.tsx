@@ -57,6 +57,8 @@ export function SoftEvents({
   newAlbumHref,
   firstName,
   notifiesOnNewAlbums = false,
+  photosOfYou,
+  photosOfYouHref,
 }: {
   albums: StackedAlbum[];
   hrefBase: string;
@@ -67,6 +69,9 @@ export function SoftEvents({
   firstName?: string;
   /** Whether this member already gets the new-album email. */
   notifiesOnNewAlbums?: boolean;
+  /** Confirmed face matches per album id. Empty when the member has not enrolled. */
+  photosOfYou?: Map<string, number>;
+  photosOfYouHref?: string;
 }) {
   const [query, setQuery] = useState("");
   const [day, setDay] = useState<string | null>(null);
@@ -389,6 +394,17 @@ export function SoftEvents({
                       members-only, so repeating it on all six taught nothing. */}
                   <div className="p-3 sm:p-3.5">
                     <div className="soft-display line-clamp-2 text-[16px] text-ink sm:text-[20px]">{album.title}</div>
+                    {/* The detail that makes the feature feel alive. Counted
+                        once for every album on screen, never per card. */}
+                    {photosOfYou?.get(album.id) ? (
+                      <Link
+                        href={photosOfYouHref ?? "#"}
+                        className="mt-1 inline-block text-[12px] font-bold text-accent-700 no-underline"
+                      >
+                        {photosOfYou.get(album.id)!.toLocaleString("en-AU")} photo
+                        {photosOfYou.get(album.id) === 1 ? "" : "s"} of you
+                      </Link>
+                    ) : null}
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                       {eventTypeLabel(album.eventType) ? (
                         <span className="soft-chip soft-chip-muted">{eventTypeLabel(album.eventType)}</span>

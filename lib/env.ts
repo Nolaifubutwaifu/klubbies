@@ -12,6 +12,14 @@ const schema = z.object({
   CRON_SECRET: z.string().min(16),
   // Test-only: shortens every signed URL so expiry can be exercised quickly.
   SIGNED_URL_TTL_OVERRIDE_SECONDS: z.coerce.number().int().positive().optional(),
+  // Face recognition (AWS Rekognition). Every one of these is optional on
+  // purpose: a dev machine with no AWS credentials still boots, and the face
+  // worker no-ops instead of throwing. Absence disables the feature, it is
+  // never a configuration error.
+  AWS_REGION: z.string().min(1).default("ap-southeast-2"),
+  AWS_ACCESS_KEY_ID: z.string().min(1).optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  REKOGNITION_COLLECTION_PREFIX: z.string().regex(/^[a-zA-Z0-9_.\-]+$/).default("klubbies-dev"),
 });
 
 export type ServerEnv = z.infer<typeof schema>;

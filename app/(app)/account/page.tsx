@@ -9,6 +9,7 @@ import { formatLongDate } from "@/lib/format";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./AccountForms";
+import { FaceRow } from "./FaceRow";
 
 export const metadata: Metadata = { title: "Your profile" };
 
@@ -130,6 +131,8 @@ export default async function AccountPage() {
             {invites.map((invite) => (
               <InviteCard key={invite.membershipId} invite={invite} />
             ))}
+
+            <FaceRow clubs={clubs} />
 
             <h2 className="soft-display mt-2 text-[18px]">Notifications</h2>
             <div className="soft-card p-4">
