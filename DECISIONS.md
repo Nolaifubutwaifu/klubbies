@@ -473,3 +473,30 @@ says about the rest.
      guests and plus-ones, who never see a Klubbies screen at all — that one
      is a question for a lawyer, and it is the question that decides whether
      this design ships as built.
+
+## 2026-09-23 · What the first real backfill taught
+
+101. **A claimed job that never finished was invisible and permanent.**
+     `claim_face_jobs` only looked at `status = 'pending'`, so a job whose
+     function timed out stayed `running` for ever: never retried, never
+     failed, never surfaced. Three appeared within an hour of the first real
+     backfill. Ten minutes in `running` — past the 300s any run can
+     legitimately take — now makes a job reclaimable, and `attempts` still
+     increments so a photo that reliably kills its worker eventually gives up.
+
+102. **`settleBackfills` could not re-open a finished backfill.** It only
+     examined clubs already marked queued or running, so a reclaimed job or a
+     later rematch left the panel claiming the library was done while photos
+     sat unprocessed. Every enabled club is checked now, in both directions.
+
+103. **The admin panel was a snapshot.** Turn it on, then nothing moves until
+     you reload — which on a 191 photo library reads as broken. It polls every
+     four seconds while work remains, shows a pulsing dot, the running face
+     count and the progress, and stops polling on its own. The tell that this
+     was wrong came from using it, not from reading it.
+
+104. **"Photos of you" is stacked by album.** A flat run of forty thumbnails
+     from four different nights reads as a pile; nobody remembers their photos
+     as a chronology, they remember them as the ball, then the grand final.
+     Same shape the Saved page already uses, one signing call for the page,
+     and each album links through to itself.

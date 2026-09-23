@@ -60,23 +60,38 @@ export type PhotoOfYou = {
   similarity: number;
 };
 
+export type PhotosOfYouGroup = {
+  albumId: string;
+  albumTitle: string;
+  albumDate: string | null;
+  items: PhotoOfYou[];
+};
+
 /**
- * The grid. RLS already restricts face_matches to the caller's own profile,
- * so there is deliberately no user filter here — do not "fix" this by adding
- * one, it would only hide the fact that the guarantee lives in the database.
+ * The grid, grouped by album.
+ *
+ * A member's own photos are the one view in this app where the flat, purely
+ * chronological order was wrong: a run of 40 thumbnails from four different
+ * nights reads as a pile, not as "the ball, then the grand final". Albums are
+ * how people remember events, so they are how these are stacked — the same
+ * shape the Saved page uses.
+ *
+ * RLS already restricts face_matches to the caller's own profile, so there is
+ * deliberately no user filter here. Do not "fix" that by adding one: it would
+ * only hide the fact that the guarantee lives in the database.
  */
 export async function listPhotosOfYou(
   supabase: UserClient,
   clubId: string,
   page = 0,
-): Promise<{ items: PhotoOfYou[]; hasMore: boolean }> {
+): Promise<{ groups: PhotosOfYouGroup[]; total: number; hasMore: boolean }> {
   const { data, error } = await supabase
     .from("face_matches")
-    // albums has to be named by its FK: media.album_id points at albums,
-    // and albums.cover_media_id points back at media, so a bare `albums`
-    // embed is ambiguous and PostgREST refuses it.
+    // albums has to be named by its FK: media.album_id points at albums, and
+    // albums.cover_media_id points back at media, so a bare `albums` embed is
+    // ambiguous and PostgREST refuses it.
     .select(
-      "id, media_id, similarity, media!inner(id, album_id, sort_at, thumb_path, poster_path, albums!media_album_id_fkey(title))",
+      "id, media_id, similarity, media!inner(id, album_id, sort_at, thumb_path, poster_path, albums!media_album_id_fkey(title, event_date))",
     )
     .eq("club_id", clubId)
     .eq("state", "confirmed")
@@ -94,19 +109,34 @@ export async function listPhotosOfYou(
     SIGNED_URL_TTL.thumb,
   );
 
+  // Album order follows the photo order, so the most recent event is first
+  // and the group's own photos stay newest-first inside it.
+  const groups = new Map<string, PhotosOfYouGroup>();
+  for (const row of pageRows) {
+    const albumId = row.media.album_id;
+    if (!albumId) continue; // loose media has no event to sit under
+    const path = row.media.thumb_path ?? row.media.poster_path;
+    const group = groups.get(albumId) ?? {
+      albumId,
+      albumTitle: row.media.albums?.title ?? "This club",
+      albumDate: row.media.albums?.event_date ?? null,
+      items: [],
+    };
+    group.items.push({
+      matchId: row.id,
+      mediaId: row.media_id,
+      albumId,
+      albumTitle: group.albumTitle,
+      thumbUrl: path ? (urls.get(path) ?? null) : null,
+      similarity: Number(row.similarity),
+    });
+    groups.set(albumId, group);
+  }
+
   return {
+    groups: [...groups.values()],
+    total: pageRows.length,
     hasMore: rows.length > PHOTOS_OF_YOU_PAGE_SIZE,
-    items: pageRows.map((row) => {
-      const path = row.media.thumb_path ?? row.media.poster_path;
-      return {
-        matchId: row.id,
-        mediaId: row.media_id,
-        albumId: row.media.album_id,
-        albumTitle: row.media.albums?.title ?? "This club",
-        thumbUrl: path ? (urls.get(path) ?? null) : null,
-        similarity: Number(row.similarity),
-      };
-    }),
   };
 }
 

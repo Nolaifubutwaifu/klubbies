@@ -6,8 +6,9 @@ import { PhotoStackArt } from "@/components/soft/illustrations";
 import { SectionFx } from "@/components/soft/SectionFx";
 import { Placeholder } from "@/components/ui";
 import { getClubContext } from "@/lib/auth/session";
+import { formatLongDate } from "@/lib/format";
 import { backfillProgress } from "@/lib/faces/backfill";
-import { faceStateFor, listFaceSuggestions, listPhotosOfYou } from "@/lib/faces/queries";
+import { faceStateFor, listFaceSuggestions, listPhotosOfYou, type PhotosOfYouGroup } from "@/lib/faces/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Enrol, TurnOff } from "./Enrol";
 import { Suggestions } from "./Suggestions";
@@ -28,8 +29,10 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
   if (!state.enabled) notFound();
 
   const enrolled = state.profile?.status === "ready";
-  const [{ items }, suggestions, progress] = await Promise.all([
-    enrolled ? listPhotosOfYou(supabase, ctx.club.id) : Promise.resolve({ items: [], hasMore: false }),
+  const [{ groups, total }, suggestions, progress] = await Promise.all([
+    enrolled
+      ? listPhotosOfYou(supabase, ctx.club.id)
+      : Promise.resolve({ groups: [] as PhotosOfYouGroup[], total: 0, hasMore: false }),
     enrolled ? listFaceSuggestions(supabase, ctx.club.id) : Promise.resolve([]),
     backfillProgress(ctx.club.id),
   ]);
@@ -82,11 +85,12 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
             <>
               <Suggestions handle={handle} suggestions={suggestions} />
 
-              {items.length > 0 ? (
-                <section className="flex flex-col gap-3">
+              {total > 0 ? (
+                <section className="flex flex-col gap-6">
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <h2 className="soft-display text-[19px]">
-                      {items.length.toLocaleString("en-AU")} {items.length === 1 ? "photo" : "photos"}
+                      {total.toLocaleString("en-AU")} {total === 1 ? "photo" : "photos"} across{" "}
+                      {groups.length.toLocaleString("en-AU")} {groups.length === 1 ? "event" : "events"}
                     </h2>
                     {stillLooking ? (
                       <span className="text-[13px] text-[color:var(--ink-55)]">
@@ -94,25 +98,44 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                       </span>
                     ) : null}
                   </div>
-                  <div
-                    className="grid gap-2"
-                    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(104px, 18vw, 168px), 1fr))" }}
-                  >
-                    {items.map((item) => (
-                      <Link
-                        key={item.matchId}
-                        href={item.albumId ? `/c/${handle}/a/${item.albumId}/${item.mediaId}` : `/c/${handle}`}
-                        className="block aspect-square overflow-hidden rounded-[14px] no-underline"
-                        title={item.albumTitle}
+
+                  {/* Stacked by album, because that is how anyone remembers
+                      which night they are looking for. */}
+                  {groups.map((group) => (
+                    <section key={group.albumId} className="flex flex-col gap-2.5">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <Link
+                          href={`/c/${handle}/a/${group.albumId}`}
+                          className="soft-display text-[17px] text-ink no-underline"
+                        >
+                          {group.albumTitle}
+                        </Link>
+                        <span className="text-[12px] text-[color:var(--ink-55)]">
+                          {group.albumDate ? `${formatLongDate(group.albumDate)} · ` : ""}
+                          {group.items.length.toLocaleString("en-AU")} of you
+                        </span>
+                      </div>
+                      <div
+                        className="grid gap-2"
+                        style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(104px, 18vw, 168px), 1fr))" }}
                       >
-                        {item.thumbUrl ? (
-                          <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
-                        ) : (
-                          <Placeholder seed={item.mediaId} className="h-full w-full" />
-                        )}
-                      </Link>
-                    ))}
-                  </div>
+                        {group.items.map((item) => (
+                          <Link
+                            key={item.matchId}
+                            href={`/c/${handle}/a/${group.albumId}/${item.mediaId}`}
+                            className="block aspect-square overflow-hidden rounded-[14px] no-underline"
+                            title={group.albumTitle}
+                          >
+                            {item.thumbUrl ? (
+                              <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                            ) : (
+                              <Placeholder seed={item.mediaId} className="h-full w-full" />
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  ))}
                 </section>
               ) : stillLooking ? (
                 /* Enrolled, backfill still running: silence would read as failure. */
