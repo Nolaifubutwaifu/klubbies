@@ -1099,6 +1099,8 @@ export type Database = {
           club_id: string;
           created_at: string;
           declined_at: string | null;
+          face_notice_ack_at: string | null;
+          face_notice_version: string | null;
           first_seen_at: string | null;
           grace_ends_at: string | null;
           grace_notices_sent: number;
@@ -1121,6 +1123,8 @@ export type Database = {
           club_id: string;
           created_at?: string;
           declined_at?: string | null;
+          face_notice_ack_at?: string | null;
+          face_notice_version?: string | null;
           first_seen_at?: string | null;
           grace_ends_at?: string | null;
           grace_notices_sent?: number;
@@ -1143,6 +1147,8 @@ export type Database = {
           club_id?: string;
           created_at?: string;
           declined_at?: string | null;
+          face_notice_ack_at?: string | null;
+          face_notice_version?: string | null;
           first_seen_at?: string | null;
           grace_ends_at?: string | null;
           grace_notices_sent?: number;

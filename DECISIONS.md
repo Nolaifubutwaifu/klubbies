@@ -429,3 +429,47 @@ after the run; `tuning-photos/` keeps only its README.
     per-reference direction with the batch set to the whole club, which is one
     search for a newly enrolled member either way. One matching path, one
     place for the bands and the rejection check to be honoured.
+
+## 2026-09-23 · Face recognition, second pass on the copy
+
+Reviewing the three pieces of copy against what the code actually does turned
+up three claims that were not true. Fixed regardless of what a lawyer later
+says about the rest.
+
+97. **"Neither can we" is gone.** The notice and the privacy policy both said
+    no one at Klubbies could search a club's photos for a person. The service
+    role bypasses every policy in this schema and `SearchFacesByImage` is in
+    the IAM policy, so that was a claim about intent dressed up as a claim
+    about capability. It now says there is no such feature and none has been
+    built, which is true and still reassuring.
+98. **The consent tickbox said less than it did.** It covered "a faceprint
+    from my selfie", when by the time a member sees it a faceprint of their
+    face usually already exists from the club's photos. The screen disclosed
+    that two paragraphs up; the sentence people actually tick now says what it
+    is for.
+99. **The committee is no longer told it carries the responsibility.** "You
+    are responsible for telling your members" reads as moving a legal duty
+    onto a student committee, and a tickbox does not move it — Klubbies is the
+    entity making and holding the faceprints. It now says members should know,
+    and that we show them a notice ourselves.
+
+100. **Every member of a face-enabled club is now told, and has to
+     acknowledge it.** A dismissible banner inviting enrolment was the only
+     thing a non-enrolling member ever saw, and a faceprint is made of their
+     face either way. `memberships.face_notice_ack_at` records the
+     acknowledgement — on the membership, not the profile, because it applies
+     to the members who never create a profile, which is most of them.
+
+     It is shown at the door and inside: joining a face-enabled club puts the
+     notice in the invite card with the Accept button disabled until it is
+     ticked, and a member who joined before the club switched it on gets a
+     persistent (not dismissible, not modal) notice on the club page until
+     they acknowledge. The notice outranks the enrol prompt — told first,
+     invited second.
+
+     It is an acknowledgement, not consent, and the column names and copy both
+     say so. Consent is enrolment, which stays entirely optional. This closes
+     the disclosure gap for members. It does **not** close the consent gap for
+     guests and plus-ones, who never see a Klubbies screen at all — that one
+     is a question for a lawyer, and it is the question that decides whether
+     this design ships as built.

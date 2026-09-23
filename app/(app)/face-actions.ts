@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getClubContextById } from "@/lib/auth/session";
 import { backfillProgress, queueClubBackfill } from "@/lib/faces/backfill";
 import { ensureClubCollection } from "@/lib/faces/collections";
-import { CLUB_NOTICE_VERSION, CONSENT_VERSION } from "@/lib/faces/constants";
+import { CLUB_NOTICE_VERSION, CONSENT_VERSION, MEMBER_NOTICE_VERSION } from "@/lib/faces/constants";
 import { facesConfigured } from "@/lib/faces/client";
 import { promoteMatchToReference, revokeProfile, selfiePath } from "@/lib/faces/enrol";
 import { enqueueEnrolJob, kickFaceJobs, runFaceJobs } from "@/lib/faces/jobs";
@@ -157,6 +157,31 @@ export async function runFaceJobsAction(clubId: string): Promise<ActionState> {
 // ---------------------------------------------------------------------------
 // Member
 // ---------------------------------------------------------------------------
+
+/**
+ * Records that a member has seen the notice. Deliberately not consent, and
+ * deliberately not a precondition for enrolling: it is the disclosure every
+ * member of a face-enabled club is owed, because a faceprint is made of their
+ * face whether or not they ever choose to be findable.
+ *
+ * The member writes their own row — the RLS policy and the column grant are
+ * both scoped to `user_id = auth.uid()` and these two columns.
+ */
+export async function acknowledgeFaceNoticeAction(clubId: string): Promise<ActionState> {
+  if (!z.uuid().safeParse(clubId).success) return { error: "Not found" };
+  const ctx = await getClubContextById(clubId);
+  if (!ctx?.membership) return { error: "Not authorised" };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("memberships")
+    .update({ face_notice_ack_at: new Date().toISOString(), face_notice_version: MEMBER_NOTICE_VERSION })
+    .eq("id", ctx.membership.id);
+  if (error) return { error: "Could not save that. Try again." };
+
+  revalidatePath(`/c/${ctx.club.handle}`, "layout");
+  return { ok: true };
+}
 
 const enrolSchema = z.object({
   clubId: z.uuid(),

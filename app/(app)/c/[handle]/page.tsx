@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { FaceNotice } from "@/components/FaceNotice";
 import { FacePrompt } from "@/components/FacePrompt";
 import { MarkVisited } from "@/components/MarkVisited";
 import { SoftEvents } from "@/components/soft/SoftEvents";
@@ -43,7 +44,11 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
 
   return (
     <main className="flex flex-1 flex-col">
-      {faceState.enabled && !faceState.profile ? (
+      {/* Told first, invited second. A member who has not acknowledged the
+          notice sees only that; the enrol prompt waits its turn. */}
+      {faceState.enabled && !ctx.membership?.face_notice_ack_at ? (
+        <FaceNotice clubId={ctx.club.id} meHref={`/c/${handle}/me`} />
+      ) : faceState.enabled && !faceState.profile ? (
         <FacePrompt clubId={ctx.club.id} href={`/c/${handle}/me`} count={0} />
       ) : null}
       <SoftEvents

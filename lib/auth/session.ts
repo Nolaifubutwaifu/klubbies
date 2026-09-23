@@ -100,6 +100,8 @@ export type MyClub = {
   status: string;
   graceEndsAt: string | null;
   accepted: boolean;
+  /** This club analyses faces in its photos, so joining it means yours too. */
+  facesEnabled: boolean;
 };
 
 function initialsOf(name: string): string {
@@ -120,7 +122,7 @@ export const listMyClubs = cache(async (): Promise<{ clubs: MyClub[]; invites: M
   const { data } = await supabase
     .from("memberships")
     .select(
-      "id, role, status, grace_ends_at, created_at, invited_at, accepted_at, declined_at, club_roles(name, manage_club), clubs!inner(id, name, handle, organisation, status, logo_path, accent_colour)",
+      "id, role, status, grace_ends_at, created_at, invited_at, accepted_at, declined_at, club_roles(name, manage_club), clubs!inner(id, name, handle, organisation, status, logo_path, accent_colour, club_face_settings(enabled))",
     )
     .eq("user_id", user.id)
     .in("status", ["active", "grace"])
@@ -142,6 +144,10 @@ export const listMyClubs = cache(async (): Promise<{ clubs: MyClub[]; invites: M
       status: m.status,
       graceEndsAt: m.grace_ends_at,
       accepted: m.accepted_at !== null,
+      facesEnabled: Boolean(
+        (Array.isArray(m.clubs.club_face_settings) ? m.clubs.club_face_settings[0] : m.clubs.club_face_settings)
+          ?.enabled,
+      ),
     }));
 
   return {
