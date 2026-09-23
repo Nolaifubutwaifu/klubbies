@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { facesConfigured } from "@/lib/faces/client";
 import { createClient } from "@/lib/supabase/server";
 import type { MyClub } from "@/lib/auth/session";
 
@@ -11,7 +12,9 @@ import type { MyClub } from "@/lib/auth/session";
  * always there is the difference between a setting and a nag.
  */
 export async function FaceRow({ clubs }: { clubs: MyClub[] }) {
-  if (clubs.length === 0) return null;
+  // Same rule as the club page: a deployment with no AWS credentials does
+  // not advertise a feature it cannot run.
+  if (clubs.length === 0 || !facesConfigured()) return null;
   const supabase = await createClient();
   const clubIds = clubs.map((club) => club.clubId);
 

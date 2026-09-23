@@ -203,6 +203,12 @@ export async function enrolFaceAction(clubId: string, selfie: File, consented: b
 
   const ctx = await getClubContextById(clubId);
   if (!ctx?.membership) return { error: "Not authorised" };
+  // Never take a selfie we cannot process: the job would queue behind a
+  // worker that can never run, and the member would wait on "Looking now"
+  // indefinitely with their photo already uploaded.
+  if (!facesConfigured()) {
+    return { error: "Face recognition is not available here yet. Nothing has been saved." };
+  }
 
   const admin = createAdminClient();
   const { data: settings } = await admin

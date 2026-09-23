@@ -1,5 +1,6 @@
 import "server-only";
 import type { Json, MemberFaceProfile } from "@/lib/db/types";
+import { facesConfigured } from "@/lib/faces/client";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import type { UserClient } from "@/lib/supabase/server";
 
@@ -39,7 +40,12 @@ export async function faceStateFor(supabase: UserClient, clubId: string, userId:
       .maybeSingle(),
   ]);
   return {
-    enabled: Boolean(settings?.enabled),
+    // A club row can say "on" while this deployment has no AWS credentials —
+    // the database is shared between local and production, and production may
+    // not have the keys yet. Without them nothing can index, match or delete,
+    // so the honest answer to a member is that the feature is not here. The
+    // alternative is an enrolment that accepts a selfie and never finishes.
+    enabled: Boolean(settings?.enabled) && facesConfigured(),
     profile: profile ?? null,
     backfillRunning: settings?.backfill_status === "queued" || settings?.backfill_status === "running",
   };

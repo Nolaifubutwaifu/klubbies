@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import type { Club, ClubRole, Membership } from "@/lib/db/types";
+import { facesConfigured } from "@/lib/faces/client";
 import { NO_PERMS, permsFromRole, type Perms } from "@/lib/permissions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -144,10 +145,12 @@ export const listMyClubs = cache(async (): Promise<{ clubs: MyClub[]; invites: M
       status: m.status,
       graceEndsAt: m.grace_ends_at,
       accepted: m.accepted_at !== null,
-      facesEnabled: Boolean(
-        (Array.isArray(m.clubs.club_face_settings) ? m.clubs.club_face_settings[0] : m.clubs.club_face_settings)
-          ?.enabled,
-      ),
+      facesEnabled:
+        facesConfigured() &&
+        Boolean(
+          (Array.isArray(m.clubs.club_face_settings) ? m.clubs.club_face_settings[0] : m.clubs.club_face_settings)
+            ?.enabled,
+        ),
     }));
 
   return {
