@@ -39,6 +39,15 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
       ? await countPhotosOfYou(supabase, ctx.club.id)
       : null;
 
+  // One signing call for every club logo in the rail, not one per club.
+  const logoPaths = clubs.map((club) => club.logoPath).filter((p): p is string => Boolean(p));
+  const signedLogos = logoPaths.length ? await signPaths(supabase, logoPaths, SIGNED_URL_TTL.display) : new Map();
+  const logoUrls: Record<string, string> = {};
+  for (const club of clubs) {
+    const url = club.logoPath ? signedLogos.get(club.logoPath) : null;
+    if (url) logoUrls[club.clubId] = url;
+  }
+
   const avatarUrl = profile?.avatar_url
     ? ((await signPaths(supabase, [profile.avatar_url], SIGNED_URL_TTL.display)).get(profile.avatar_url) ?? null)
     : null;
@@ -58,6 +67,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
           newCount={fresh.count ?? 0}
           facesCount={facesCount}
           canManage={ctx.perms.manage_albums || ctx.perms.manage_club || ctx.perms.manage_members}
+          logoUrls={logoUrls}
           person={{ name: displayName, role: ctx.role?.name ?? "Member", avatarUrl }}
         />
         <div className="min-w-0 flex-1">{props.children}</div>

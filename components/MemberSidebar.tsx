@@ -22,12 +22,16 @@ export function MemberSidebar({
   newCount,
   facesCount,
   canManage,
+  logoUrls,
   person,
 }: {
   handle: string;
   clubs: MyClub[];
   savedCount: number;
   newCount: number;
+  /** Signed URLs for club logos, by club id. A club without one falls back
+      to its initials, which is what every club used to get. */
+  logoUrls: Record<string, string>;
   /** Shows the way into the committee screens. The header carries this on a
       phone, and the header is hidden at lg — so without it a manager on a
       wide screen has no route to their own admin area at all. */
@@ -84,10 +88,15 @@ export function MemberSidebar({
               }}
             >
               <span
-                className="flex h-8 w-8 flex-none items-center justify-center rounded-[11px] text-[11px] font-extrabold text-white"
-                style={{ background: club.accentColour ?? "var(--color-accent)" }}
+                className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] text-[11px] font-extrabold text-white"
+                style={{ background: logoUrls[club.clubId] ? "transparent" : (club.accentColour ?? "var(--color-accent)") }}
               >
-                {initials(club.name)}
+                {logoUrls[club.clubId] ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                  <img src={logoUrls[club.clubId]} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  initials(club.name)
+                )}
               </span>
               <span className="min-w-0 flex-1 truncate">{club.name}</span>
               {here && newCount > 0 ? (

@@ -3,7 +3,7 @@ import type { FaceJob, FaceJobKind } from "@/lib/db/types";
 import { removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { facesConfigured, isThrottling } from "./client";
-import { JOB_BATCH_SIZE, JOB_CONCURRENCY, MAX_JOB_ATTEMPTS } from "./constants";
+import { DRAIN_BUDGET_MS, JOB_BATCH_SIZE, JOB_CONCURRENCY, MAX_JOB_ATTEMPTS, UPLOAD_KICK_BUDGET_MS } from "./constants";
 import { enrolProfile } from "./enrol";
 import { indexMedia, rematchMedia } from "./index-media";
 import { matchClubMedia } from "./match";
@@ -25,52 +25,63 @@ export type DrainResult = { claimed: number; done: number; failed: number; purge
  * claim_face_jobs uses `for update skip locked`, so two of these running at
  * once take different work rather than the same work twice.
  */
-export async function runFaceJobs(batchSize = JOB_BATCH_SIZE): Promise<DrainResult> {
+export async function runFaceJobs(options: { budgetMs?: number; batchSize?: number } = {}): Promise<DrainResult> {
   if (!facesConfigured()) return { claimed: 0, done: 0, failed: 0, purged: 0, searches: 0 };
+  const budgetMs = options.budgetMs ?? DRAIN_BUDGET_MS;
+  const batchSize = options.batchSize ?? JOB_BATCH_SIZE;
+  const deadline = Date.now() + budgetMs;
 
   const admin = createAdminClient();
-  const { data: claimed, error } = await admin.rpc("claim_face_jobs", { batch_size: batchSize });
-  if (error) throw error;
-  const jobs = (claimed ?? []) as FaceJob[];
-
+  let claimedTotal = 0;
   let done = 0;
   let failed = 0;
-  // Photos this pass touched, per club, so matching can run once over the
-  // whole batch instead of once per face. On a nightly drain that is the
-  // difference between a search per face and a search per enrolled reference.
-  const touched = new Map<string, Set<string>>();
-
-  // A fixed pool rather than Promise.all: eight concurrent AWS calls is the
-  // shape that fits a 300-second function without tripping throttling.
-  const queue = [...jobs];
-  const workers = Array.from({ length: Math.min(JOB_CONCURRENCY, queue.length) }, async () => {
-    for (let job = queue.shift(); job; job = queue.shift()) {
-      const ok = await runOne(job);
-      if (ok) {
-        done += 1;
-        if (job.media_id) {
-          const set = touched.get(job.club_id) ?? new Set<string>();
-          set.add(job.media_id);
-          touched.set(job.club_id, set);
-        }
-      } else failed += 1;
-    }
-  });
-  await Promise.all(workers);
-
-  // Matching runs after the whole batch is indexed, never inside a job.
   let searches = 0;
-  for (const [clubId, mediaIds] of touched) {
-    try {
-      const result = await matchClubMedia(clubId, [...mediaIds]);
-      searches += result.searches;
-      if (result.searches) {
-        console.log(`face: matched ${mediaIds.size} photo(s) ${result.direction}, ${result.searches} search(es), ${result.written} match(es)`);
+
+  // Keep claiming until the queue is empty or the clock runs out. A single
+  // batch used to be the whole pass, which meant a 110 photo library needed
+  // five separate triggers and — with one cron run a day on Hobby — five
+  // days. Nothing ever asked for the next batch.
+  while (Date.now() < deadline) {
+    const { data: claimed, error } = await admin.rpc("claim_face_jobs", { batch_size: batchSize });
+    if (error) throw error;
+    const jobs = (claimed ?? []) as FaceJob[];
+    if (jobs.length === 0) break;
+    claimedTotal += jobs.length;
+
+    // Photos this batch touched, per club, so matching runs once over the
+    // batch rather than once per face.
+    const touched = new Map<string, Set<string>>();
+
+    // A fixed pool rather than Promise.all: eight concurrent AWS calls is the
+    // shape that fits a 300-second function without tripping throttling.
+    const queue = [...jobs];
+    const workers = Array.from({ length: Math.min(JOB_CONCURRENCY, queue.length) }, async () => {
+      for (let job = queue.shift(); job; job = queue.shift()) {
+        const ok = await runOne(job);
+        if (ok) {
+          done += 1;
+          if (job.media_id) {
+            const set = touched.get(job.club_id) ?? new Set<string>();
+            set.add(job.media_id);
+            touched.set(job.club_id, set);
+          }
+        } else failed += 1;
       }
-    } catch (error) {
-      // A failed match leaves the faces indexed, so the next pass retries it
-      // without paying to index them again.
-      console.error("face matching failed", clubId, error);
+    });
+    await Promise.all(workers);
+
+    for (const [clubId, mediaIds] of touched) {
+      try {
+        const result = await matchClubMedia(clubId, [...mediaIds]);
+        searches += result.searches;
+        if (result.searches) {
+          console.log(`face: matched ${mediaIds.size} photo(s) ${result.direction}, ${result.searches} search(es), ${result.written} match(es)`);
+        }
+      } catch (error) {
+        // A failed match leaves the faces indexed, so the next pass retries it
+        // without paying to index them again.
+        console.error("face matching failed", clubId, error);
+      }
     }
   }
 
@@ -78,7 +89,7 @@ export async function runFaceJobs(batchSize = JOB_BATCH_SIZE): Promise<DrainResu
   const purge = await drainFacePurgeQueue();
   await settleBackfills();
 
-  return { claimed: jobs.length, done, failed, purged: purge.deleted, searches };
+  return { claimed: claimedTotal, done, failed, purged: purge.deleted, searches };
 }
 
 async function runOne(job: FaceJob): Promise<boolean> {
@@ -203,7 +214,12 @@ export async function enqueueEnrolJob(clubId: string, profileId: string): Promis
  */
 export function kickFaceJobs(): void {
   if (!facesConfigured()) return;
-  void runFaceJobs(JOB_CONCURRENCY).catch((error) => console.error("face drain failed", error));
+  // Short budget: this rides on an upload request, and its job is to get the
+  // photo just uploaded matched within seconds. Clearing a backfill is the
+  // cron's work, or the admin's "Run now".
+  void runFaceJobs({ budgetMs: UPLOAD_KICK_BUDGET_MS, batchSize: JOB_CONCURRENCY }).catch((error) =>
+    console.error("face drain failed", error),
+  );
 }
 
 export type FaceQueueStats = { pending: number; running: number; failed: number };

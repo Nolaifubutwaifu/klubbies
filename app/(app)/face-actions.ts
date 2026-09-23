@@ -168,7 +168,10 @@ export async function runFaceJobsAction(clubId: string): Promise<ActionState> {
   const ctx = await managerContext(clubId);
   if (!ctx) return { error: "Not authorised" };
 
-  const result = await runFaceJobs();
+  // Shorter than the cron's budget: this is a button, and nobody wants a
+  // four minute spinner. The panel polls, so a big library just takes a few
+  // presses — or tomorrow's cron, which has the long budget.
+  const result = await runFaceJobs({ budgetMs: 60_000 });
   const progress = await backfillProgress(clubId);
   revalidatePath(`/admin/${ctx.club.handle}/settings`);
   return {

@@ -83,9 +83,21 @@ export const TRANSCODE_QUALITY = 85;
 export const SELFIE_MAX_EDGE = 1000;
 export const SELFIE_QUALITY = 0.9;
 
-/** Jobs claimed per drain pass, and how many run at once. */
+/** Jobs claimed per batch, and how many run at once within one. */
 export const JOB_BATCH_SIZE = 25;
 export const JOB_CONCURRENCY = 8;
+
+/**
+ * How long a drain keeps claiming batches before it stops and leaves the rest
+ * for the next trigger.
+ *
+ * The cron route sets maxDuration to 300s, so 240 leaves room to finish the
+ * batch in hand, purge and settle without the function being killed
+ * mid-write. An upload's fire-and-forget kick gets far less: its only job is
+ * the photo just uploaded, and it is running inside somebody's request.
+ */
+export const DRAIN_BUDGET_MS = 240_000;
+export const UPLOAD_KICK_BUDGET_MS = 15_000;
 
 /** Five strikes and the job stops burning AWS quota, with the error kept. */
 export const MAX_JOB_ATTEMPTS = 5;
