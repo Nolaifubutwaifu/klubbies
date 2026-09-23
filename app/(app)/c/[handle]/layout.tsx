@@ -57,6 +57,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
           savedCount={saved.count ?? 0}
           newCount={fresh.count ?? 0}
           facesCount={facesCount}
+          canManage={ctx.perms.manage_albums || ctx.perms.manage_club || ctx.perms.manage_members}
           person={{ name: displayName, role: ctx.role?.name ?? "Member", avatarUrl }}
         />
         <div className="min-w-0 flex-1">{props.children}</div>

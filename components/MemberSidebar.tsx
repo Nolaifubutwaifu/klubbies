@@ -21,12 +21,17 @@ export function MemberSidebar({
   savedCount,
   newCount,
   facesCount,
+  canManage,
   person,
 }: {
   handle: string;
   clubs: MyClub[];
   savedCount: number;
   newCount: number;
+  /** Shows the way into the committee screens. The header carries this on a
+      phone, and the header is hidden at lg — so without it a manager on a
+      wide screen has no route to their own admin area at all. */
+  canManage: boolean;
   /** Null when this club has face recognition off, so the row is hidden. */
   facesCount: number | null;
   person: { name: string; role: string; avatarUrl: string | null };
@@ -96,6 +101,21 @@ export function MemberSidebar({
 
         <span className="my-2 h-px bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)]" aria-hidden />
 
+        {canManage ? (
+          <Link
+            href={`/admin/${handle}`}
+            className="flex min-h-[44px] items-center gap-2 rounded-full px-3.5 text-[14px] font-bold no-underline transition-colors"
+            style={{
+              background: pathname.startsWith("/admin") ? "color-mix(in srgb, var(--color-accent) 12%, transparent)" : "transparent",
+              color: pathname.startsWith("/admin") ? "var(--color-accent-700)" : "var(--color-text)",
+            }}
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M12 3 4 6.5v5c0 4.4 3.2 8.4 8 9.5 4.8-1.1 8-5.1 8-9.5v-5z" />
+            </svg>
+            Admin view
+          </Link>
+        ) : null}
         {rows.map((row) => (
           <Link
             key={row.href}
