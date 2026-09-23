@@ -146,13 +146,19 @@ async function revokeOrphanedProfiles(): Promise<void> {
   console.log(`face: removed ${stale.length} profile(s) for revoked memberships`);
 }
 
-/** A club's backfill is done when it has no live jobs left. */
+/**
+ * A club's backfill is done when it has no live jobs left — and stops being
+ * done the moment it has some again.
+ *
+ * This used to look only at clubs already marked queued or running, so a club
+ * marked done could never be re-opened: a job reclaimed after a timeout, or a
+ * rematch queued later, left the panel claiming the library was finished while
+ * photos sat unprocessed. Every enabled club is checked now, in both
+ * directions.
+ */
 async function settleBackfills(): Promise<void> {
   const admin = createAdminClient();
-  const { data: running } = await admin
-    .from("club_face_settings")
-    .select("club_id")
-    .in("backfill_status", ["queued", "running"]);
+  const { data: running } = await admin.from("club_face_settings").select("club_id").eq("enabled", true);
   for (const row of running ?? []) {
     const { count } = await admin
       .from("face_jobs")

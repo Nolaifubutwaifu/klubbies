@@ -139,6 +139,29 @@ export async function disableClubFacesAction(clubId: string): Promise<ActionStat
   return { ok: true, message: "Off. Every faceprint for this club has been deleted." };
 }
 
+/**
+ * Progress for the admin panel to poll while a backfill is in flight.
+ *
+ * Read-only and cheap — three counts, no Rekognition — because the panel asks
+ * for it every few seconds. Watching a library get worked through is the
+ * difference between "it is running" and "nothing is happening", and the
+ * first backfill of a real club takes long enough that the difference matters.
+ */
+export async function faceProgressAction(
+  clubId: string,
+): Promise<{ total: number; remaining: number; status: string; faces: number; error?: string }> {
+  if (!z.uuid().safeParse(clubId).success) return { total: 0, remaining: 0, status: "idle", faces: 0, error: "Not found" };
+  const ctx = await managerContext(clubId);
+  if (!ctx) return { total: 0, remaining: 0, status: "idle", faces: 0, error: "Not authorised" };
+
+  const progress = await backfillProgress(clubId);
+  const { count: faces } = await createAdminClient()
+    .from("media_faces")
+    .select("id", { count: "exact", head: true })
+    .eq("club_id", clubId);
+  return { ...progress, faces: faces ?? 0 };
+}
+
 /** The "Run now" button: for backfill, and for when something looks stuck. */
 export async function runFaceJobsAction(clubId: string): Promise<ActionState> {
   if (!z.uuid().safeParse(clubId).success) return { error: "Not found" };

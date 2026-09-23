@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import {
   disableClubFacesAction,
   enableClubFacesAction,
+  faceProgressAction,
   runFaceJobsAction,
 } from "@/app/(app)/face-actions";
 import { CLUB_NOTICE } from "@/lib/faces/copy";
@@ -27,6 +28,32 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
   const [confirmingOff, setConfirmingOff] = useState(false);
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
+  // The server's numbers are a snapshot from render; this keeps them moving.
+  const [live, setLive] = useState(backfill);
+  const [faces, setFaces] = useState<number | null>(null);
+  const working = live.remaining > 0 || live.status === "queued" || live.status === "running";
+
+  // Poll while there is work left, and stop the moment there is not. A first
+  // backfill runs for minutes, and a page showing a frozen number for that
+  // long reads as broken even when everything is fine. `working` is in the
+  // dependencies, so finishing tears the interval down on its own.
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const tick = async () => {
+      const next = await faceProgressAction(clubId);
+      if (cancelled || next.error) return;
+      setLive({ total: next.total, remaining: next.remaining, status: next.status });
+      setFaces(next.faces);
+    };
+    void tick();
+    if (!working) return;
+    const timer = window.setInterval(tick, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [clubId, enabled, working]);
 
   if (!configured) {
     return (
@@ -40,7 +67,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
   }
 
   if (enabled) {
-    const done = Math.max(0, backfill.total - backfill.remaining);
+    const done = Math.max(0, live.total - live.remaining);
     return (
       <div className="soft-card flex flex-col gap-3 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -55,17 +82,37 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between gap-3 text-[13px]">
-            <span>{backfill.remaining > 0 ? "Working through your library" : "Library up to date"}</span>
+            <span className="flex items-center gap-2">
+              {working ? (
+                <>
+                  {/* A moving dot is the cheapest possible "yes, still going". */}
+                  <span className="relative flex h-2 w-2" aria-hidden>
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                  </span>
+                  Looking through your photos
+                </>
+              ) : (
+                "Library up to date"
+              )}
+            </span>
             <span className="text-[color:var(--ink-55)]">
-              {done.toLocaleString("en-AU")} of {backfill.total.toLocaleString("en-AU")}
+              {done.toLocaleString("en-AU")} of {live.total.toLocaleString("en-AU")}
             </span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)]">
             <div
-              className="h-full rounded-full bg-accent transition-[width]"
-              style={{ width: `${backfill.total ? Math.round((done / backfill.total) * 100) : 100}%` }}
+              className="h-full rounded-full bg-accent transition-[width] duration-700"
+              style={{ width: `${live.total ? Math.round((done / live.total) * 100) : 100}%` }}
             />
           </div>
+          <span className="text-[12px] text-[color:var(--ink-55)]">
+            {faces === null
+              ? "\u00a0"
+              : working
+                ? `${faces.toLocaleString("en-AU")} faces found so far. You can leave this page; it keeps going.`
+                : `${faces.toLocaleString("en-AU")} faces found. Members who enrol are matched against these.`}
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -80,7 +127,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
               })
             }
           >
-            {pending ? "Running…" : "Run now"}
+            {pending ? "Running…" : working ? "Run another batch" : "Run now"}
           </button>
           {confirmingOff ? (
             <>
