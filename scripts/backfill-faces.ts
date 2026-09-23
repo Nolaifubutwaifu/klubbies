@@ -180,7 +180,7 @@ async function processOne(clubId: string, collectionId: string, mediaId: string)
     state: value.similarity >= CONFIRMED_AT ? ("confirmed" as const) : ("suggested" as const),
   }));
   if (rows.length) {
-    await db.from("face_matches").upsert(rows, { onConflict: "media_face_id,profile_id", ignoreDuplicates: true });
+    await db.from("face_matches").upsert(rows, { onConflict: "profile_id,media_id", ignoreDuplicates: true });
     createdMatches += rows.length;
   }
 }

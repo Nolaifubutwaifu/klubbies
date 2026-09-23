@@ -39,7 +39,16 @@ function FaceCrop({ suggestion }: { suggestion: Suggestion }) {
   );
 }
 
-export function Suggestions({ handle, suggestions }: { handle: string; suggestions: Suggestion[] }) {
+export function Suggestions({
+  handle,
+  suggestions,
+  total,
+}: {
+  handle: string;
+  suggestions: Suggestion[];
+  /** Every suggestion waiting, not just the ones on screen. */
+  total: number;
+}) {
   const [decided, decide] = useOptimistic<string[], string>([], (state, id) => [...state, id]);
   const [, startTransition] = useTransition();
   const remaining = suggestions.filter((s) => !decided.includes(s.matchId));
@@ -52,6 +61,9 @@ export function Suggestions({ handle, suggestions }: { handle: string; suggestio
         <h2 className="soft-display text-[19px]">Is this you?</h2>
         <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
           Saying yes helps us recognise you next time. Saying no means we never suggest that photo again.
+          {total > suggestions.length
+            ? ` ${total.toLocaleString("en-AU")} waiting — answer these and the next ones appear.`
+            : ""}
         </p>
       </div>
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6">

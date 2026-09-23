@@ -158,7 +158,7 @@ export async function matchClubMedia(clubId: string, mediaIds: string[]): Promis
   for (let i = 0; i < rows.length; i += 500) {
     const { error } = await admin
       .from("face_matches")
-      .upsert(rows.slice(i, i + 500), { onConflict: "media_face_id,profile_id", ignoreDuplicates: true });
+      .upsert(rows.slice(i, i + 500), { onConflict: "profile_id,media_id", ignoreDuplicates: true });
     if (error) throw error;
   }
 

@@ -18,10 +18,18 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
   const { club, membership, perms } = ctx;
   const adminArea = (forceAdmin || area === "admin") && perms.manage_club;
 
-  let logoUrl: string | null = null;
-  if (club.logo_path) {
-    const supabase = await createClient();
-    logoUrl = (await signPaths(supabase, [club.logo_path], SIGNED_URL_TTL.display)).get(club.logo_path) ?? null;
+  // Every logo the header can show, in one call: the current club's, plus
+  // each club in the switcher list. The dropdown used to fall back to
+  // initials even for clubs whose logo was already uploaded.
+  const logoPaths = [club.logo_path, ...clubs.map((c) => c.logoPath)].filter((p): p is string => Boolean(p));
+  const signed = logoPaths.length
+    ? await signPaths(await createClient(), logoPaths, SIGNED_URL_TTL.display)
+    : new Map<string, string>();
+  const logoUrl = club.logo_path ? (signed.get(club.logo_path) ?? null) : null;
+  const clubLogoUrls: Record<string, string> = {};
+  for (const c of clubs) {
+    const url = c.logoPath ? signed.get(c.logoPath) : null;
+    if (url) clubLogoUrls[c.clubId] = url;
   }
 
   const memberLinks = [
@@ -39,7 +47,13 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
           <Link href="/clubs" className="soft-wordmark hidden text-[19px] text-ink no-underline sm:block">
             klubbies
           </Link>
-          <ClubSwitcher current={{ name: club.name, handle: club.handle }} clubs={clubs} invites={invites} logoUrl={logoUrl} />
+          <ClubSwitcher
+            current={{ name: club.name, handle: club.handle }}
+            clubs={clubs}
+            invites={invites}
+            logoUrl={logoUrl}
+            clubLogoUrls={clubLogoUrls}
+          />
           {adminArea ? <span className="soft-chip hidden text-[11px] sm:inline-flex">Admin view</span> : null}
 
           <div className="ml-auto flex items-center gap-2">

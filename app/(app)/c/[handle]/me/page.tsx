@@ -8,7 +8,13 @@ import { Placeholder } from "@/components/ui";
 import { getClubContext } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
 import { backfillProgress } from "@/lib/faces/backfill";
-import { faceStateFor, listFaceSuggestions, listPhotosOfYou, type PhotosOfYouGroup } from "@/lib/faces/queries";
+import {
+  faceStateFor,
+  listFaceSuggestions,
+  listPhotosOfYou,
+  type PhotosOfYouGroup,
+  type Suggestion,
+} from "@/lib/faces/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Enrol, TurnOff } from "./Enrol";
 import { Suggestions } from "./Suggestions";
@@ -29,11 +35,13 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
   if (!state.enabled) notFound();
 
   const enrolled = state.profile?.status === "ready";
-  const [{ groups, total }, suggestions, progress] = await Promise.all([
+  const [{ groups, total, hasMore }, suggestions, progress] = await Promise.all([
     enrolled
       ? listPhotosOfYou(supabase, ctx.club.id)
       : Promise.resolve({ groups: [] as PhotosOfYouGroup[], total: 0, hasMore: false }),
-    enrolled ? listFaceSuggestions(supabase, ctx.club.id) : Promise.resolve([]),
+    enrolled
+      ? listFaceSuggestions(supabase, ctx.club.id)
+      : Promise.resolve({ items: [] as Suggestion[], total: 0 }),
     backfillProgress(ctx.club.id),
   ]);
 
@@ -75,15 +83,21 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
           {state.profile?.status === "pending" ? (
             <div className="soft-card flex max-w-[56ch] flex-col gap-2 p-5">
               <span className="soft-display text-[18px]">Looking now</span>
+              {/* Say what it is actually waiting on. "A minute" is a lie when
+                  a club has just switched on and thousands of photos are
+                  still being indexed ahead of the first search. */}
               <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
-                We&rsquo;re comparing your selfie against this club&rsquo;s photos. Come back in a minute.
+                We&rsquo;re comparing your selfie against this club&rsquo;s photos.{" "}
+                {progress.remaining > 0
+                  ? `There are ${progress.remaining.toLocaleString("en-AU")} photos still being read, so this may take a while. Your photos appear here as they are found — you don't need to wait on this page.`
+                  : "This usually takes under a minute."}
               </p>
             </div>
           ) : null}
 
           {enrolled ? (
             <>
-              <Suggestions handle={handle} suggestions={suggestions} />
+              <Suggestions handle={handle} suggestions={suggestions.items} total={suggestions.total} />
 
               {total > 0 ? (
                 <section className="flex flex-col gap-6">
@@ -136,6 +150,13 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                       </div>
                     </section>
                   ))}
+
+                  {hasMore ? (
+                    <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+                      Showing your {total.toLocaleString("en-AU")} most recent. Older ones are in the albums
+                      themselves, where each shows how many are of you.
+                    </p>
+                  ) : null}
                 </section>
               ) : stillLooking ? (
                 /* Enrolled, backfill still running: silence would read as failure. */

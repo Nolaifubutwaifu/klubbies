@@ -500,3 +500,37 @@ says about the rest.
      as a chronology, they remember them as the ball, then the grand final.
      Same shape the Saved page already uses, one signing call for the page,
      and each album links through to itself.
+
+## 2026-09-23 · The bug sweep after the first real club
+
+105. **The drain claimed one batch and stopped.** 25 jobs, then nothing asked
+     for the next batch — so 110 photos needed five separate triggers, and on
+     a daily Hobby cron that is five days. It now claims until the queue is
+     empty or a time budget expires: 240s under the cron's 300s maxDuration,
+     60s behind "Run now" (a button, not a spinner), 15s on the kick that
+     rides inside an upload request.
+
+106. **Enrolment was queued behind the entire backfill.** Strict `order by id`
+     put the job created when a member hands over their selfie 95 photos deep
+     on a club switched on minutes earlier — having just told them it would
+     take a minute. Enrol jobs now sort first. One call, and the only job a
+     human is actually waiting on.
+
+107. **One match per member per photo is a constraint now, not a habit.** The
+     unique was `(media_face_id, profile_id)`, which allows two rows for one
+     member in one photo if two faces match them. `matchForMedia` used
+     `maybeSingle()`, which answers "nothing here" on two rows — so "Not me"
+     would have vanished exactly when somebody wanted it. Replaced with
+     `(profile_id, media_id)`, and the query takes the best row rather than
+     insisting there is only one.
+
+108. **The rail never showed club logos.** `MemberSidebar` drew initials
+     unconditionally though `listMyClubs` had already fetched `logoPath`, and
+     the switcher's dropdown did the same while the button above it showed the
+     logo correctly. Both fixed, one signing call each.
+
+109. **Three places lied about how long things take or how much there is.**
+     "Come back in a minute" while thousands of photos are still being read;
+     a suggestion strip capped at 24 with no hint the other 40 exist; and a
+     "Photos of you" page that silently stopped at 60. All three now say what
+     is actually true.

@@ -154,7 +154,10 @@ export type Suggestion = {
  * crop is a fraction of the frame, and a 400px thumb cropped to one face is
  * unreadable.
  */
-export async function listFaceSuggestions(supabase: UserClient, clubId: string): Promise<Suggestion[]> {
+export async function listFaceSuggestions(
+  supabase: UserClient,
+  clubId: string,
+): Promise<{ items: Suggestion[]; total: number }> {
   const { data, error } = await supabase
     .from("face_matches")
     .select(
@@ -166,6 +169,14 @@ export async function listFaceSuggestions(supabase: UserClient, clubId: string):
     .limit(SUGGESTION_LIMIT);
   if (error) throw error;
 
+  // The strip shows the most likely handful; the count tells the truth about
+  // the rest, so answering them visibly shortens the queue.
+  const { count: total } = await supabase
+    .from("face_matches")
+    .select("id", { count: "exact", head: true })
+    .eq("club_id", clubId)
+    .eq("state", "suggested");
+
   const rows = data ?? [];
   const urls = await signPaths(
     supabase,
@@ -173,17 +184,20 @@ export async function listFaceSuggestions(supabase: UserClient, clubId: string):
     SIGNED_URL_TTL.display,
   );
 
-  return rows.map((row) => {
-    const path = row.media.display_path ?? row.media.storage_path;
-    return {
-      matchId: row.id,
-      mediaId: row.media_id,
-      albumId: row.media.album_id,
-      albumTitle: row.media.albums?.title ?? "This club",
-      displayUrl: path ? (urls.get(path) ?? null) : null,
-      box: asBox(row.bounding_box),
-    };
-  });
+  return {
+    total: total ?? rows.length,
+    items: rows.map((row) => {
+      const path = row.media.display_path ?? row.media.storage_path;
+      return {
+        matchId: row.id,
+        mediaId: row.media_id,
+        albumId: row.media.album_id,
+        albumTitle: row.media.albums?.title ?? "This club",
+        displayUrl: path ? (urls.get(path) ?? null) : null,
+        box: asBox(row.bounding_box),
+      };
+    }),
+  };
 }
 
 /**
@@ -212,7 +226,14 @@ export async function countPhotosOfYouByAlbum(
   return counts;
 }
 
-/** Is this specific photo one of yours? Drives "Not me" in the viewer. */
+/**
+ * Is this specific photo one of yours? Drives "Not me" in the viewer.
+ *
+ * `limit(1)` rather than `maybeSingle()`: a unique constraint now guarantees
+ * one row per member per photo, but maybeSingle() answers "nothing here" when
+ * it finds more than one, which would have hidden the button in exactly the
+ * case somebody wanted it. A row that is wrong is worth being able to reject.
+ */
 export async function matchForMedia(
   supabase: UserClient,
   mediaId: string,
@@ -222,8 +243,10 @@ export async function matchForMedia(
     .select("id, state")
     .eq("media_id", mediaId)
     .in("state", ["confirmed", "suggested"])
-    .maybeSingle();
-  return data ? { matchId: data.id, state: data.state } : null;
+    .order("similarity", { ascending: false })
+    .limit(1);
+  const row = data?.[0];
+  return row ? { matchId: row.id, state: row.state } : null;
 }
 
 export async function countPhotosOfYou(supabase: UserClient, clubId: string): Promise<number> {

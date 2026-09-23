@@ -17,11 +17,14 @@ export function ClubSwitcher({
   clubs,
   invites,
   logoUrl,
+  clubLogoUrls = {},
 }: {
   current: { name: string; handle: string } | null;
   clubs: MyClub[];
   invites: MyClub[];
   logoUrl?: string | null;
+  /** Signed logo per club id, so the list matches the button above it. */
+  clubLogoUrls?: Record<string, string>;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -86,8 +89,16 @@ export function ClubSwitcher({
                 onClick={() => setOpen(false)}
                 aria-current={club.handle === current?.handle}
               >
-                <span className="flex h-8 w-8 flex-none items-center justify-center bg-neutral-900 text-[11px] font-extrabold text-white">
-                  {initials(club.name)}
+                <span
+                  className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden text-[11px] font-extrabold text-white"
+                  style={{ background: clubLogoUrls[club.clubId] ? "transparent" : "var(--color-neutral-900)" }}
+                >
+                  {clubLogoUrls[club.clubId] ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
+                    <img src={clubLogoUrls[club.clubId]} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    initials(club.name)
+                  )}
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate font-heading text-[15px] font-bold">{club.name}</span>
