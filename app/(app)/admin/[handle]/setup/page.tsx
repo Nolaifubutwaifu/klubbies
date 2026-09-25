@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
+import { clubAddress } from "@/lib/env";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -71,7 +72,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
     {
       key: "handle",
       title: "Pick a handle",
-      hint: `klubbies.app/c/${ctx.club.handle}`,
+      hint: clubAddress(ctx.club.handle),
       done: true,
       href: `/admin/${handle}/settings`,
       cta: "Open settings",

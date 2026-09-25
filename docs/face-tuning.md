@@ -1,8 +1,9 @@
 # Tuning photos
 
 Real photos, used once to settle the face recognition thresholds in
-`lib/faces/constants.ts`. Never committed — see the .gitignore entry beside
-this file. Delete the folder when the tuning run is done.
+`lib/faces/constants.ts`. They go in a `tuning-photos/` folder at the repo
+root, which is gitignored so real faces are never committed. Delete the folder
+when the tuning run is done.
 
 ## Shape
 

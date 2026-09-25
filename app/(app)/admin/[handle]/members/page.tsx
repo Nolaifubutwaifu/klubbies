@@ -4,6 +4,7 @@ import { BillingGate } from "@/components/BillingGate";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
+import { formatDate } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { AddMemberForm } from "./AddMemberForm";
 import { MemberTable, type MemberRow } from "./MemberTable";
@@ -134,7 +135,7 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
                   <td>{i.added_count}</td>
                   <td>{i.matched_count}</td>
                   <td>{i.error_count}</td>
-                  <td className="text-[color:var(--ink-70)]">{new Date(i.imported_at).toLocaleDateString("en-AU")}</td>
+                  <td className="text-[color:var(--ink-70)]">{formatDate(i.imported_at)}</td>
                 </tr>
               ))}
             </tbody>

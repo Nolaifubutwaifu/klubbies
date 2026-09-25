@@ -2,7 +2,7 @@
 //
 // Tuned 2026-09-23 against 274 real photos and 335 human-confirmed face names
 // (six people photographed inside about a year of each other, which is the
-// distribution a club produces). Method and raw numbers are in DECISIONS.md.
+// distribution a club produces). Method and raw numbers are in docs/decisions.md.
 //
 // The finding that mattered: the similarity threshold is almost irrelevant,
 // and the minimum face size does nearly all the work. Recall was flat from 82

@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Uploader } from "@/app/(app)/admin/[handle]/albums/[albumId]/Uploader";
 import { PublishToggle } from "@/app/(app)/admin/[handle]/albums/[albumId]/PublishToggle";
+import { AlbumActions } from "@/components/AlbumActions";
 import { AlbumEditPanel } from "@/components/AlbumEditPanel";
 import { AlbumGrid } from "@/components/AlbumGrid";
 import { SaveAlbum } from "@/components/SaveAlbum";
 import { UnfinishedUploads } from "@/components/UnfinishedUploads";
 import { getClubContext } from "@/lib/auth/session";
-import { formatLongDate } from "@/lib/format";
+import { faceStateFor, photosOfYouInAlbum } from "@/lib/faces/queries";
+import { formatLongDate, plural } from "@/lib/format";
 import { eventTypeLabel } from "@/lib/media/event-types";
 import { favouritedIds } from "@/lib/media/favourites";
 import { listAlbumMedia } from "@/lib/media/queries";
@@ -17,6 +19,7 @@ import { ProcessingBanner } from "@/components/ProcessingBanner";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { personName } from "@/lib/auth/display-name";
 
 type Props = PageProps<"/c/[handle]/a/[albumId]">;
 
@@ -110,13 +113,13 @@ export default async function AlbumPage(props: Props) {
   const { data: uploaderNames } = uploaderIds.length
     ? await supabase
         .from("memberships")
-        .select("user_id, roster_name, claimed_name")
+        .select("user_id, roster_name, claimed_name, users!memberships_user_id_fkey(display_name)")
         .eq("club_id", ctx.club.id)
         .in("user_id", uploaderIds.slice(0, 10))
     : { data: [] };
 
   const firstNames = (uploaderNames ?? [])
-    .map((m) => (m.claimed_name ?? m.roster_name).trim().split(/\s+/)[0])
+    .map((m) => personName({ displayName: m.users?.display_name, claimedName: m.claimed_name, rosterName: m.roster_name }).split(/\s+/)[0])
     .filter(Boolean);
   const guestCount = guestFiles ?? 0;
   const addedBy = [
@@ -150,6 +153,13 @@ export default async function AlbumPage(props: Props) {
 
   const savedIds = await favouritedIds(supabase, ctx.userId, items.map((item) => item.id));
 
+  // "You (6)" beside All, for a member who has enrolled and is in this album.
+  // Fetched as its own list rather than filtered from the loaded page, so it
+  // finds you on page three as well as page one.
+  const faceState = await faceStateFor(supabase, ctx.club.id, ctx.userId);
+  const mineIds = faceState.enabled && faceState.profile?.status === "ready" ? await photosOfYouInAlbum(supabase, album.id) : [];
+  const { items: mineItems } = await listAlbumMedia(supabase, album.id, 0, { onlyIds: mineIds.slice(0, 200) });
+
   const photoCount = counts?.photo_count ?? 0;
   const videoCount = counts?.video_count ?? 0;
 
@@ -175,13 +185,18 @@ export default async function AlbumPage(props: Props) {
               {eventTypeLabel(album.event_type) ? (
                 <span className="soft-chip">{eventTypeLabel(album.event_type)}</span>
               ) : null}
+              {canManage ? (
+                <span className={album.status === "published" ? "soft-chip" : "soft-chip soft-chip-muted"}>
+                  {album.status === "published" ? "Published" : "Draft · members can't see it"}
+                </span>
+              ) : null}
             </div>
             <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-[color:var(--ink-70)]">
               <span className="whitespace-nowrap">
                 {[
                   formatLongDate(album.event_date),
-                  photoCount ? `${photoCount.toLocaleString("en-AU")} photos` : null,
-                  videoCount ? `${videoCount.toLocaleString("en-AU")} videos` : null,
+                  photoCount ? plural(photoCount, "photo") : null,
+                  videoCount ? plural(videoCount, "video") : null,
                   addedBy ? `added by ${addedBy}` : null,
                 ]
                   .filter(Boolean)
@@ -197,30 +212,30 @@ export default async function AlbumPage(props: Props) {
             </p>
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-            {canManage ? (
-              <span className={album.status === "published" ? "soft-chip" : "soft-chip soft-chip-muted"}>
-                {album.status === "published" ? "Published" : "Draft · members can't see it"}
-              </span>
-            ) : null}
+          <AlbumActions
+            primary={
+              canAdd ? (
+                <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-primary !min-h-[44px] !text-[14px] no-underline">
+                  {adding ? "Close uploader" : "Add photos"}
+                </Link>
+              ) : undefined
+            }
+          >
             {canManage ? (
               <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="soft-btn soft-btn-accent !min-h-[44px] !text-[14px] no-underline">
                 {editing ? "Close details" : "Edit details"}
               </Link>
             ) : null}
-            {canAdd ? (
-              <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-primary !min-h-[44px] !text-[14px] no-underline">
-                {adding ? "Close uploader" : "Add photos"}
-              </Link>
-            ) : null}
+            {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
+            {/* Last, because "Save to Photos" only appears once the browser
+                says it can share files. Anything after it used to jump. */}
             <SaveAlbum
               albumId={album.id}
               mediaIds={(readyIds ?? []).map((m) => m.id)}
               parts={Math.max(1, Math.ceil((photoCount + videoCount) / 150))}
               canDownload={album.allow_download || canManage}
             />
-            {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
-          </div>
+          </AlbumActions>
         </div>
       </div>
 
@@ -281,6 +296,8 @@ export default async function AlbumPage(props: Props) {
         savedTotal={savedTotal ?? savedIds.size}
         processingCount={processingPhotos + processingVideos}
         canDownload={album.allow_download || canManage}
+        mineItems={mineItems}
+        albumTitle={album.title}
       />
     </main>
   );

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SectionFx } from "@/components/soft/SectionFx";
 import { PhotoStackArt } from "@/components/soft/illustrations";
 import { getClubContext } from "@/lib/auth/session";
 import { listFavourites } from "@/lib/media/favourites";
@@ -64,8 +63,10 @@ export default async function SavedPage(props: PageProps<"/c/[handle]/saved">) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="soft-fx-host">
-        <SectionFx blobs={["left"]} />
+      {/* No SectionFx here: its grain multiplies over the page's own and
+          showed as a lighter rectangle with hard edges. The app backdrop
+          already textures the whole page. */}
+      <section>
         <div className="w-full px-4 pb-16 pt-6 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>

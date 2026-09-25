@@ -3,15 +3,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
-import { formatBytes, formatDate, formatDateTime } from "@/lib/format";
+import { formatBytes, formatDate, formatDateTime, plural } from "@/lib/format";
 import { listStackedAlbums } from "@/lib/media/album-list";
+import { EXPIRE_AFTER_DAYS, STUCK_AFTER_MS } from "@/lib/media/constants";
 import { createClient } from "@/lib/supabase/server";
+import { personName } from "@/lib/auth/display-name";
 
 export const metadata: Metadata = { title: "Admin" };
 
 /** Cutoff for the "views this week" figure. */
 function sevenDaysAgo(): string {
   return new Date(Date.now() - 7 * 86_400_000).toISOString();
+}
+
+/** Uploads started before this and still unfinished have stopped. */
+function stuckCutoff(): string {
+  return new Date(Date.now() - STUCK_AFTER_MS).toISOString();
 }
 
 export default async function AdminDashboard(props: PageProps<"/admin/[handle]">) {
@@ -26,8 +33,23 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
     return q;
   };
 
-  const [onList, active, pending, grace, albumCount, published, usage, mismatches, activity, stacked, viewsWeek, removals, engagement] =
-    await Promise.all([
+  const [
+    onList,
+    active,
+    pending,
+    grace,
+    albumCount,
+    published,
+    usage,
+    mismatches,
+    activity,
+    stacked,
+    viewsWeek,
+    removals,
+    engagement,
+    readyItems,
+    stuck,
+  ] = await Promise.all([
       count(),
       count("active"),
       count("pending"),
@@ -44,7 +66,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
         .limit(5),
       supabase
         .from("access_events")
-        .select("id, action, occurred_at, memberships(roster_name), media(original_filename)")
+        .select("id, action, occurred_at, memberships(roster_name, claimed_name, users!memberships_user_id_fkey(display_name)), media(original_filename)")
         .eq("club_id", clubId)
         .order("occurred_at", { ascending: false })
         .limit(6),
@@ -61,17 +83,41 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
         .eq("club_id", clubId)
         .eq("status", "open"),
       supabase.from("album_engagement").select("*").eq("club_id", clubId),
+      // What members can actually open, the same rule as album_media_counts.
+      // club_storage_usage counts every row, finished or not, which is how
+      // this page said 114 while the album said 110.
+      supabase.from("media").select("id", { count: "exact", head: true }).eq("club_id", clubId).eq("status", "ready"),
+      // Uploads that stopped. Given an hour, so one still going isn't flagged.
+      supabase
+        .from("media")
+        .select("id, album_id, albums!media_album_id_fkey(title)", { count: "exact" })
+        .eq("club_id", clubId)
+        .neq("status", "ready")
+        .lt("created_at", stuckCutoff())
+        .order("created_at", { ascending: true })
+        .limit(50),
     ]);
 
   const drafts = (albumCount.count ?? 0) - (published.count ?? 0);
   const firstRun = (onList.count ?? 0) <= 1 && (albumCount.count ?? 0) === 0;
   const openRemovals = removals.count ?? 0;
+  const stuckCount = stuck.count ?? 0;
+  const stuckAlbums = [
+    ...new Map(
+      (stuck.data ?? []).filter((row) => row.album_id).map((row) => [row.album_id!, row.albums?.title ?? "an album"]),
+    ),
+  ];
 
   const views = new Map((engagement.data ?? []).map((row) => [row.album_id, row]));
   const mostOpened = [...(engagement.data ?? [])].sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0))[0];
   const mostOpenedTitle = mostOpened ? stacked.find((a) => a.id === mostOpened.album_id)?.title : null;
 
-  const today = new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long" });
+  const today = new Date().toLocaleDateString("en-AU", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "Australia/Brisbane",
+  });
 
   // The committee screen is a control panel: what needs doing, then the
   // numbers, then the evidence.
@@ -83,6 +129,16 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           body: "Already hidden from members. Confirm or put back within seven days.",
           href: `/admin/${handle}/removals`,
           cta: "Review",
+          urgent: true,
+        }
+      : null,
+    stuckCount > 0
+      ? {
+          key: "unfinished",
+          title: `${plural(stuckCount, "upload")} didn't finish`,
+          body: `In ${stuckAlbums.map(([, title]) => title).join(", ")}. Members can't see them. Upload them again or remove them; they clear themselves after ${EXPIRE_AFTER_DAYS} days.`,
+          href: stuckAlbums[0] ? `/c/${handle}/a/${stuckAlbums[0][0]}` : `/admin/${handle}/albums`,
+          cta: "Fix",
           urgent: true,
         }
       : null,
@@ -109,8 +165,10 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
     (pending.count ?? 0) > 0
       ? {
           key: "pending",
-          title: `${(pending.count ?? 0).toLocaleString("en-AU")} members have never signed in`,
-          body: "Mostly first years. A nudge usually does it.",
+          title: `${plural(pending.count ?? 0, "member")} ${(pending.count ?? 0) === 1 ? "has" : "have"} never signed in`,
+          // No guess about who they are: "mostly first years" read oddly for
+          // a club with one pending member.
+          body: "On the member list, but they haven't opened Klubbies yet.",
           href: `/admin/${handle}/members`,
           cta: "Open members",
           urgent: false,
@@ -123,7 +181,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageTitle kicker={ctx.club.name} title={today} underline>
           {tasks.length
-            ? `${tasks.length} thing${tasks.length === 1 ? "" : "s"} need you. Everything else is running itself.`
+            ? `${plural(tasks.length, "thing")} ${tasks.length === 1 ? "needs" : "need"} you. Everything else is running itself.`
             : "Nothing needs you. Everything is running itself."}
         </PageTitle>
         <div className="flex flex-wrap gap-2">
@@ -157,10 +215,15 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
         <Stat
           value={(albumCount.count ?? 0).toLocaleString("en-AU")}
           label="Albums"
-          hint={drafts > 0 ? `${drafts} draft` : "all published"}
+          hint={drafts > 0 ? plural(drafts, "draft") : "all published"}
           tone={drafts > 0 ? "attention" : "plain"}
         />
-        <Stat value={(usage.data?.item_count ?? 0).toLocaleString("en-AU")} label="Photos and videos" hint="originals kept" />
+        <Stat
+          value={(readyItems.count ?? 0).toLocaleString("en-AU")}
+          label="Photos and videos"
+          hint={stuckCount > 0 ? `${stuckCount.toLocaleString("en-AU")} unfinished` : "originals kept"}
+          tone={stuckCount > 0 ? "attention" : "plain"}
+        />
         <Stat value={formatBytes(usage.data?.total_bytes ?? 0)} label="Storage" hint="Included" />
         <Stat
           value={(viewsWeek.count ?? 0).toLocaleString("en-AU")}
@@ -240,7 +303,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                         <span className="block text-[12px] text-[color:var(--ink-70)]">
                           {(album.photoCount + album.videoCount).toLocaleString("en-AU")} ·{" "}
                           {album.status === "published"
-                            ? `${(row?.view_count ?? 0).toLocaleString("en-AU")} views`
+                            ? plural(row?.view_count ?? 0, "view")
                             : "not live"}
                         </span>
                       </span>
@@ -274,7 +337,15 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                     />
                     <span className="min-w-0">
                       <span className="block text-[14px]">
-                        <strong className="font-bold">{e.memberships?.roster_name ?? "Admin"}</strong>{" "}
+                        <strong className="font-bold">
+                          {e.memberships
+                            ? personName({
+                                displayName: e.memberships.users?.display_name,
+                                claimedName: e.memberships.claimed_name,
+                                rosterName: e.memberships.roster_name,
+                              })
+                            : "Admin"}
+                        </strong>{" "}
                         {e.action === "download" ? "downloaded" : "viewed"} {e.media?.original_filename ?? "an item"}
                       </span>
                       <span className="block text-[12px] text-[color:var(--ink-55)]">{formatDateTime(e.occurred_at)}</span>
@@ -294,9 +365,8 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
               <span className="block text-[12px] font-bold">Most opened album</span>
               <span className="soft-display mt-1 block text-[21px] text-ink">{mostOpenedTitle}</span>
               <span className="mt-1 block text-[13px]">
-                {(mostOpened?.view_count ?? 0).toLocaleString("en-AU")} views ·{" "}
-                {(mostOpened?.download_count ?? 0).toLocaleString("en-AU")} downloads ·{" "}
-                {(mostOpened?.member_count ?? 0).toLocaleString("en-AU")} members
+                {plural(mostOpened?.view_count ?? 0, "view")} · {plural(mostOpened?.download_count ?? 0, "download")} ·{" "}
+                {plural(mostOpened?.member_count ?? 0, "member")}
               </span>
             </section>
           ) : null}

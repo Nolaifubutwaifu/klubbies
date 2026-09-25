@@ -4,7 +4,7 @@ import { InviteCard } from "@/components/InviteCard";
 import { Brand, EmptyState, PageTitle } from "@/components/ui";
 import { PhotoStackArt } from "@/components/soft/illustrations";
 import { getProfile, listMyClubs, requireUser } from "@/lib/auth/session";
-import { formatDate, formatLongDate } from "@/lib/format";
+import { formatDate, formatLongDate, plural } from "@/lib/format";
 import { listClubCards } from "@/lib/media/club-cards";
 import { createClient } from "@/lib/supabase/server";
 
@@ -67,6 +67,7 @@ export default async function ClubsPage() {
                 <Link
                   key={club.membershipId}
                   href={`/c/${club.handle}`}
+                  aria-label={`${club.name}, ${card?.albumCount ? plural(card.albumCount, "album") : "nothing uploaded yet"}${card?.newCount ? `, ${card.newCount} new` : ""}`}
                   className="soft-card group flex flex-col overflow-hidden !p-0 text-ink no-underline"
                 >
                   {/* The photos are the point, so they lead. */}
@@ -80,13 +81,15 @@ export default async function ClubsPage() {
                         }}
                       >
                         {card.tiles.slice(0, 3).map((url, i) => (
+                          // The skeleton sits under each image, so a slow
+                          // collage shimmers instead of showing a flat box.
                           <span
                             key={url}
-                            className="block overflow-hidden"
+                            className="soft-skeleton block overflow-hidden !rounded-none"
                             style={i === 0 && card.tiles.length > 1 ? { gridColumn: "span 2", gridRow: "span 2" } : undefined}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
-                            <img src={url} alt="" loading="lazy" className="h-full w-full object-cover" />
+                            <img src={url} alt="" loading="lazy" className="relative z-[1] h-full w-full object-cover" />
                           </span>
                         ))}
                       </span>
@@ -120,7 +123,7 @@ export default async function ClubsPage() {
                     <span className="soft-display text-[24px]">{club.name}</span>
                     <span className="text-[13px] text-[color:var(--ink-70)]">
                       {card && card.albumCount
-                        ? `${card.albumCount.toLocaleString("en-AU")} album${card.albumCount === 1 ? "" : "s"} · ${card.itemCount.toLocaleString("en-AU")} photos and videos`
+                        ? `${plural(card.albumCount, "album")} · ${plural(card.itemCount, "photo or video", "photos and videos")}`
                         : "Nothing uploaded yet"}
                     </span>
                     {card?.latestTitle ? (

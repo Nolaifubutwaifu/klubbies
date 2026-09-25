@@ -80,11 +80,6 @@ export function SaveAlbum({
   return (
     <div className="flex flex-col items-start gap-1">
       <div className="flex flex-wrap gap-2">
-        {canShareFiles && mediaIds.length > 0 ? (
-          <button type="button" className="btn btn-ghost text-[14px]" onClick={saveToPhotos} disabled={busy}>
-            {busy ? "Saving…" : "Save to Photos"}
-          </button>
-        ) : null}
         {parts <= 1 ? (
           <a href={`/api/albums/${albumId}/zip`} className="btn btn-ghost text-[14px]">
             Download all
@@ -96,6 +91,13 @@ export function SaveAlbum({
             </a>
           ))
         )}
+        {/* After the downloads: it appears only once the browser answers,
+            and appended last it can't push anything else along. */}
+        {canShareFiles && mediaIds.length > 0 ? (
+          <button type="button" className="btn btn-ghost text-[14px]" onClick={saveToPhotos} disabled={busy}>
+            {busy ? "Saving…" : "Save to Photos"}
+          </button>
+        ) : null}
       </div>
       {progress ? <span className="text-[12px] text-ink-55">{progress}</span> : null}
       {error ? <span className="text-[12px] text-accent-700">{error}</span> : null}

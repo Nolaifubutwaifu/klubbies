@@ -6,10 +6,19 @@ import { displayNameFor } from "@/lib/auth/display-name";
 import { listMyClubs, type ClubContext } from "@/lib/auth/session";
 import { canWrite } from "@/lib/billing/status";
 import { formatLongDate } from "@/lib/format";
-import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
+import { signLogoMarks } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
-export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext; forceAdmin?: boolean }) {
+export async function AppHeader({
+  ctx,
+  forceAdmin = false,
+  photosOfYou = false,
+}: {
+  ctx: ClubContext;
+  forceAdmin?: boolean;
+  /** Face recognition is on here and this member has enrolled. */
+  photosOfYou?: boolean;
+}) {
   const [{ clubs, invites }, displayName, area] = await Promise.all([
     listMyClubs(),
     displayNameFor(ctx),
@@ -21,10 +30,7 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
   // Every logo the header can show, in one call: the current club's, plus
   // each club in the switcher list. The dropdown used to fall back to
   // initials even for clubs whose logo was already uploaded.
-  const logoPaths = [club.logo_path, ...clubs.map((c) => c.logoPath)].filter((p): p is string => Boolean(p));
-  const signed = logoPaths.length
-    ? await signPaths(await createClient(), logoPaths, SIGNED_URL_TTL.display)
-    : new Map<string, string>();
+  const signed = await signLogoMarks(await createClient(), [club.logo_path, ...clubs.map((c) => c.logoPath)]);
   const logoUrl = club.logo_path ? (signed.get(club.logo_path) ?? null) : null;
   const clubLogoUrls: Record<string, string> = {};
   for (const c of clubs) {
@@ -34,8 +40,18 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
 
   const memberLinks = [
     { href: `/c/${club.handle}`, label: "Events" },
+    ...(photosOfYou ? [{ href: `/c/${club.handle}/me`, label: "Photos of you" }] : []),
     { href: `/c/${club.handle}/saved`, label: "Saved" },
     { href: `/c/${club.handle}/feed`, label: "Club feed" },
+  ];
+
+  // The switcher is the one menu a phone always has, so the two places that
+  // otherwise only live in the desktop rail get a door here too.
+  const shortcuts = [
+    ...(photosOfYou ? [{ href: `/c/${club.handle}/me`, label: "Photos of you" }] : []),
+    ...(perms.manage_club
+      ? [forceAdmin ? { href: `/c/${club.handle}`, label: "Member view" } : { href: `/admin/${club.handle}`, label: "Admin view" }]
+      : []),
   ];
 
   return (
@@ -48,11 +64,12 @@ export async function AppHeader({ ctx, forceAdmin = false }: { ctx: ClubContext;
             klubbies
           </Link>
           <ClubSwitcher
-            current={{ name: club.name, handle: club.handle }}
+            current={{ name: club.name, handle: club.handle, accentColour: club.accent_colour }}
             clubs={clubs}
             invites={invites}
             logoUrl={logoUrl}
             clubLogoUrls={clubLogoUrls}
+            shortcuts={shortcuts}
           />
           {adminArea ? <span className="soft-chip hidden text-[11px] sm:inline-flex">Admin view</span> : null}
 

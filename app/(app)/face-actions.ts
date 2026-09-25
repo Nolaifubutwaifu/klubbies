@@ -15,9 +15,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "./admin/actions";
 
-// Two gates, in order: a club admin turns the feature on for the club, then
-// each member decides for themselves. Neither implies the other, and neither
-// is a tickbox on a settings row — both write a versioned consent record.
+// Two gates, in order: the club has the feature on, then each member decides
+// for themselves. Clubs are on by default since the 2026-09-25 rollout
+// (supabase/migrations/20260925000021) and an admin can still switch theirs
+// off; enrolment is never automatic, and writes a versioned consent record.
 
 // ---------------------------------------------------------------------------
 // Admin

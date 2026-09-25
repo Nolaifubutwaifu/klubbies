@@ -48,7 +48,6 @@ next-env.d.ts
 # Full-size marketing source photos (web crops live in public/marketing)
 design/source-photos/
 
-# Real faces, gathered once to tune the recognition thresholds. The README
-# survives so the method is repeatable; nothing else in there ever does.
-tuning-photos/*
-!tuning-photos/README.md
+# Real faces, gathered once to tune the recognition thresholds. The method is
+# in docs/face-tuning.md; the photos themselves are never committed.
+tuning-photos/

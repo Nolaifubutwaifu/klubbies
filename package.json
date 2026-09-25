@@ -11,7 +11,10 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "seed": "tsx --env-file=.env.local scripts/seed.ts",
-    "backfill-faces": "tsx --env-file=.env.local scripts/backfill-faces.ts"
+    "demo": "tsx --env-file=.env.local scripts/demo.ts",
+    "backfill-faces": "tsx --env-file=.env.local scripts/backfill-faces.ts",
+    "dedupe-media": "tsx --env-file=.env.local scripts/dedupe-media.ts",
+    "logo-marks": "tsx --env-file=.env.local scripts/logo-marks.ts"
   },
   "dependencies": {
     "@aws-sdk/client-rekognition": "^3.1136.0",

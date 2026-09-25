@@ -3,6 +3,7 @@ import type { FaceJob, FaceJobKind } from "@/lib/db/types";
 import { removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { facesConfigured, isThrottling } from "./client";
+import { ensureClubCollection } from "./collections";
 import { DRAIN_BUDGET_MS, JOB_BATCH_SIZE, JOB_CONCURRENCY, MAX_JOB_ATTEMPTS, UPLOAD_KICK_BUDGET_MS } from "./constants";
 import { enrolProfile } from "./enrol";
 import { indexMedia, rematchMedia } from "./index-media";
@@ -36,6 +37,7 @@ export async function runFaceJobs(options: { budgetMs?: number; batchSize?: numb
   let done = 0;
   let failed = 0;
   let searches = 0;
+  const ensured = new Set<string>();
 
   // Keep claiming until the queue is empty or the clock runs out. A single
   // batch used to be the whole pass, which meant a 110 photo library needed
@@ -47,6 +49,20 @@ export async function runFaceJobs(options: { budgetMs?: number; batchSize?: numb
     const jobs = (claimed ?? []) as FaceJob[];
     if (jobs.length === 0) break;
     claimedTotal += jobs.length;
+
+    // A club switched on by the rollout migration has no collection yet: the
+    // database can't create one. Make sure each club in the batch has one
+    // before any of its photos is indexed. CreateCollection is idempotent, so
+    // this is one cheap call per club per pass.
+    for (const clubId of new Set(jobs.map((job) => job.club_id))) {
+      if (ensured.has(clubId)) continue;
+      try {
+        await ensureCollectionRecorded(admin, clubId);
+        ensured.add(clubId);
+      } catch (error) {
+        console.error("could not ensure face collection", clubId, error);
+      }
+    }
 
     // Photos this batch touched, per club, so matching runs once over the
     // batch rather than once per face.
@@ -90,6 +106,17 @@ export async function runFaceJobs(options: { budgetMs?: number; batchSize?: numb
   await settleBackfills();
 
   return { claimed: claimedTotal, done, failed, purged: purge.deleted, searches };
+}
+
+/** Creates the club's collection if it is missing and records its id. */
+async function ensureCollectionRecorded(admin: ReturnType<typeof createAdminClient>, clubId: string): Promise<void> {
+  const collectionId = await ensureClubCollection(clubId);
+  if (!collectionId) return;
+  await admin
+    .from("club_face_settings")
+    .update({ collection_id: collectionId })
+    .eq("club_id", clubId)
+    .is("collection_id", null);
 }
 
 async function runOne(job: FaceJob): Promise<boolean> {

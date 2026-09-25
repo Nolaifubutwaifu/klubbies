@@ -7,6 +7,7 @@ import { listFeed } from "@/lib/feed/queries";
 import { listAlbums } from "@/lib/media/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Composer, PostList } from "./Feed";
+import { personName } from "@/lib/auth/display-name";
 
 export const metadata: Metadata = { title: "Club feed" };
 
@@ -26,7 +27,7 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
       .in("status", ["active", "pending"]),
     supabase
       .from("memberships")
-      .select("id, roster_name, claimed_name, club_roles!inner(name, manage_club, manage_members, manage_albums)")
+      .select("id, roster_name, claimed_name, club_roles!inner(name, manage_club, manage_members, manage_albums), users!memberships_user_id_fkey(display_name)")
       .eq("club_id", ctx.club.id)
       .eq("status", "active")
       .limit(30),
@@ -97,7 +98,7 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
             <div className="mt-2 flex flex-col gap-2">
               {committeeList.map((m) => (
                 <span key={m.id} className="text-[14px]">
-                  {m.claimed_name ?? m.roster_name}{" "}
+                  {personName({ displayName: m.users?.display_name, claimedName: m.claimed_name, rosterName: m.roster_name })}{" "}
                   <span className="text-[12px] text-ink-55">{m.club_roles.name}</span>
                 </span>
               ))}

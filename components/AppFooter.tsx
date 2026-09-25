@@ -10,7 +10,7 @@ export function AppFooter() {
   if (/^\/c\/[^/]+\/a\/[^/]+\/[^/]+/.test(usePathname())) return null;
 
   return (
-    <footer className="relative z-10 mt-auto">
+    <footer className="app-footer relative z-10 mt-auto">
       <div className="mx-auto flex w-full max-w-[1320px] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-8 text-[13px] text-[color:var(--ink-55)] sm:px-6">
         <span className="soft-wordmark text-[17px] text-ink">klubbies</span>
         <span>Your club&rsquo;s photos, for your club only.</span>

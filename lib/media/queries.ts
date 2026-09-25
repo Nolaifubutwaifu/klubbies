@@ -102,8 +102,9 @@ export async function listAlbumMedia(
   supabase: UserClient,
   albumId: string,
   page: number,
-  opts: { includeProcessing?: boolean } = {},
+  opts: { includeProcessing?: boolean; onlyIds?: string[] } = {},
 ): Promise<{ items: GridItem[]; hasMore: boolean }> {
+  if (opts.onlyIds && opts.onlyIds.length === 0) return { items: [], hasMore: false };
   let query = supabase
     .from("media")
     .select("id, kind, width, height, duration_seconds, status, original_filename, thumb_path, poster_path")
@@ -112,6 +113,7 @@ export async function listAlbumMedia(
     .order("id", { ascending: true })
     .range(page * MEDIA_PAGE_SIZE, (page + 1) * MEDIA_PAGE_SIZE);
   if (!opts.includeProcessing) query = query.eq("status", "ready");
+  if (opts.onlyIds) query = query.in("id", opts.onlyIds);
 
   const { data, error } = await query;
   if (error) throw error;

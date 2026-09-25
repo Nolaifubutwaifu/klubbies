@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { ClubMark } from "@/components/ClubMark";
 
 export type AdminNavCounts = {
   albums: number;
@@ -78,6 +79,8 @@ function Icon({ name }: { name: string }) {
 export function AdminNav({
   handle,
   clubName,
+  clubAddress,
+  accentColour,
   logoUrl,
   counts,
   plan,
@@ -85,6 +88,10 @@ export function AdminNav({
 }: {
   handle: string;
   clubName: string;
+  /** The shareable address without its scheme, from APP_URL — the same
+      value Settings shows, so admins never copy two different links. */
+  clubAddress: string;
+  accentColour: string | null;
   logoUrl: string | null;
   counts: AdminNavCounts;
   plan: { line: string; hint: string };
@@ -106,29 +113,14 @@ export function AdminNav({
     { href: `${base}/settings`, label: "Billing & settings", icon: "billing", badge: 0 },
   ];
 
-  const initials = clubName
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
   return (
     <nav aria-label="Committee" className="lg:sticky lg:top-5 lg:self-start">
       <div className="soft-card flex flex-col gap-1 p-3 lg:w-[248px]">
         <div className="hidden items-center gap-2.5 px-1.5 pb-3 lg:flex">
-          <span className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-[12px] bg-accent text-[12px] font-extrabold text-white">
-            {logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-              <img src={logoUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              initials
-            )}
-          </span>
+          <ClubMark name={clubName} logoUrl={logoUrl} accentColour={accentColour} size={36} />
           <span className="min-w-0">
             <span className="soft-display block truncate text-[15px]">{clubName}</span>
-            <span className="block truncate text-[11px] text-[color:var(--ink-55)]">klubbies.app/c/{handle}</span>
+            <span className="block truncate text-[11px] text-[color:var(--ink-55)]">{clubAddress}</span>
           </span>
         </div>
 
