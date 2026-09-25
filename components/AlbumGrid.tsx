@@ -19,8 +19,10 @@ function Tile({ item, cover, saved }: { item: GridItem; cover: boolean; saved: b
   return (
     <>
       {item.thumbUrl ? (
+        // Named by the link around it (see labelFor), so the image itself is
+        // decorative. Its alt used to be the raw filename, "edited-.jpg".
         // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-        <img src={item.thumbUrl} alt={item.original_filename ?? ""} className="h-full w-full object-cover" loading="lazy" />
+        <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
       ) : (
         <span className="flex h-full w-full items-center justify-center bg-neutral-400 p-2 text-center text-[11px] text-ink">
           {item.status === "ready" ? "No preview" : item.original_filename || "Not finished"}
@@ -64,6 +66,8 @@ export function AlbumGrid({
   savedTotal,
   processingCount = 0,
   canDownload = false,
+  mineItems = [],
+  albumTitle,
 }: {
   albumId: string;
   hrefBase: string;
@@ -80,6 +84,10 @@ export function AlbumGrid({
   /** Files still being processed, which members can't read rows for. */
   processingCount?: number;
   canDownload?: boolean;
+  /** Photos in this album the viewer is confirmed in. Empty when they have
+      not enrolled or are in none, and then the chip isn't shown. */
+  mineItems?: GridItem[];
+  albumTitle: string;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -91,7 +99,7 @@ export function AlbumGrid({
   const [message, setMessage] = useState("");
   const [saved, setSaved] = useState<Set<string>>(new Set(savedIds));
   const [pending, startTransition] = useTransition();
-  const [kind, setKind] = useState<"all" | "photo" | "video" | "saved">("all");
+  const [kind, setKind] = useState<"all" | "mine" | "photo" | "video" | "saved">("all");
 
   const toggle = (id: string) =>
     setSelected((current) => {
@@ -103,7 +111,21 @@ export function AlbumGrid({
 
   const selectedIds = [...selected];
   const shown =
-    kind === "all" ? items : kind === "saved" ? items.filter((item) => saved.has(item.id)) : items.filter((item) => item.kind === kind);
+    kind === "all"
+      ? items
+      : kind === "mine"
+        ? mineItems
+        : kind === "saved"
+          ? items.filter((item) => saved.has(item.id))
+          : items.filter((item) => item.kind === kind);
+  const total = photoCount + videoCount;
+  // Screen readers hear "Photo 3 of 110 in Bobbies Pics", not "link".
+  const positionById = new Map(items.map((item, i) => [item.id, i + 1]));
+  const labelFor = (item: GridItem) => {
+    const noun = item.kind === "video" ? "Video" : "Photo";
+    const at = positionById.get(item.id);
+    return at ? `${noun} ${at} of ${total} in ${albumTitle}` : `${noun} in ${albumTitle}`;
+  };
 
   const loadMore = () =>
     startTransition(async () => {
@@ -215,7 +237,8 @@ export function AlbumGrid({
       <div className="flex w-full flex-wrap gap-2 px-4 sm:px-6">
         {(
           [
-            ["all", `All ${(photoCount + videoCount).toLocaleString("en-AU")}`, true],
+            ["all", `All ${total.toLocaleString("en-AU")}`, true],
+            ["mine", `You ${mineItems.length.toLocaleString("en-AU")}`, mineItems.length > 0],
             ["photo", `Photos ${photoCount.toLocaleString("en-AU")}`, photoCount > 0 && videoCount > 0],
             ["video", `Videos ${videoCount.toLocaleString("en-AU")}`, videoCount > 0],
             ["saved", `Favourites ${savedTotal.toLocaleString("en-AU")}`, savedTotal > 0],
@@ -241,7 +264,7 @@ export function AlbumGrid({
         className="grid w-full gap-1 px-1 pb-6 pt-3 sm:gap-1.5 sm:px-4"
         style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(104px, 14vw, 168px), 1fr))" }}
       >
-        {kind !== "saved" ? <ProcessingTiles count={processingCount} /> : null}
+        {kind !== "saved" && kind !== "mine" ? <ProcessingTiles count={processingCount} /> : null}
         {shown.map((item) =>
           selecting ? (
             <button
@@ -249,6 +272,7 @@ export function AlbumGrid({
               type="button"
               onClick={() => toggle(item.id)}
               aria-pressed={selected.has(item.id)}
+              aria-label={labelFor(item)}
               className="relative block aspect-square overflow-hidden rounded-[10px] border-0 bg-bg p-0"
               style={{ outline: selected.has(item.id) ? "3px solid var(--color-accent)" : undefined, outlineOffset: -3 }}
             >
@@ -258,6 +282,7 @@ export function AlbumGrid({
             <Link
               key={item.id}
               href={`${hrefBase}/${item.id}`}
+              aria-label={labelFor(item)}
               className="soft-tile relative block aspect-square !rounded-[10px]"
               scroll={false}
             >
@@ -273,7 +298,7 @@ export function AlbumGrid({
         </p>
       ) : null}
 
-      {hasMore ? (
+      {hasMore && kind !== "mine" ? (
         <button type="button" className="btn btn-secondary mb-6 self-center" disabled={pending} onClick={loadMore}>
           {pending ? "Loading…" : "Load more"}
         </button>

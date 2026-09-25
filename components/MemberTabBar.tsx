@@ -7,9 +7,11 @@ import type { ReactNode } from "react";
 /**
  * Most members open Klubbies on a phone at 11pm. Four destinations, thumb
  * height, always there — the design's tab bar, hidden once there's room for
- * the header nav instead.
+ * the header nav instead. A fifth, Photos of you, joins them in a club where
+ * the feature is on for this member: the rail was its only way in, and the
+ * rail doesn't exist on a phone.
  */
-export function MemberTabBar({ handle }: { handle: string }) {
+export function MemberTabBar({ handle, photosOfYou = false }: { handle: string; photosOfYou?: boolean }) {
   const pathname = usePathname();
   const base = `/c/${handle}`;
   // The lightbox is full-bleed and carries its own actions; a tab bar over the
@@ -23,6 +25,22 @@ export function MemberTabBar({ handle }: { handle: string }) {
       match: (p) => p === base,
       icon: <path d="M4 11l8-6 8 6v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" />,
     },
+    ...(photosOfYou
+      ? [
+          {
+            href: `${base}/me`,
+            label: "Photos of you",
+            match: (p: string) => p.startsWith(`${base}/me`),
+            icon: (
+              <>
+                <rect x="3.5" y="3.5" width="17" height="17" rx="3.5" />
+                <circle cx="12" cy="10" r="3" />
+                <path d="M6.8 20.5c.9-2.9 2.8-4.3 5.2-4.3s4.3 1.4 5.2 4.3" />
+              </>
+            ),
+          },
+        ]
+      : []),
     {
       href: `${base}/feed`,
       label: "Club feed",
@@ -59,6 +77,7 @@ export function MemberTabBar({ handle }: { handle: string }) {
   return (
     <>
       <nav
+        data-tabbar
         aria-label="Sections"
         className="fixed inset-x-0 bottom-0 z-30 flex border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] bg-[color:var(--color-surface)] px-2.5 pb-[max(16px,env(safe-area-inset-bottom))] pt-2 sm:hidden"
       >
@@ -70,7 +89,7 @@ export function MemberTabBar({ handle }: { handle: string }) {
               key={tab.href}
               href={tab.href}
               aria-current={here ? "page" : undefined}
-              className="flex min-h-[48px] flex-1 flex-col items-center justify-center gap-[3px] text-[11px] font-bold no-underline"
+              className="flex min-h-[48px] min-w-0 flex-1 flex-col items-center justify-center gap-[3px] text-center text-[11px] font-bold leading-[1.15] no-underline"
               style={{ color: colour }}
             >
               <svg
@@ -91,8 +110,9 @@ export function MemberTabBar({ handle }: { handle: string }) {
           );
         })}
       </nav>
-      {/* Keeps the last row of a page clear of the bar. */}
-      <div aria-hidden className="h-[84px] sm:hidden" />
+      {/* The footer after the page takes the bar's height as padding (see
+          .app-footer in globals.css). A spacer here sat above the footer,
+          which left the legal links under the bar. */}
     </>
   );
 }

@@ -28,6 +28,16 @@ export function appUrl(): string {
   return (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
 }
 
+/**
+ * "klubbies.example/c/uq_vb": the club's shareable address as people see it.
+ * Everything that shows the address calls this, so the rail, the setup
+ * checklist and Settings can't drift apart again (the rail once hardcoded a
+ * domain the app wasn't served from).
+ */
+export function clubAddress(handle: string): string {
+  return `${appUrl().replace(/^https?:\/\//, "")}/c/${handle}`;
+}
+
 let cached: ServerEnv | undefined;
 
 export function serverEnv(): ServerEnv {

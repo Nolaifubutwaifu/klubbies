@@ -4,13 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { acceptInviteAction, declineInviteAction } from "@/app/(app)/actions";
+import { ClubMark } from "@/components/ClubMark";
 import type { MyClub } from "@/lib/auth/session";
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "??";
-  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 export function ClubSwitcher({
   current,
@@ -18,13 +13,16 @@ export function ClubSwitcher({
   invites,
   logoUrl,
   clubLogoUrls = {},
+  shortcuts = [],
 }: {
-  current: { name: string; handle: string } | null;
+  current: { name: string; handle: string; accentColour?: string | null } | null;
   clubs: MyClub[];
   invites: MyClub[];
   logoUrl?: string | null;
   /** Signed logo per club id, so the list matches the button above it. */
   clubLogoUrls?: Record<string, string>;
+  /** Places in the current club that only the desktop rail links to. */
+  shortcuts?: { href: string; label: string }[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -56,14 +54,7 @@ export function ClubSwitcher({
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-          <img src={logoUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
-        ) : (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-accent-500),var(--color-accent-700))] text-[10px] font-extrabold text-white">
-            {initials(current?.name ?? "Klubbies")}
-          </span>
-        )}
+        <ClubMark name={current?.name ?? "Klubbies"} logoUrl={logoUrl} accentColour={current?.accentColour} size={24} />
         <span className="soft-wordmark text-[17px]">{current?.name ?? "Your clubs"}</span>
         {invites.length ? <span className="tag tag-accent text-[10px]">{invites.length} new</span> : null}
         <span className="text-[11px] text-ink-55">▾</span>
@@ -89,17 +80,7 @@ export function ClubSwitcher({
                 onClick={() => setOpen(false)}
                 aria-current={club.handle === current?.handle}
               >
-                <span
-                  className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden text-[11px] font-extrabold text-white"
-                  style={{ background: clubLogoUrls[club.clubId] ? "transparent" : "var(--color-neutral-900)" }}
-                >
-                  {clubLogoUrls[club.clubId] ? (
-                    // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                    <img src={clubLogoUrls[club.clubId]} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    initials(club.name)
-                  )}
-                </span>
+                <ClubMark name={club.name} logoUrl={clubLogoUrls[club.clubId]} accentColour={club.accentColour} />
                 <span className="min-w-0">
                   <span className="block truncate font-heading text-[15px] font-bold">{club.name}</span>
                   <span className="block text-[12px] text-ink-70">
@@ -110,6 +91,22 @@ export function ClubSwitcher({
               </Link>
             ))}
           </div>
+
+          {current && shortcuts.length ? (
+            <div className="flex flex-col border-t-2 border-divider">
+              <div className="label-caps px-4 pt-3">In {current.name}</div>
+              {shortcuts.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex min-h-[48px] items-center border-t border-divider px-4 text-[15px] font-bold text-ink no-underline first-of-type:border-t-0 hover:bg-accent-100"
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          ) : null}
 
           {invites.map((invite) => (
             <div key={invite.membershipId} className="m-3 border-2 border-accent bg-accent-100 p-3">

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Handover, type HandoverCandidate } from "./Handover";
 import { PastSeasons, type Season } from "./PastSeasons";
 import { RoleEditor } from "./RoleEditor";
+import { personName } from "@/lib/auth/display-name";
 
 export const metadata: Metadata = { title: "Handover" };
 
@@ -20,7 +21,7 @@ export default async function RolesPage(props: PageProps<"/admin/[handle]/roles"
     // Only people who have actually signed in can be handed a club.
     supabase
       .from("memberships")
-      .select("id, roster_name, claimed_name, role, user_id, status")
+      .select("id, roster_name, claimed_name, role, user_id, status, users!memberships_user_id_fkey(display_name)")
       .eq("club_id", ctx.club.id)
       .eq("status", "active")
       .not("user_id", "is", null)
@@ -37,7 +38,7 @@ export default async function RolesPage(props: PageProps<"/admin/[handle]/roles"
     .filter((m) => m.user_id !== ctx.userId)
     .map((m) => ({
       membershipId: m.id,
-      name: m.claimed_name ?? m.roster_name,
+      name: personName({ displayName: m.users?.display_name, claimedName: m.claimed_name, rosterName: m.roster_name }),
       isAdmin: m.role === "club_admin",
     }));
   const owner = (people ?? []).find((m) => m.user_id === ctx.userId);
@@ -73,7 +74,11 @@ export default async function RolesPage(props: PageProps<"/admin/[handle]/roles"
         <Handover
           clubId={ctx.club.id}
           clubName={ctx.club.name}
-          ownerName={owner ? (owner.claimed_name ?? owner.roster_name) : "You"}
+          ownerName={
+            owner
+              ? personName({ displayName: owner.users?.display_name, claimedName: owner.claimed_name, rosterName: owner.roster_name })
+              : "You"
+          }
           candidates={candidates}
         />
       ) : null}

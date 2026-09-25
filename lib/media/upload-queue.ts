@@ -1,4 +1,5 @@
 import { Upload } from "tus-js-client";
+import { contentHash } from "@/lib/media/content-hash";
 import { LARGE_VIDEO_BYTES, resolveMimeType } from "@/lib/media/constants";
 import { prepareVideo, preparePhoto, type Prepared } from "@/lib/media/prepare";
 import { createClient } from "@/lib/supabase/client";
@@ -9,6 +10,8 @@ import { supabaseUrl } from "@/lib/supabase/config";
 // bytes), then finalises. One failed file never blocks the rest.
 
 type Ticket = {
+  /** The album already has this exact file: nothing to upload. */
+  duplicate?: boolean;
   mediaId: string;
   kind: "photo" | "video";
   bucket: string;
@@ -26,8 +29,10 @@ type Job = {
   status: JobStatus;
   uploaded: number;
   error?: string;
+  note?: string;
   previewUrl?: string;
   prepared?: Prepared;
+  hash?: string | null;
   ticket?: Ticket;
   originalDone?: boolean;
   tus?: Upload;
@@ -40,6 +45,8 @@ export type JobView = Readonly<{
   status: JobStatus;
   uploaded: number;
   error?: string;
+  /** Set when a file was skipped rather than uploaded, and why. */
+  note?: string;
   previewUrl?: string;
 }>;
 
@@ -112,6 +119,7 @@ export class UploadQueue {
       status: j.status,
       uploaded: j.uploaded,
       error: j.error,
+      note: j.note,
       previewUrl: j.previewUrl,
     }));
     for (const listener of this.listeners) listener();
@@ -178,13 +186,24 @@ export class UploadQueue {
 
       let ticket = job.ticket;
       if (!ticket) {
+        if (job.hash === undefined) job.hash = await contentHash(job.file);
         const res = await fetch("/api/media/upload_ticket", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ albumId: this.albumId, filename: job.file.name, mimeType: job.mimeType, byteSize: job.file.size }),
+          body: JSON.stringify({
+            albumId: this.albumId,
+            filename: job.file.name,
+            mimeType: job.mimeType,
+            byteSize: job.file.size,
+            contentHash: job.hash,
+          }),
         });
         const body: Ticket & { error?: string } = await res.json();
         if (!res.ok || body.error) throw new Error(body.error ?? "Could not start the upload");
+        if (body.duplicate) {
+          this.patch(job, { status: "done", uploaded: job.file.size, note: "Already in this album" });
+          return;
+        }
         ticket = body;
         this.patch(job, { ticket });
       }

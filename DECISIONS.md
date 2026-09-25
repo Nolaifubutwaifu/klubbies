@@ -534,3 +534,62 @@ says about the rest.
      a suggestion strip capped at 24 with no hint the other 40 exist; and a
      "Photos of you" page that silently stopped at 60. All three now say what
      is actually true.
+
+## 2026-09-25 · QA audit fixes (KB-01 to KB-25)
+
+A read-only pass over the live site found 25 problems. The ones that needed a
+choice, rather than just a fix:
+
+110. **Photos of you reaches phones, and so does the admin area.** The rail was
+     the only way to either, and the rail doesn't exist below `lg`. The tab bar
+     grows a fifth tab where the feature is on and the member has enrolled;
+     the club switcher gets an "In this club" section (Photos of you, Admin
+     view); the profile page, which is the "You" tab, links each club's admin
+     area. The rail's admin link now asks for `manage_club`, the permission
+     every `/admin` page checks, instead of sending a media officer to a 404.
+111. **Face recognition off is a state, not a 404.** `/c/[handle]/me` says so,
+     with a way into Settings for admins.
+112. **"Is this you?" crops on the server, per request, and stores nothing.**
+     `/api/faces/[matchId]/crop` cuts a 240px square from the display copy
+     with sharp and returns it `private`. The old CSS crop compared a fraction
+     of the width with a fraction of the height, so a landscape photo came out
+     shrunk into a grey square, and each 105px tile downloaded the full 2000px
+     image. Decision 84 still holds: no crop is ever written to storage.
+113. **One photo, one row per album, enforced by a content hash.** The browser
+     hashes each file before asking for a ticket (SHA-256; over 96 MB, the size
+     plus first and last 8 MB, prefixed `s:`), and the ticket route answers
+     "already here" for a finished copy or resumes a stuck one rather than
+     adding a second row. `media.content_hash` has a partial unique index per
+     album. Rows from before the column are covered by
+     `scripts/dedupe-media.ts`, and until that runs the face pages collapse
+     duplicates by filename and byte size.
+114. **Unfinished uploads are surfaced after an hour and cleared after 14
+     days.** The dashboard's Needs you lists them; the daily cron deletes rows
+     and objects still unfinished a fortnight on.
+115. **One counting rule: published albums, finished files.** Drafts get their
+     own label for the committee instead of inflating the number members see.
+116. **EXIF time is wall-clock time.** `DateTimeOriginal` is read as a raw
+     string and pinned to `OffsetTimeOriginal` when the camera wrote one, else
+     to Brisbane, the zone every date in the app is shown in. Separately, the
+     viewer formatted times on the server without a zone, which on Vercel is
+     UTC: that was the "8:01 am" on a night photo.
+117. **The profile name wins everywhere.** `personName()` in
+     `lib/auth/display-name.ts` is the rule: profile display name, then the
+     name signed in under, then the roster name. The profile page already
+     promised this.
+118. **Signed URLs are reused, not lengthened.** Every page load used to sign
+     afresh, so the browser could never reuse an image. `signPaths` now hands
+     back an already-issued URL to the same session (keyed by a hash of the
+     access token, never the user id) while it has at least 40% of its life
+     left. Lifetimes are unchanged from masterfile §8. Because a URL can now
+     be reused, avatars, album covers and logos are uploaded under a new name
+     each time and the replaced file is deleted, so nobody sees a stale image.
+119. **Logos get a 96px mark.** `setClubLogoAction` makes `mark-*.webp` beside
+     the upload, and every badge signs the mark, falling back to the original
+     for logos that predate it (`scripts/logo-marks.ts` backfills them).
+     `ClubMark` is the one badge component, so a club no longer shows red in
+     one place and as a black square in another.
+120. **Thumbnails are sized by their short edge.** `thumb.webp` is now at least
+     400px on its short side (capped at 900 on the long side), up from 400 on
+     the long side, which left 3:2 photos soft under a 186px square tile.
+     Existing thumbnails keep their old size.

@@ -2,6 +2,7 @@ import "server-only";
 import type { ClubContext } from "@/lib/auth/session";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import type { UserClient } from "@/lib/supabase/server";
+import { personName } from "@/lib/auth/display-name";
 
 export const REACTIONS = ["👍", "🎉", "❤️", "😂"] as const;
 
@@ -31,7 +32,7 @@ export async function listFeed(supabase: UserClient, ctx: ClubContext, limit = 3
     .select(
       // post_reactions also joins posts to memberships, so the relationship has to
       // be named or PostgREST refuses the embed (PGRST201).
-      "id, body, pinned, created_at, album_id, author_membership_id, memberships!posts_author_membership_id_fkey(roster_name, claimed_name, user_id, club_roles(name)), albums(id, title, cover_media_id, cover_path)",
+      "id, body, pinned, created_at, album_id, author_membership_id, memberships!posts_author_membership_id_fkey(roster_name, claimed_name, user_id, club_roles(name), users!memberships_user_id_fkey(display_name)), albums(id, title, cover_media_id, cover_path)",
     )
     .eq("club_id", ctx.club.id)
     .order("pinned", { ascending: false })
@@ -70,7 +71,10 @@ export async function listFeed(supabase: UserClient, ctx: ClubContext, limit = 3
 
   return posts.map((post) => {
     const author = post.memberships;
-    const authorName = author?.claimed_name ?? author?.roster_name ?? "Someone";
+    const authorName =
+      (author
+        ? personName({ displayName: author.users?.display_name, claimedName: author.claimed_name, rosterName: author.roster_name })
+        : "") || "Someone";
     const mine = author?.user_id === ctx.userId;
     const albumCountRow = post.album_id ? countByAlbum.get(post.album_id) : undefined;
     const coverId = post.albums?.cover_media_id ?? albumCountRow?.first_media_id ?? null;

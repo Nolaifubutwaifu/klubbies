@@ -9,13 +9,26 @@ const SUGGESTION_LIMIT = 24;
 
 export type BoundingBox = { Left: number; Top: number; Width: number; Height: number };
 
-function asBox(value: Json | null): BoundingBox | null {
+export function asBox(value: Json | null): BoundingBox | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
   const box = value as Record<string, unknown>;
   const numbers = ["Left", "Top", "Width", "Height"].map((key) => box[key]);
   if (!numbers.every((n) => typeof n === "number")) return null;
   const [Left, Top, Width, Height] = numbers as number[];
   return { Left, Top, Width, Height };
+}
+
+type DupeFields = { id: string; content_hash: string | null; original_filename: string | null; byte_size: number | null };
+
+/**
+ * Which rows are the same photo. Uploads carry a content hash now; rows from
+ * before that fall back to filename plus exact byte size, which is what a
+ * re-uploaded camera file keeps. Without either, a row is only itself.
+ */
+function dupeKey(media: DupeFields): string {
+  if (media.content_hash) return `h:${media.content_hash}`;
+  if (media.original_filename && media.byte_size) return `f:${media.original_filename}:${media.byte_size}`;
+  return `id:${media.id}`;
 }
 
 export type FaceState = {
@@ -91,7 +104,7 @@ export async function listPhotosOfYou(
     // albums.cover_media_id points back at media, so a bare `albums` embed is
     // ambiguous and PostgREST refuses it.
     .select(
-      "id, media_id, similarity, media!inner(id, album_id, sort_at, thumb_path, poster_path, albums!media_album_id_fkey(title, event_date))",
+      "id, media_id, similarity, media!inner(id, album_id, sort_at, thumb_path, poster_path, content_hash, original_filename, byte_size, albums!media_album_id_fkey(title, event_date))",
     )
     .eq("club_id", clubId)
     .eq("state", "confirmed")
@@ -100,7 +113,15 @@ export async function listPhotosOfYou(
   if (error) throw error;
 
   const rows = data ?? [];
-  const pageRows = rows.slice(0, PHOTOS_OF_YOU_PAGE_SIZE);
+  // The same photo uploaded twice is two media rows and so two matches, which
+  // showed "6 photos of you" for 3 photos. Show each picture once.
+  const seen = new Set<string>();
+  const pageRows = rows.slice(0, PHOTOS_OF_YOU_PAGE_SIZE).filter((row) => {
+    const key = dupeKey(row.media);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   // One signing call for the page, the way lib/media/queries.ts does it. One
   // request per tile is the thing this codebase has consistently avoided.
   const urls = await signPaths(
@@ -142,17 +163,17 @@ export async function listPhotosOfYou(
 
 export type Suggestion = {
   matchId: string;
+  /** Every match for this same picture, the first included. A photo uploaded
+      twice is asked about once, and the answer applies to both copies. */
+  matchIds: string[];
   mediaId: string;
   albumId: string | null;
   albumTitle: string;
-  displayUrl: string | null;
-  box: BoundingBox | null;
 };
 
 /**
- * "Is this you?". These use the display copy rather than the thumbnail: the
- * crop is a fraction of the frame, and a 400px thumb cropped to one face is
- * unreadable.
+ * "Is this you?". The card shows /api/faces/[matchId]/crop, a 240px crop cut
+ * from the display copy on the server, so nothing here needs signing.
  */
 export async function listFaceSuggestions(
   supabase: UserClient,
@@ -161,7 +182,7 @@ export async function listFaceSuggestions(
   const { data, error } = await supabase
     .from("face_matches")
     .select(
-      "id, media_id, bounding_box, similarity, media!inner(id, album_id, display_path, storage_path, albums!media_album_id_fkey(title))",
+      "id, media_id, similarity, media!inner(id, album_id, content_hash, original_filename, byte_size, albums!media_album_id_fkey(title))",
     )
     .eq("club_id", clubId)
     .eq("state", "suggested")
@@ -177,27 +198,26 @@ export async function listFaceSuggestions(
     .eq("club_id", clubId)
     .eq("state", "suggested");
 
-  const rows = data ?? [];
-  const urls = await signPaths(
-    supabase,
-    rows.map((row) => row.media.display_path ?? row.media.storage_path).filter(Boolean),
-    SIGNED_URL_TTL.display,
-  );
+  const byKey = new Map<string, Suggestion>();
+  for (const row of data ?? []) {
+    const key = dupeKey(row.media);
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.matchIds.push(row.id);
+      continue;
+    }
+    byKey.set(key, {
+      matchId: row.id,
+      matchIds: [row.id],
+      mediaId: row.media_id,
+      albumId: row.media.album_id,
+      albumTitle: row.media.albums?.title ?? "This club",
+    });
+  }
+  const items = [...byKey.values()];
+  const duplicates = (data?.length ?? 0) - items.length;
 
-  return {
-    total: total ?? rows.length,
-    items: rows.map((row) => {
-      const path = row.media.display_path ?? row.media.storage_path;
-      return {
-        matchId: row.id,
-        mediaId: row.media_id,
-        albumId: row.media.album_id,
-        albumTitle: row.media.albums?.title ?? "This club",
-        displayUrl: path ? (urls.get(path) ?? null) : null,
-        box: asBox(row.bounding_box),
-      };
-    }),
-  };
+  return { total: Math.max(items.length, (total ?? 0) - duplicates), items };
 }
 
 /**
@@ -214,16 +234,42 @@ export async function countPhotosOfYouByAlbum(
   if (albumIds.length === 0) return counts;
   const { data } = await supabase
     .from("face_matches")
-    .select("media_id, media!inner(album_id)")
+    .select("media_id, media!inner(id, album_id, content_hash, original_filename, byte_size)")
     .eq("club_id", clubId)
     .eq("state", "confirmed")
     .in("media.album_id", albumIds);
+  const seen = new Set<string>();
   for (const row of data ?? []) {
     const albumId = row.media?.album_id;
     if (!albumId) continue;
+    const key = `${albumId}|${dupeKey(row.media)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
     counts.set(albumId, (counts.get(albumId) ?? 0) + 1);
   }
   return counts;
+}
+
+/**
+ * The photos in one album you are confirmed in, one per picture. Drives the
+ * "You" filter on the album page, which is where members usually start.
+ */
+export async function photosOfYouInAlbum(supabase: UserClient, albumId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from("face_matches")
+    .select("media_id, media!inner(id, album_id, content_hash, original_filename, byte_size)")
+    .eq("state", "confirmed")
+    .eq("media.album_id", albumId)
+    .limit(500);
+  const seen = new Set<string>();
+  const ids: string[] = [];
+  for (const row of data ?? []) {
+    const key = dupeKey(row.media);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    ids.push(row.media_id);
+  }
+  return ids;
 }
 
 /**
@@ -249,11 +295,17 @@ export async function matchForMedia(
   return row ? { matchId: row.id, state: row.state } : null;
 }
 
+/** Distinct pictures, not match rows, so the badge agrees with the page. */
 export async function countPhotosOfYou(supabase: UserClient, clubId: string): Promise<number> {
-  const { count } = await supabase
+  const { data, count } = await supabase
     .from("face_matches")
-    .select("id", { count: "exact", head: true })
+    .select("media!inner(id, content_hash, original_filename, byte_size)", { count: "exact" })
     .eq("club_id", clubId)
-    .eq("state", "confirmed");
-  return count ?? 0;
+    .eq("state", "confirmed")
+    .limit(1000);
+  const rows = data ?? [];
+  // Past a thousand the exact count is the better number to show; the
+  // duplicates it would include are a rounding error at that size.
+  if ((count ?? 0) > rows.length) return count ?? rows.length;
+  return new Set(rows.map((row) => dupeKey(row.media))).size;
 }

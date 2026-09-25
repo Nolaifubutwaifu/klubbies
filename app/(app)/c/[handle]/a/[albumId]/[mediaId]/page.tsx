@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { getClubContext } from "@/lib/auth/session";
-import { formatBytes, formatDuration, formatLongDate } from "@/lib/format";
+import { formatBytes, formatDuration, formatLongDate, formatTime } from "@/lib/format";
 import { matchForMedia } from "@/lib/faces/queries";
 import { logAccess } from "@/lib/media/access";
 import { favouritedIds } from "@/lib/media/favourites";
@@ -75,9 +75,7 @@ export default async function ViewerPage(props: PageProps<"/c/[handle]/a/[albumI
         width: media.width,
         height: media.height,
         duration: formatDuration(media.duration_seconds),
-        takenAt: media.captured_at
-          ? new Date(media.captured_at).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" })
-          : "",
+        takenAt: formatTime(media.captured_at),
       }}
       details={details}
       prevId={data.prevId}

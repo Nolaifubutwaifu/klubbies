@@ -1,3 +1,4 @@
+import { contentHash } from "@/lib/media/content-hash";
 import { LARGE_VIDEO_BYTES, resolveMimeType } from "@/lib/media/constants";
 import { prepareVideo, preparePhoto, type Prepared } from "@/lib/media/prepare";
 import { supabaseUrl } from "@/lib/supabase/config";
@@ -22,6 +23,8 @@ export type GuestJobView = Readonly<{
 type Signed = { path: string; token: string };
 
 type Ticket = {
+  /** The album already has this exact file: nothing to upload. */
+  duplicate?: boolean;
   mediaId: string;
   bucket: string;
   mimeType: string;
@@ -39,6 +42,7 @@ type Job = {
   error?: string;
   previewUrl?: string;
   prepared?: Prepared;
+  hash?: string | null;
   ticket?: Ticket;
   originalDone?: boolean;
 };
@@ -164,13 +168,21 @@ export class GuestUploadQueue {
 
       let ticket = job.ticket;
       if (!ticket) {
+        if (job.hash === undefined) job.hash = await contentHash(job.file);
         const res = await fetch(`/api/guest/${encodeURIComponent(this.token)}/ticket`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ filename: job.file.name, mimeType: job.mimeType, byteSize: job.file.size }),
+          body: JSON.stringify({
+            filename: job.file.name,
+            mimeType: job.mimeType,
+            byteSize: job.file.size,
+            contentHash: job.hash,
+          }),
         });
         const body: Ticket & { error?: string } = await res.json();
         if (!res.ok || body.error) throw new Error(body.error ?? "Could not start the upload");
+        // Already in the album: from the guest's side that is simply done.
+        if (body.duplicate) return this.patch(job, { status: "done", progress: 1 });
         ticket = body;
         this.patch(job, { ticket });
       }

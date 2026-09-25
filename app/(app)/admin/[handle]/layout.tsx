@@ -2,9 +2,10 @@ import { AdminNav } from "@/components/AdminNav";
 import { AppHeader } from "@/components/AppHeader";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { displayNameFor } from "@/lib/auth/display-name";
+import { clubAddress } from "@/lib/env";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
 import { formatDate } from "@/lib/format";
-import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
+import { signLogoMarks } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { clubToneStyle } from "@/lib/theme";
 
@@ -30,7 +31,7 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
   ]);
 
   const logoUrl = ctx.club.logo_path
-    ? ((await signPaths(supabase, [ctx.club.logo_path], SIGNED_URL_TTL.display)).get(ctx.club.logo_path) ?? null)
+    ? ((await signLogoMarks(supabase, [ctx.club.logo_path])).get(ctx.club.logo_path) ?? null)
     : null;
 
   const status = ctx.club.billing_status as BillingStatus;
@@ -45,6 +46,8 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
         <AdminNav
           handle={handle}
           clubName={ctx.club.name}
+          clubAddress={clubAddress(handle)}
+          accentColour={ctx.club.accent_colour}
           logoUrl={logoUrl}
           counts={{ albums: albums.count ?? 0, members: members.count ?? 0, removals: removals.count ?? 0 }}
           plan={plan}

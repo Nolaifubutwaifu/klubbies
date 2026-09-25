@@ -5,6 +5,7 @@ import { serverEnv } from "@/lib/env";
 import { runFaceJobs } from "@/lib/faces/jobs";
 import { runRemovalSweep } from "@/lib/media/removals";
 import { runScheduledPublishJob } from "@/lib/media/schedule";
+import { runUnfinishedSweep } from "@/lib/media/unfinished";
 import { runGraceJob } from "@/lib/membership/grace";
 
 export const maxDuration = 300;
@@ -23,7 +24,8 @@ function authorised(request: Request): boolean {
 //
 // Via Vercel Cron (vercel.json): publishes albums whose scheduled time has
 // passed, deletes photos whose removal request nobody answered, revokes
-// expired grace memberships, and sends the day 7 and day 29 reminders.
+// expired grace memberships, sends the day 7 and day 29 reminders, and clears
+// uploads that never finished within 14 days.
 // Publishing runs first so a scheduled album is live as early in the pass as
 // possible.
 //
@@ -36,7 +38,8 @@ export async function GET(request: Request) {
   const scheduled = await runScheduledPublishJob();
   const removals = await runRemovalSweep();
   const grace = await runGraceJob();
+  const unfinished = await runUnfinishedSweep();
   const faces = await runFaceJobs();
   await pruneRateEvents();
-  return NextResponse.json({ scheduled, removals, grace, faces });
+  return NextResponse.json({ scheduled, removals, grace, unfinished, faces });
 }

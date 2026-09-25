@@ -30,6 +30,16 @@ Seed sample data (two clubs, three members, twelve photos):
 SEED_ADMIN_EMAIL=you@example.com pnpm seed
 ```
 
+### After the 25 September 2026 QA fixes
+
+Apply `supabase/migrations/20260925000020_media_content_hash.sql` before deploying: the upload ticket routes write `media.content_hash`. Then, once per club with existing uploads:
+
+```bash
+pnpm tsx --env-file=.env.local scripts/dedupe-media.ts --club <handle>            # report only
+pnpm tsx --env-file=.env.local scripts/dedupe-media.ts --club <handle> --confirm  # delete extra copies, record hashes
+pnpm tsx --env-file=.env.local scripts/logo-marks.ts                              # small logo renditions
+```
+
 ## Scripts
 
 | Command | What it does |

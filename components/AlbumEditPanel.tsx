@@ -93,7 +93,7 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
     setCoverBusy(true);
     setCoverError("");
     const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const path = `clubs/${album.clubId}/covers/${album.id}.${ext}`;
+    const path = `clubs/${album.clubId}/covers/${album.id}-${Date.now()}.${ext}`;
     const { error } = await createClient().storage.from("club_media").upload(path, file, { upsert: true, contentType: file.type });
     if (error) {
       setCoverBusy(false);

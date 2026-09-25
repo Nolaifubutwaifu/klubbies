@@ -17,6 +17,10 @@ export type StackedAlbum = {
   allowDownload: boolean;
   openToMembers: boolean;
   coverUrl: string | null;
+  /** The cover at display size (2000px). Only signed for the album the club
+      home leads with, where the cover runs nearly the width of the page and
+      the 400px thumbnail looked pixelated. */
+  heroUrl: string | null;
   tiles: { id: string; url: string | null; kind: string }[];
   moreCount: number;
   /** Published since the viewer last opened this club. */
@@ -61,7 +65,7 @@ export async function listStackedAlbums(
     supabase.from("album_media_counts").select("*").in("album_id", ids),
     supabase
       .from("media")
-      .select("id, album_id, kind, status, thumb_path, poster_path, sort_at")
+      .select("id, album_id, kind, status, thumb_path, display_path, poster_path, sort_at")
       .in("album_id", ids)
       .order("album_id")
       .order("sort_at", { ascending: true })
@@ -79,9 +83,27 @@ export async function listStackedAlbums(
 
   const coverMediaIds = albums.map((a) => a.cover_media_id).filter((id): id is string => Boolean(id));
   const { data: coverMedia } = coverMediaIds.length
-    ? await supabase.from("media").select("id, thumb_path, poster_path").in("id", coverMediaIds)
+    ? await supabase.from("media").select("id, thumb_path, display_path, poster_path").in("id", coverMediaIds)
     : { data: [] };
   const coverById = new Map((coverMedia ?? []).map((m) => [m.id, m.thumb_path ?? m.poster_path]));
+  const coverDisplayById = new Map((coverMedia ?? []).map((m) => [m.id, m.display_path ?? m.poster_path]));
+
+  // The same pick SoftEvents makes: the newest album with something in it and
+  // something to show. Only that one needs its big rendition signed.
+  const hero = albums.find((album) => {
+    const count = countByAlbum.get(album.id);
+    const total = (count?.photo_count ?? 0) + (count?.video_count ?? 0);
+    return total > 0 && (album.cover_path || album.cover_media_id || byAlbum.get(album.id)?.length);
+  });
+  const heroFirst = hero ? byAlbum.get(hero.id)?.[0] : undefined;
+  const heroPath = hero
+    ? (hero.cover_path ??
+      (hero.cover_media_id ? coverDisplayById.get(hero.cover_media_id) : null) ??
+      heroFirst?.display_path ??
+      heroFirst?.poster_path ??
+      null)
+    : null;
+  const heroUrls = heroPath ? await signPaths(supabase, [heroPath], SIGNED_URL_TTL.display) : new Map<string, string>();
 
   const paths = [
     ...(media ?? []).map((m) => m.thumb_path ?? m.poster_path ?? ""),
@@ -110,6 +132,7 @@ export async function listStackedAlbums(
       allowDownload: album.allow_download,
       openToMembers: album.contributor_scope === "members",
       coverUrl: (coverPath ? urls.get(coverPath) : null) ?? firstTileUrl ?? null,
+      heroUrl: album.id === hero?.id && heroPath ? (heroUrls.get(heroPath) ?? null) : null,
       tiles: tilesSource.map((t) => ({
         id: t.id,
         kind: t.kind,

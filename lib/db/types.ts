@@ -736,6 +736,7 @@ export type Database = {
           album_id: string | null;
           byte_size: number | null;
           captured_at: string | null;
+          content_hash: string | null;
           club_id: string;
           created_at: string;
           display_path: string | null;
@@ -760,6 +761,7 @@ export type Database = {
           album_id?: string | null;
           byte_size?: number | null;
           captured_at?: string | null;
+          content_hash?: string | null;
           club_id: string;
           created_at?: string;
           display_path?: string | null;
@@ -784,6 +786,7 @@ export type Database = {
           album_id?: string | null;
           byte_size?: number | null;
           captured_at?: string | null;
+          content_hash?: string | null;
           club_id?: string;
           created_at?: string;
           display_path?: string | null;

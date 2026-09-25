@@ -2,13 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ClubMark, clubInitials as initials } from "@/components/ClubMark";
 import type { MyClub } from "@/lib/auth/session";
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "??";
-  return (parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-}
 
 /**
  * The member app on a wide screen: every club you're in down the left, so
@@ -80,6 +75,7 @@ export function MemberSidebar({
             <Link
               key={club.clubId}
               href={`/c/${club.handle}`}
+              aria-label={here && newCount > 0 ? `${club.name}, ${newCount} new since your last visit` : club.name}
               aria-current={here && pathname === `/c/${club.handle}` ? "page" : undefined}
               className="flex min-h-[44px] items-center gap-2.5 rounded-full px-2.5 text-[14px] font-bold no-underline transition-colors"
               style={{
@@ -87,17 +83,7 @@ export function MemberSidebar({
                 color: here ? "var(--color-accent-700)" : "var(--color-text)",
               }}
             >
-              <span
-                className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] text-[11px] font-extrabold text-white"
-                style={{ background: logoUrls[club.clubId] ? "transparent" : (club.accentColour ?? "var(--color-accent)") }}
-              >
-                {logoUrls[club.clubId] ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                  <img src={logoUrls[club.clubId]} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  initials(club.name)
-                )}
-              </span>
+              <ClubMark name={club.name} logoUrl={logoUrls[club.clubId]} accentColour={club.accentColour} />
               <span className="min-w-0 flex-1 truncate">{club.name}</span>
               {here && newCount > 0 ? (
                 <span className="flex-none rounded-full bg-accent px-2 py-0.5 text-[11px] font-extrabold text-white">

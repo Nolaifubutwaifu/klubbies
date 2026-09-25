@@ -20,7 +20,9 @@ export function LogoUploader({ clubId, logoUrl }: { clubId: string; logoUrl: str
     if (file.size > 5 * 1024 * 1024) return setError("Logos must be under 5 MB");
     setBusy(true);
     setError("");
-    const path = `clubs/${clubId}/logo/logo.${ext}`;
+    // A new name per upload: a replaced logo must never be served from a
+    // cached URL for the old one. The server clears the previous file.
+    const path = `clubs/${clubId}/logo/logo-${Date.now()}.${ext}`;
     const { error: uploadError } = await createClient().storage.from("club_media").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) {
       setBusy(false);

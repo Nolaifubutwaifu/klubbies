@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
-import { appUrl } from "@/lib/env";
+import { clubAddress } from "@/lib/env";
 import { backfillProgress } from "@/lib/faces/backfill";
 import { facesConfigured } from "@/lib/faces/client";
 import { clubFaceState } from "@/lib/faces/collections";
@@ -59,8 +59,20 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
                 <LogoUploader clubId={club.id} logoUrl={logoUrl} />
                 <div className="soft-card bg-surface p-4">
                   <div className="label-caps">Club address</div>
-                  <div className="mt-2 break-all soft-display text-[18px]">
-                    {appUrl().replace(/^https?:\/\//, "")}/c/{club.handle}
+                  {/* Breaks after a slash, never inside "uq_vb". */}
+                  <div className="mt-2 break-words soft-display text-[18px]">
+                    {clubAddress(club.handle)
+                      .split("/")
+                      .map((part, i, all) => (
+                        <span key={i}>
+                          {part}
+                          {i < all.length - 1 ? (
+                            <>
+                              /<wbr />
+                            </>
+                          ) : null}
+                        </span>
+                      ))}
                   </div>
                   <p className="mt-2 text-[13px] leading-normal text-[color:var(--ink-70)]">
                     Share this link with members. It never changes, so links in group chats keep working.
