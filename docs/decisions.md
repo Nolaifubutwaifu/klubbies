@@ -1,6 +1,6 @@
 # Decisions
 
-Choices made during the v1 build that `klubbies_masterfile.md` did not settle. Newest at the bottom.
+Choices made during the v1 build that `docs/masterfile.md` did not settle. Newest at the bottom.
 
 ## 2026-09-15 · v1 build
 
@@ -400,7 +400,7 @@ which is harder — so read these as a ceiling on quality, not a floor. Re-run
 the survey against a real club's library before trusting the numbers there.
 
 The tuning photos and their Rekognition collection were deleted immediately
-after the run; `tuning-photos/` keeps only its README.
+after the run. The method is in `docs/face-tuning.md`; the `tuning-photos/` folder it uses is gitignored.
 
 ## 2026-09-23 · Face matching, from per-face to per-batch
 
@@ -593,3 +593,31 @@ choice, rather than just a fix:
      400px on its short side (capped at 900 on the long side), up from 400 on
      the long side, which left 3:2 photos soft under a 186px square tile.
      Existing thumbnails keep their old size.
+
+## 2026-09-25 · Face recognition for every club
+
+121. **On by default, everywhere.** Max's call, replacing the per-club opt-in
+     from decision 80. `20260925000021_faces_for_every_club.sql` switches on
+     every club that had never decided and queues its library; a trigger on
+     `clubs` does the same for every new club. A club an admin turned off
+     stays off, and the switch in Billing & settings still works both ways.
+     The rollout is recorded as `notice_version = 'klubbies-rollout-2026-09-25'`
+     with no `notice_accepted_by`, so the record says honestly that Klubbies
+     turned it on rather than a committee.
+122. **What did not change:** every member still sees the face notice and must
+     acknowledge it before anything else (decision 100), and enrolment stays
+     each member's own choice. The open question in decision 100, consent for
+     guests and plus-ones who never see a Klubbies screen, now applies to every
+     club rather than two.
+123. **The drain makes the collection.** The migration can't call AWS or read
+     the Rekognition prefix, so `runFaceJobs` creates a club's collection the
+     first time it works on that club and records its id. For the same reason
+     uploads now queue as soon as a club is enabled, without waiting for a
+     collection id.
+
+## 2026-09-25 · Repository tidy
+
+124. **Docs live in `docs/`.** The masterfile, this file, the design notes and
+     the face tuning method moved there from the repo root, `design/` and
+     `tuning-photos/`. `README.md` is the map. `FavouriteButton` was unused
+     and is gone. `main` is the only branch.

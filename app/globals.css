@@ -958,7 +958,7 @@
      its own, set here as `font-family: var(--font-accent)` once one is picked
      and added to app/layout.tsx. Fraunces, Syne, Big Shoulders Display,
      Unbounded, Archivo Black, Familjen Grotesk and Instrument Serif were all
-     rejected on looks — see DECISIONS.md #76. */
+     rejected on looks — see docs/decisions.md #76. */
   .theme-soft .soft-word {
     color: var(--color-accent-700);
     font-weight: 600;

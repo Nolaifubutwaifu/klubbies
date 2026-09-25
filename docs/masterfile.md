@@ -377,7 +377,7 @@ SIGNED_URL_SECRET
 * TypeScript strict mode on. No `any`.
 * Write a Playwright test for each of these paths before calling a milestone done: non member is refused, member sees only their club, revoked member loses access, signed URL expires.
 * Seed script that creates two clubs, three members and a dozen sample media items so the UI can be developed without manual setup.
-* Keep a running `DECISIONS.md` with any choice made that this file did not cover.
+* Keep a running `docs/decisions.md` with any choice made that this file did not cover.
 
 ## 17. Decisions already made
 
@@ -391,4 +391,4 @@ These are settled. Do not reopen them without asking Max.
 
 ## 18. Still open
 
-Nothing blocking. Raise anything new in `DECISIONS.md`.
+Nothing blocking. Raise anything new in `docs/decisions.md`.
