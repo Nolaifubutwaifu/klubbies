@@ -20,8 +20,9 @@ export default function FeedPost({ name, clubName, author, body, feedUrl, unsubs
       <Text
         style={{
           ...emailStyles.body,
-          borderLeft: "4px solid #ec3013",
-          paddingLeft: 12,
+          background: "#f8eee9",
+          borderRadius: 16,
+          padding: "14px 18px",
           whiteSpace: "pre-wrap" as const,
         }}
       >
@@ -30,7 +31,7 @@ export default function FeedPost({ name, clubName, author, body, feedUrl, unsubs
       <Link href={feedUrl} style={emailStyles.button}>
         Open the club feed
       </Link>
-      <Text style={{ ...emailStyles.body, fontSize: 12, marginTop: 24 }}>
+      <Text style={{ ...emailStyles.body, fontSize: 14, marginTop: 24 }}>
         Don&apos;t want these? <Link href={unsubscribeUrl}>Turn off club feed emails</Link>.
       </Text>
     </EmailLayout>

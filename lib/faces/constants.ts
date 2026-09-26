@@ -93,7 +93,7 @@ export const JOB_CONCURRENCY = 8;
  *
  * The cron route sets maxDuration to 300s, so 240 leaves room to finish the
  * batch in hand, purge and settle without the function being killed
- * mid-write. An upload's fire-and-forget kick gets far less: its only job is
+ * mid-write. An upload's after-response kick gets far less: its only job is
  * the photo just uploaded, and it is running inside somebody's request.
  */
 export const DRAIN_BUDGET_MS = 240_000;

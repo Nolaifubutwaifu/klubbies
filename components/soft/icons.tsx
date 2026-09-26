@@ -86,3 +86,77 @@ export function XIcon({ size = 18, className }: IconProps) {
     </svg>
   );
 }
+
+export function FaceIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+      <path d="M9 10v1M15 10v1M9.5 15a3.5 3.5 0 0 0 5 0" />
+    </svg>
+  );
+}
+
+export function HeartIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
+    </svg>
+  );
+}
+
+export function DownloadIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+    </svg>
+  );
+}
+
+export function FlagIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+    </svg>
+  );
+}
+
+export function BellIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15zM10 20.5a2 2 0 0 0 4 0" />
+    </svg>
+  );
+}
+
+export function ListIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+    </svg>
+  );
+}
+
+export function UploadIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="M12 20V9M7 13l5-5 5 5M5 4h14" />
+    </svg>
+  );
+}
+
+export function CheckIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <path d="m5 12.5 4.5 4.5L19 7.5" />
+    </svg>
+  );
+}
+
+export function LockIcon({ size = 18, className }: IconProps) {
+  return (
+    <svg {...base} width={size} height={size} className={className}>
+      <rect x="5" y="10.5" width="14" height="10" rx="2.5" />
+      <path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5" />
+    </svg>
+  );
+}

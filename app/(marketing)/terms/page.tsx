@@ -7,9 +7,10 @@ export const metadata: Metadata = { title: "Terms of service" };
 export default function TermsPage() {
   return (
     <LegalPage
-      kicker="The agreement"
+      doc="terms"
       title="Terms of service"
       updated="16 September 2026"
+      minutes={3}
       sections={[
         {
           title: "Who we are",

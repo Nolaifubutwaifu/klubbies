@@ -35,7 +35,7 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={club.name} title="Billing &amp; settings" underline>
+      <PageTitle kicker={club.name} title="Billing &amp; settings">
         One plan, one card, and the handful of switches that matter.
       </PageTitle>
 
@@ -52,8 +52,8 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
                 accentColour={club.accent_colour}
               />
               <div className="flex flex-col gap-4">
-                <span className="text-[13px] font-semibold">Club mark</span>
-                <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
+                <span className="text-[14px] font-semibold">Club mark</span>
+                <span className="text-[14px] leading-normal text-[color:var(--ink-70)]">
                   Shown next to the club name in the header, and on the club switcher.
                 </span>
                 <LogoUploader clubId={club.id} logoUrl={logoUrl} />
@@ -62,7 +62,7 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
                   <div className="mt-2 break-all soft-display text-[18px]">
                     {appUrl().replace(/^https?:\/\//, "")}/c/{club.handle}
                   </div>
-                  <p className="mt-2 text-[13px] leading-normal text-[color:var(--ink-70)]">
+                  <p className="mt-2 text-[14px] leading-normal text-[color:var(--ink-70)]">
                     Share this link with members. It never changes, so links in group chats keep working.
                   </p>
                 </div>
@@ -79,7 +79,7 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
                 grace_period_enabled: club.grace_period_enabled,
               }}
             />
-            <p className="m-0 max-w-[60ch] text-[13px] text-[color:var(--ink-70)]">
+            <p className="m-0 max-w-[60ch] text-[14px] text-[color:var(--ink-70)]">
               Who can add photos is set per album, when you create it. Nothing here is ever public: every album needs a
               signed-in member on your list.
             </p>
@@ -110,14 +110,14 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
             <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
               {active
                 ? `${club.paid_at ? `Paid ${formatLongDate(club.paid_at)}. ` : ""}Unlimited members, albums and storage.`
-                : "Nothing is charged until you activate. Unlimited members, albums and storage."}
+                : "Nothing is charged until you activate. Activating unlocks adding members and uploading."}
             </p>
-            <Link href={`/admin/${handle}/billing`} className="soft-btn soft-btn-primary self-start no-underline">
+            <Link href={`/admin/${handle}/billing`} className={`btn self-start ${active ? "btn-secondary" : "btn-primary"}`}>
               {active ? "Card and receipts" : "Activate the club"}
             </Link>
           </section>
 
-          <section className="rounded-[var(--soft-r)] bg-[color:var(--tone-support)] p-5 text-[color:var(--tone-support-ink)]">
+          <section className="rounded-[var(--soft-r)] bg-[color:var(--kb-sand)] p-5">
             <span className="block text-[14px] font-bold">Splitting it with the committee?</span>
             <p className="m-0 mt-1 text-[14px]">
               A$20 across four people is A$5 each, once a month. We send one receipt you can forward.

@@ -19,7 +19,7 @@ export function ViewToggle({ area, handle }: { area: "member" | "admin"; handle:
   return (
     <button
       type="button"
-      className="btn btn-secondary text-[13px]"
+      className="btn btn-secondary text-[14px]"
       disabled={pending}
       onClick={() => startTransition(() => setAreaAction(next, target))}
     >

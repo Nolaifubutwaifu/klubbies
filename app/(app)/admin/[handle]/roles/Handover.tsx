@@ -53,7 +53,7 @@ export function Handover({
       ) : (
         <>
           <label className="flex flex-col gap-1.5">
-            <span className="text-[13px] font-bold text-[color:var(--ink-70)]">Who takes over</span>
+            <span className="text-[14px] font-bold text-[color:var(--ink-70)]">Who takes over</span>
             <select
               value={choice}
               onChange={(e) => {

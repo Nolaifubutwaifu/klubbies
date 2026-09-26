@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PhotoStackArt } from "@/components/soft/illustrations";
-import { SectionFx } from "@/components/soft/SectionFx";
 import { Placeholder } from "@/components/ui";
 import { getClubContext } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
@@ -17,6 +16,7 @@ import {
 } from "@/lib/faces/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Enrol, TurnOff } from "./Enrol";
+import { LookingNow } from "./LookingNow";
 import { Suggestions } from "./Suggestions";
 
 export async function generateMetadata(props: PageProps<"/c/[handle]/me">): Promise<Metadata> {
@@ -49,21 +49,17 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="soft-fx-host">
-        <SectionFx blobs={["left"]} />
+      <section>
         <div className="flex w-full flex-col gap-7 px-4 pb-16 pt-6 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="soft-chip">{ctx.club.name}</span>
               <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">Photos of you</h1>
-              <p className="mt-2 max-w-[52ch] text-[15px] text-[color:var(--ink-70)]">
-                Only you see this page. Nobody else can search this club&rsquo;s photos for a person, including the
+              <p className="mt-2 max-w-[52ch] text-[16px] text-[color:var(--kb-ink-2)]">
+                Only you see this page. Nobody can search this club&rsquo;s photos for a person, including the
                 committee.
               </p>
             </div>
-            <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
-              All events
-            </Link>
           </div>
 
           {/* Not enrolled: the pitch and the consent screen. */}
@@ -82,7 +78,8 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
 
           {state.profile?.status === "pending" ? (
             <div className="soft-card flex max-w-[56ch] flex-col gap-2 p-5">
-              <span className="soft-display text-[18px]">Looking now</span>
+              <span className="soft-display text-[19px]">Looking now</span>
+              <LookingNow clubId={ctx.club.id} />
               {/* Say what it is actually waiting on. "A minute" is a lie when
                   a club has just switched on and thousands of photos are
                   still being indexed ahead of the first search. */}
@@ -107,7 +104,7 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                       {groups.length.toLocaleString("en-AU")} {groups.length === 1 ? "event" : "events"}
                     </h2>
                     {stillLooking ? (
-                      <span className="text-[13px] text-[color:var(--ink-55)]">
+                      <span className="text-[14px] text-[color:var(--ink-55)]">
                         Still looking through {progress.remaining.toLocaleString("en-AU")} more
                       </span>
                     ) : null}
@@ -124,7 +121,7 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                         >
                           {group.albumTitle}
                         </Link>
-                        <span className="text-[12px] text-[color:var(--ink-55)]">
+                        <span className="text-[14px] text-[color:var(--ink-55)]">
                           {group.albumDate ? `${formatLongDate(group.albumDate)} · ` : ""}
                           {group.items.length.toLocaleString("en-AU")} of you
                         </span>
@@ -152,7 +149,7 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                   ))}
 
                   {hasMore ? (
-                    <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+                    <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
                       Showing your {total.toLocaleString("en-AU")} most recent. Older ones are in the albums
                       themselves, where each shows how many are of you.
                     </p>
@@ -183,7 +180,7 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
               )}
 
               <div className="flex flex-col gap-2 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-5">
-                <p className="m-0 max-w-[60ch] text-[13px] leading-normal text-[color:var(--ink-70)]">
+                <p className="m-0 max-w-[60ch] text-[14px] leading-normal text-[color:var(--ink-70)]">
                   Face recognition is not reliable. It misses people and it sometimes matches the wrong person. Matches
                   are suggestions, not statements of fact. Tap &ldquo;Not me&rdquo; on anything wrong.
                 </p>

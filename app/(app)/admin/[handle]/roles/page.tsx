@@ -60,7 +60,7 @@ export default async function RolesPage(props: PageProps<"/admin/[handle]/roles"
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={ctx.club.name} title="Handover" underline>
+      <PageTitle kicker={ctx.club.name} title="Handover">
         Your club&rsquo;s history doesn&rsquo;t graduate with your media officer. Move ownership, change roles, keep
         every past season.
       </PageTitle>

@@ -59,7 +59,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
     return (
       <div className="soft-card flex flex-col gap-2 p-5">
         <span className="text-[14px] font-bold">Find yourself in photos</span>
-        <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+        <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
           Not available on this deployment yet. It needs AWS credentials set on the server.
         </p>
       </div>
@@ -74,14 +74,14 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
           <span className="text-[14px] font-bold">Find yourself in photos</span>
           <span className="soft-chip">On</span>
         </div>
-        <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+        <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
           {enrolledCount === 0
             ? "No members have enrolled yet. They see the invitation on the club page."
             : `${enrolledCount.toLocaleString("en-AU")} ${enrolledCount === 1 ? "member has" : "members have"} enrolled. Each of them sees only their own photos.`}
         </p>
 
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-baseline justify-between gap-3 text-[13px]">
+          <div className="flex items-baseline justify-between gap-3 text-[14px]">
             <span className="flex items-center gap-2">
               {working ? (
                 <>
@@ -106,7 +106,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
               style={{ width: `${live.total ? Math.round((done / live.total) * 100) : 100}%` }}
             />
           </div>
-          <span className="text-[12px] text-[color:var(--ink-55)]">
+          <span className="text-[14px] text-[color:var(--ink-55)]">
             {faces === null
               ? "\u00a0"
               : working
@@ -115,25 +115,29 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
           </span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]"
-            disabled={pending}
-            onClick={() =>
-              startTransition(async () => {
-                const res = await runFaceJobsAction(clubId);
-                setMessage(res.error ?? res.message ?? "");
-              })
-            }
-          >
-            {pending ? "Running…" : working ? "Run another batch" : "Run now"}
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* "Run now" only when there is something to run: the cron and the
+              upload kick handle the steady state. */}
+          {working ? (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={pending}
+              onClick={() =>
+                startTransition(async () => {
+                  const res = await runFaceJobsAction(clubId);
+                  setMessage(res.error ?? res.message ?? "");
+                })
+              }
+            >
+              {pending ? "Running…" : "Speed it up"}
+            </button>
+          ) : null}
           {confirmingOff ? (
             <>
               <button
                 type="button"
-                className="soft-btn soft-btn-primary !min-h-[38px] !px-4 !text-[13px]"
+                className="btn btn-danger btn-sm"
                 disabled={pending}
                 onClick={() =>
                   startTransition(async () => {
@@ -145,31 +149,23 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
               >
                 Yes, delete every faceprint
               </button>
-              <button
-                type="button"
-                className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]"
-                onClick={() => setConfirmingOff(false)}
-              >
+              <button type="button" className="btn btn-ghost" onClick={() => setConfirmingOff(false)}>
                 Keep it on
               </button>
             </>
           ) : (
-            <button
-              type="button"
-              className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]"
-              onClick={() => setConfirmingOff(true)}
-            >
-              Turn it off
+            <button type="button" className="kb-link kb-link-quiet" onClick={() => setConfirmingOff(true)}>
+              Turn face recognition off
             </button>
           )}
         </div>
         {confirmingOff ? (
-          <p className="m-0 text-[13px] text-accent-700">
+          <p className="kb-error m-0">
             This deletes every faceprint for {clubName}, every enrolment selfie and every match. Your photos are not
             touched. There is no undo.
           </p>
         ) : null}
-        {message ? <p className="m-0 text-[12px] text-[color:var(--ink-55)]">{message}</p> : null}
+        {message ? <p className="m-0 text-[14px] text-[color:var(--ink-55)]">{message}</p> : null}
       </div>
     );
   }
@@ -178,12 +174,12 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
     <div className="soft-card flex flex-col gap-3 p-5">
       <span className="text-[15px] font-bold">{CLUB_NOTICE.title(clubName)}</span>
       <p className="m-0 text-[14px] text-[color:var(--ink-70)]">{CLUB_NOTICE.lead}</p>
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-[13px] leading-normal text-[color:var(--ink-70)]">
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-[14px] leading-normal text-[color:var(--ink-70)]">
         {CLUB_NOTICE.points.map((point) => (
           <li key={point}>{point}</li>
         ))}
       </ul>
-      <label className="flex cursor-pointer items-start gap-2.5 text-[13px]">
+      <label className="flex cursor-pointer items-start gap-2.5 text-[14px]">
         <input
           type="checkbox"
           checked={accepted}
@@ -194,7 +190,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
       </label>
       <button
         type="button"
-        className="soft-btn soft-btn-primary self-start !min-h-[40px] !px-5 !text-[13px]"
+        className="btn btn-secondary self-start"
         disabled={!accepted || pending}
         onClick={() =>
           startTransition(async () => {
@@ -205,7 +201,7 @@ export function FaceRecognition({ clubId, clubName, configured, enabled, enrolle
       >
         {pending ? "Setting it up…" : "Turn on face recognition"}
       </button>
-      {message ? <p className="m-0 text-[12px] text-[color:var(--ink-55)]">{message}</p> : null}
+      {message ? <p className="m-0 text-[14px] text-[color:var(--ink-55)]">{message}</p> : null}
     </div>
   );
 }

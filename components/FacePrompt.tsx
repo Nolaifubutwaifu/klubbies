@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { FaceIcon } from "@/components/soft/icons";
 import { useState, useSyncExternalStore } from "react";
 
 /**
@@ -36,21 +37,24 @@ export function FacePrompt({ clubId, href, count }: { clubId: string; href: stri
   if (storedDismissed || dismissed) return null;
 
   return (
-    <div className="mx-4 mb-4 flex flex-wrap items-center gap-3 rounded-[var(--soft-r)] bg-[color-mix(in_srgb,var(--color-accent)_10%,var(--color-surface))] p-4 sm:mx-6">
-      <span className="min-w-0 flex-1 text-[14px]">
+    <div className="kb-info mx-4 mb-4 flex-wrap items-center gap-3 sm:mx-6">
+      <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white text-[color:var(--kb-ember-deep)]" aria-hidden>
+        <FaceIcon size={20} />
+      </span>
+      <span className="min-w-0 flex-1">
         <strong className="block font-bold">Find yourself in this club&rsquo;s photos</strong>
-        <span className="text-[13px] text-[color:var(--ink-70)]">
+        <span className="text-[15px] text-[color:var(--kb-ink-2)]">
           {count > 0
             ? `${count.toLocaleString("en-AU")} already waiting. Only you can see them.`
-            : "Add a selfie and we’ll show you the ones you appear in. Only you can see them."}
+            : "Add a selfie and we’ll show you the ones you’re in. Only you can see them."}
         </span>
       </span>
-      <Link href={href} className="soft-btn soft-btn-primary !min-h-[38px] !px-4 !text-[13px] no-underline">
+      <Link href={href} className="btn btn-primary btn-sm">
         {count > 0 ? "Show me" : "Set it up"}
       </Link>
       <button
         type="button"
-        className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-bold text-[color:var(--ink-55)]"
+        className="kb-link kb-link-quiet !no-underline"
         onClick={() => {
           setDismissed(true);
           try {

@@ -49,7 +49,7 @@ export function GuestUploader({ token }: { token: string }) {
         onDrop={onDrop}
       >
         <span className="soft-display text-[19px]">Drop photos and videos here</span>
-        <span className="text-[13px] text-[color:var(--ink-70)]">
+        <span className="text-[14px] text-[color:var(--ink-70)]">
           HEIC, JPG, PNG, WebP, MP4, MOV — originals, kept at full quality
         </span>
         <input
@@ -80,7 +80,7 @@ export function GuestUploader({ token }: { token: string }) {
             <span className="soft-display text-[17px]">
               {busy ? `Uploading ${jobs.length} ${jobs.length === 1 ? "file" : "files"}` : failed.length ? "Some files need another go" : "All done"}
             </span>
-            <span className="text-[13px] text-[color:var(--ink-70)]">{pct}%</span>
+            <span className="text-[14px] text-[color:var(--ink-70)]">{pct}%</span>
           </div>
           <div className="h-[8px] overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-text)_8%,transparent)]">
             <div
@@ -88,7 +88,7 @@ export function GuestUploader({ token }: { token: string }) {
               style={{ width: `${pct}%`, background: "linear-gradient(90deg, var(--color-accent-600), var(--color-accent-800))" }}
             />
           </div>
-          <span className="text-[13px] text-[color:var(--ink-70)]">
+          <span className="text-[14px] text-[color:var(--ink-70)]">
             {done} of {jobs.length} done{failed.length ? ` · ${failed.length} failed` : ""}
             {busy ? " · keep this tab open" : ""}
           </span>
@@ -109,7 +109,7 @@ export function GuestUploader({ token }: { token: string }) {
                   <span className="flex items-baseline justify-between gap-3">
                     <span className="truncate text-[14px] font-semibold">{job.name}</span>
                     <span
-                      className="flex-none text-[12px] font-bold"
+                      className="flex-none text-[14px] font-bold"
                       style={{ color: job.status === "failed" ? "var(--color-accent-700)" : "var(--color-neutral-700)" }}
                     >
                       {job.status === "done" ? "Done" : job.status === "failed" ? "Failed" : `${Math.floor(job.progress * 100)}%`}
@@ -117,8 +117,8 @@ export function GuestUploader({ token }: { token: string }) {
                   </span>
                   {job.status === "failed" ? (
                     <span className="mt-0.5 flex items-center gap-2">
-                      <span className="text-[12px] text-accent-800">{job.error}</span>
-                      <button type="button" className="soft-btn soft-btn-tonal !min-h-[32px] !px-3 !text-[12px]" onClick={() => queue.retry(job.key)}>
+                      <span className="text-[14px] text-accent-800">{job.error}</span>
+                      <button type="button" className="soft-btn soft-btn-tonal !min-h-[32px] !px-3 !text-[14px]" onClick={() => queue.retry(job.key)}>
                         Retry
                       </button>
                     </span>

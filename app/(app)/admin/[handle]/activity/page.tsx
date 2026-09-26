@@ -54,13 +54,13 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
         </p>
       </div>
       <div className="flex flex-wrap gap-1">
-        <Link href={href({})} className="btn btn-secondary text-[13px]" aria-pressed={!action}>
+        <Link href={href({})} className="btn btn-secondary text-[14px]" aria-pressed={!action}>
           Everything
         </Link>
-        <Link href={href({ action: "view" })} className="btn btn-secondary text-[13px]" aria-pressed={action === "view"}>
+        <Link href={href({ action: "view" })} className="btn btn-secondary text-[14px]" aria-pressed={action === "view"}>
           Views
         </Link>
-        <Link href={href({ action: "download" })} className="btn btn-secondary text-[13px]" aria-pressed={action === "download"}>
+        <Link href={href({ action: "download" })} className="btn btn-secondary text-[14px]" aria-pressed={action === "download"}>
           Downloads
         </Link>
       </div>
@@ -83,7 +83,7 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
                   <td className="whitespace-nowrap text-[color:var(--ink-70)]">{formatDateTime(e.occurred_at)}</td>
                   <td>
                     <span className="font-semibold">{e.memberships?.roster_name ?? "Admin"}</span>
-                    {e.memberships ? <div className="text-[12px] text-[color:var(--ink-55)]">{e.memberships.roster_email}</div> : null}
+                    {e.memberships ? <div className="text-[14px] text-[color:var(--ink-55)]">{e.memberships.roster_email}</div> : null}
                   </td>
                   <td>
                     <span className={e.action === "download" ? "tag tag-accent" : "tag tag-neutral"}>{e.action}</span>

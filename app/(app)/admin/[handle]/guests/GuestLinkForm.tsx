@@ -62,10 +62,10 @@ export function GuestLinkForm({
             </label>
 
             <div className="rounded-[var(--soft-r-sm)] bg-[color:var(--tone-support)] p-4 text-[color:var(--tone-support-ink)]">
-              <span className="block text-[13px] font-bold">What they can do</span>
+              <span className="block text-[14px] font-bold">What they can do</span>
               <ul className="m-0 mt-2 flex list-none flex-col gap-1.5 p-0">
                 {CAN.map((row) => (
-                  <li key={row.text} className="flex items-start gap-2 text-[13px]">
+                  <li key={row.text} className="flex items-start gap-2 text-[14px]">
                     <span className="mt-0.5 flex-none" style={{ color: row.yes ? "#2f6b36" : "#8c1600" }}>
                       <Tick yes={row.yes} />
                     </span>
@@ -85,11 +85,11 @@ export function GuestLinkForm({
 
       {state.url ? (
         <div className="soft-card flex flex-col gap-3 border-2 border-accent p-5">
-          <span className="text-[13px] font-bold text-accent-800">
+          <span className="text-[14px] font-bold text-accent-800">
             Your new link — copy it once, it&apos;s not shown again
           </span>
           <div className="flex flex-wrap items-center gap-2">
-            <code className="min-w-0 flex-1 overflow-x-auto rounded-full bg-[color:var(--color-bg)] px-4 py-2.5 text-[13px]">
+            <code className="min-w-0 flex-1 overflow-x-auto rounded-full bg-[color:var(--color-bg)] px-4 py-2.5 text-[14px]">
               {state.url}
             </code>
             <button
@@ -103,7 +103,7 @@ export function GuestLinkForm({
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
-          <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+          <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
             Upload only. Revoke it any time below. We store a hash of the link, not the link, so we can&apos;t show it to
             you again.
           </p>

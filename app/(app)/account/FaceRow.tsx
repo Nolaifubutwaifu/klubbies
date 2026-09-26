@@ -43,7 +43,7 @@ export async function FaceRow({ clubs }: { clubs: MyClub[] }) {
             >
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[14px] font-bold">{club.name}</span>
-                <span className="block text-[12px] text-[color:var(--ink-70)]">
+                <span className="block text-[14px] text-[color:var(--ink-70)]">
                   {status === "ready"
                     ? "On. Only you see your matches."
                     : status === "pending"
@@ -55,7 +55,7 @@ export async function FaceRow({ clubs }: { clubs: MyClub[] }) {
               </span>
               <Link
                 href={`/c/${club.handle}/me`}
-                className="soft-btn soft-btn-tonal !min-h-[36px] !px-3.5 !text-[12px] no-underline"
+                className="soft-btn soft-btn-tonal !min-h-[36px] !px-3.5 !text-[14px] no-underline"
               >
                 {status === "ready" ? "Manage" : "Set it up"}
               </Link>
@@ -63,7 +63,7 @@ export async function FaceRow({ clubs }: { clubs: MyClub[] }) {
           );
         })}
       </div>
-      <p className="m-0 text-[12px] leading-normal text-[color:var(--ink-70)]">
+      <p className="m-0 text-[14px] leading-normal text-[color:var(--ink-70)]">
         Turning it off deletes your selfie, your faceprint and every match for that club within 24 hours.
       </p>
     </>

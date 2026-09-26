@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { CalendarIcon, CameraIcon, ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from "@/components/soft/icons";
-import { ConfettiArt, PhotoStackArt, SquiggleUnderline } from "@/components/soft/illustrations";
+import { ConfettiArt, PhotoStackArt } from "@/components/soft/illustrations";
 import { EmptyClub } from "@/components/soft/EmptyClub";
 import { formatDate, formatLongDate } from "@/lib/format";
 import { findAnniversary } from "@/lib/media/anniversary";
@@ -105,7 +105,6 @@ export function SoftEvents({
           {/* The club is the identity; the greeting is a nicety. A member in
               four clubs needs to know which one this is at a glance. */}
           <h1 className="text-[clamp(30px,4.5vw,44px)]">{clubName}</h1>
-          <SquiggleUnderline />
           <p className="mt-2 text-[15px] text-ink-55">
             {newCount
               ? `${newCount} album${newCount === 1 ? "" : "s"} landed since you were last here.`
@@ -135,7 +134,7 @@ export function SoftEvents({
               type="button"
               onClick={() => setCalOpen((v) => !v)}
               aria-expanded={calOpen}
-              className="soft-btn soft-btn-tonal absolute right-1.5 top-1/2 !min-h-[34px] -translate-y-1/2 !px-3 !text-[13px]"
+              className="soft-btn soft-btn-tonal absolute right-1.5 top-1/2 !min-h-[34px] -translate-y-1/2 !px-3 !text-[14px]"
             >
               <CalendarIcon />
               <span className="max-w-[86px] truncate">{day ? formatLongDate(day) : "Any date"}</span>
@@ -201,7 +200,7 @@ export function SoftEvents({
             </div>
             <div className="grid grid-cols-7">
               {WEEKDAYS.map((w, i) => (
-                <span key={`${w}${i}`} className="p-1 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-ink-55">
+                <span key={`${w}${i}`} className="p-1 text-center text-[14px] font-bold uppercase tracking-[0.08em] text-ink-55">
                   {w}
                 </span>
               ))}
@@ -217,7 +216,7 @@ export function SoftEvents({
                     key={key}
                     type="button"
                     onClick={() => setDay(selected ? null : key)}
-                    className="flex aspect-square flex-col items-center justify-center gap-[3px] rounded-full border-0 text-[13px] font-semibold"
+                    className="flex aspect-square flex-col items-center justify-center gap-[3px] rounded-full border-0 text-[14px] font-semibold"
                     style={{
                       background: selected
                         ? "var(--color-accent)"
@@ -270,11 +269,11 @@ export function SoftEvents({
             <img src={memory.album.coverUrl} alt="" className="h-[62px] w-[62px] flex-none rounded-[16px] object-cover" />
           ) : null}
           <span className="min-w-0 flex-1">
-            <span className="block text-[12px] font-bold">
+            <span className="block text-[14px] font-bold">
               {memory.years === 1 ? "One year ago tonight" : `${memory.years} years ago tonight`}
             </span>
             <span className="soft-display block truncate text-[17px] text-ink">{memory.album.title}</span>
-            <span className="block text-[12px]">{countLabel(memory.album)}</span>
+            <span className="block text-[14px]">{countLabel(memory.album)}</span>
           </span>
           <ChevronRightIcon />
         </Link>
@@ -314,7 +313,7 @@ export function SoftEvents({
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
                 <img src={hero.coverUrl ?? ""} alt="" className="h-full w-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[rgba(25,18,22,0.82)] via-[rgba(25,18,22,0.15)] to-transparent" />
-                <span className="soft-sticker absolute right-4 top-4 sm:right-6 sm:top-6">
+                <span className="soft-chip absolute right-4 top-4 sm:right-6 sm:top-6">
                   {hero.isNew ? "New since you were here" : "Latest album"}
                 </span>
                 <div className="absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 sm:p-7">
@@ -370,20 +369,20 @@ export function SoftEvents({
                       </span>
                     )}
                     {album.isNew ? (
-                      <span className="absolute left-2.5 top-2.5 rounded-full bg-accent px-2.5 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-accent px-2.5 py-1 text-[14px] font-bold text-white">
                         New since you were here
                       </span>
                     ) : album.status === "draft" && canManage ? (
-                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[14px] font-bold text-white">
                         Draft · only you
                       </span>
                     ) : album.status === "hidden" && canManage ? (
-                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute left-2.5 top-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[14px] font-bold text-white">
                         Hidden
                       </span>
                     ) : null}
                     {total > 0 ? (
-                      <span className="absolute bottom-2.5 right-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute bottom-2.5 right-2.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-1 text-[14px] font-bold text-white">
                         {countLabel(album)}
                       </span>
                     ) : null}
@@ -399,7 +398,7 @@ export function SoftEvents({
                     {photosOfYou?.get(album.id) ? (
                       <Link
                         href={photosOfYouHref ?? "#"}
-                        className="mt-1 inline-block text-[12px] font-bold text-accent-700 no-underline"
+                        className="mt-1 inline-block text-[14px] font-bold text-accent-700 no-underline"
                       >
                         {photosOfYou.get(album.id)!.toLocaleString("en-AU")} photo
                         {photosOfYou.get(album.id) === 1 ? "" : "s"} of you
@@ -409,12 +408,12 @@ export function SoftEvents({
                       {eventTypeLabel(album.eventType) ? (
                         <span className="soft-chip soft-chip-muted">{eventTypeLabel(album.eventType)}</span>
                       ) : null}
-                      <span className="text-[13px] text-ink-55 sm:text-[14px]">
+                      <span className="text-[14px] text-ink-55 sm:text-[14px]">
                         {formatDate(album.date)}
                         {total > 0 ? ` · ${total.toLocaleString("en-AU")}` : ""}
                       </span>
                       {album.openToMembers ? (
-                        <span className="text-[13px] text-ink-55 sm:text-[14px]">· members can add</span>
+                        <span className="text-[14px] text-ink-55 sm:text-[14px]">· members can add</span>
                       ) : null}
                     </div>
                     {album.description ? (

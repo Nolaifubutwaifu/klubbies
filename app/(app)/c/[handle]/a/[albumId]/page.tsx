@@ -3,10 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { Uploader } from "@/app/(app)/admin/[handle]/albums/[albumId]/Uploader";
-import { PublishToggle } from "@/app/(app)/admin/[handle]/albums/[albumId]/PublishToggle";
 import { AlbumEditPanel } from "@/components/AlbumEditPanel";
 import { AlbumGrid } from "@/components/AlbumGrid";
-import { SaveAlbum } from "@/components/SaveAlbum";
+import { AlbumActions } from "@/components/AlbumActions";
 import { UnfinishedUploads } from "@/components/UnfinishedUploads";
 import { getClubContext } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
@@ -157,7 +156,7 @@ export default async function AlbumPage(props: Props) {
     <main className="flex flex-1 flex-col">
       {/* Sticky album header: the title and the download stay reachable while
           you scroll a thousand photos. */}
-      <div className="sticky top-0 z-20 border-b border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] bg-[color-mix(in_srgb,var(--color-surface)_92%,transparent)] backdrop-blur-md">
+      <div className="sticky top-0 z-20 border-b border-[color:var(--kb-line)] bg-[rgb(255_248_244/0.94)] backdrop-blur-md">
         <div className="flex w-full flex-wrap items-center gap-4 px-4 py-3.5 sm:px-6">
           <Link
             href={`/c/${handle}`}
@@ -176,7 +175,7 @@ export default async function AlbumPage(props: Props) {
                 <span className="soft-chip">{eventTypeLabel(album.event_type)}</span>
               ) : null}
             </div>
-            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-[color:var(--ink-70)]">
+            <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[14px] text-[color:var(--ink-70)]">
               <span className="whitespace-nowrap">
                 {[
                   formatLongDate(album.event_date),
@@ -197,29 +196,22 @@ export default async function AlbumPage(props: Props) {
             </p>
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
-            {canManage ? (
-              <span className={album.status === "published" ? "soft-chip" : "soft-chip soft-chip-muted"}>
-                {album.status === "published" ? "Published" : "Draft · members can't see it"}
-              </span>
+          <div className="flex items-center gap-2">
+            {canManage && album.status !== "published" ? (
+              <span className="soft-chip soft-chip-muted hidden sm:inline-flex">Draft · members can&rsquo;t see it</span>
             ) : null}
-            {canManage ? (
-              <Link href={editing ? albumHref : `${albumHref}?edit=1`} className="soft-btn soft-btn-accent !min-h-[44px] !text-[14px] no-underline">
-                {editing ? "Close details" : "Edit details"}
-              </Link>
-            ) : null}
-            {canAdd ? (
-              <Link href={adding ? albumHref : `${albumHref}?add=1`} className="soft-btn soft-btn-primary !min-h-[44px] !text-[14px] no-underline">
-                {adding ? "Close uploader" : "Add photos"}
-              </Link>
-            ) : null}
-            <SaveAlbum
+            <AlbumActions
               albumId={album.id}
               mediaIds={(readyIds ?? []).map((m) => m.id)}
               parts={Math.max(1, Math.ceil((photoCount + videoCount) / 150))}
               canDownload={album.allow_download || canManage}
+              canManage={canManage}
+              canAdd={canAdd}
+              published={album.status === "published"}
+              albumHref={albumHref}
+              editing={editing}
+              adding={adding}
             />
-            {canManage ? <PublishToggle albumId={album.id} published={album.status === "published"} readyCount={photoCount + videoCount} /> : null}
           </div>
         </div>
       </div>
@@ -231,9 +223,7 @@ export default async function AlbumPage(props: Props) {
       ) : null}
 
       {album.contributor_scope === "members" && !canManage && ctx.membership ? (
-        <div className="border-b-2 border-divider border-l-4 border-l-accent bg-accent-100 px-6 py-3 text-[14px] text-accent-800">
-          Everyone in {ctx.club.name} can add photos to this album. Yours appear straight away.
-        </div>
+        <div className="kb-info mx-4 mt-4 sm:mx-6">Everyone in {ctx.club.name} can add photos to this album. Yours appear straight away.</div>
       ) : null}
 
       {canManage && unfinished?.length ? <UnfinishedUploads items={unfinished} addHref={`${albumHref}?add=1`} /> : null}
@@ -241,7 +231,7 @@ export default async function AlbumPage(props: Props) {
       <ProcessingBanner photos={processingPhotos} videos={processingVideos} />
 
       {adding ? (
-        <div className="border-b-2 border-divider p-6">
+        <div className="border-b border-[color:var(--kb-line)] p-4 sm:p-6">
           <Uploader albumId={album.id} />
         </div>
       ) : null}

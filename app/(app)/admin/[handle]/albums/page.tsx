@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MoreLink, MoreMenu } from "@/components/MoreMenu";
 import { BillingGate } from "@/components/BillingGate";
 import { EmptyState, PageTitle } from "@/components/ui";
 import { PhotoStackArt } from "@/components/soft/illustrations";
@@ -47,16 +48,17 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
   return (
     <main className="flex flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle kicker={ctx.club.name} title="Albums" underline>
+        <PageTitle kicker={ctx.club.name} title="Albums">
           {albums.length ? `${summary}. Drag to reorder what members see first.` : "Nothing here yet."}
         </PageTitle>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
-            See it as a member
-          </Link>
-          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/${handle}/upload`} className="btn btn-primary">
             New album
           </Link>
+          <MoreMenu iconOnly label="More actions">
+            <MoreLink href={`/c/${handle}`}>See it as a member</MoreLink>
+            <MoreLink href={`/admin/${handle}/guests`}>Make a guest upload link</MoreLink>
+          </MoreMenu>
         </div>
       </div>
 
@@ -69,7 +71,7 @@ export default async function AdminAlbumsPage(props: PageProps<"/admin/[handle]/
           title="No albums yet."
           art={<PhotoStackArt size={120} />}
           action={
-            <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-primary no-underline">
+            <Link href={`/admin/${handle}/upload`} className="btn btn-primary">
               Make the first one
             </Link>
           }

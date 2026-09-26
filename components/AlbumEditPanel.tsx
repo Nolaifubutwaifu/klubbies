@@ -59,7 +59,7 @@ function Choice({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(option.value)}
-            className="cursor-pointer border-2 px-3 py-[9px] text-[13px] font-semibold"
+            className="cursor-pointer border-2 px-3 py-[9px] text-[14px] font-semibold"
             style={{
               borderColor: active ? "var(--color-accent)" : "var(--color-divider)",
               background: active ? "var(--color-accent)" : "transparent",
@@ -146,7 +146,7 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-semibold">Cover</span>
+              <span className="text-[14px] font-semibold">Cover</span>
               <div className="flex flex-wrap items-start gap-3">
                 {album.coverUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
@@ -155,13 +155,13 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
                   <span className="w-[150px] border-2 border-neutral-300 bg-neutral-400" style={{ aspectRatio: "4 / 3" }} />
                 )}
                 <div className="flex min-w-[160px] flex-1 flex-col gap-2">
-                  <span className="text-[13px] leading-normal text-ink-70">{album.coverSource}</span>
-                  <a href={onPickCover} className="btn btn-ghost border-2 border-divider text-[13px]">
+                  <span className="text-[14px] leading-normal text-ink-70">{album.coverSource}</span>
+                  <a href={onPickCover} className="btn btn-ghost border-2 border-divider text-[14px]">
                     Pick from this album
                   </a>
                   <button
                     type="button"
-                    className="dropzone p-3 text-[13px] text-ink-70"
+                    className="dropzone p-3 text-[14px] text-ink-70"
                     onClick={() => coverInput.current?.click()}
                     disabled={coverBusy}
                   >
@@ -180,14 +180,14 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-semibold">Who can see this album</span>
+              <span className="text-[14px] font-semibold">Who can see this album</span>
               <Choice name="visibility" value={visibility} onChange={setVisibility} options={AUDIENCE} />
             </div>
 
             <div className="flex flex-col gap-2">
-              <span className="text-[13px] font-semibold">Who can add photos to this album</span>
+              <span className="text-[14px] font-semibold">Who can add photos to this album</span>
               <Choice name="contributorScope" value={contributorScope} onChange={setContributorScope} options={CONTRIBUTORS} />
-              <span className="max-w-[46ch] text-[13px] leading-normal text-ink-70">
+              <span className="max-w-[46ch] text-[14px] leading-normal text-ink-70">
                 {contributorScope === "members"
                   ? "Every member can add their own photos, so the album fills up from everyone's phones."
                   : "Only people whose role can manage albums or upload may add photos."}
@@ -227,7 +227,7 @@ export function AlbumEditPanel({ album, closeHref, onPickCover }: { album: Album
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-danger"
             disabled={pending || typed.trim().toLowerCase() !== album.title.trim().toLowerCase()}
             onClick={() => startTransition(async () => void (await deleteAlbumAction(album.id, typed)))}
           >

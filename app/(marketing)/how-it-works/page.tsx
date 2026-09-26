@@ -1,129 +1,292 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { SquiggleUnderline } from "@/components/soft/illustrations";
+import type { ReactNode } from "react";
+import { Faq } from "@/components/site/Faq";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteNav } from "@/components/site/SiteNav";
+import { CheckIcon, FaceIcon, LockIcon } from "@/components/soft/icons";
+import { FACE, PRICE, STEPS } from "@/lib/copy/site";
 
 export const metadata: Metadata = { title: "How Klubbies works" };
 
-const STEPS: { num: string; title: string; body: string }[] = [
+const MORE_STEPS = [
   {
-    num: "01",
-    title: "Start the club and add your list",
-    body: "Name the club and you get a fixed web address to share. Drop in the membership CSV or Excel file your club already keeps, or type people in by hand. Klubbies reads messy files: it finds the header row, lets you map the name and email columns, and shows you exactly what will be added before anything happens.",
-  },
-  {
-    num: "02",
-    title: "Members sign in with a code",
-    body: "A member types their name and email. If the email is on the list, we send a short code to that address. No password to forget, no link that works for whoever is forwarded it. Members can set a password later if they sign in often.",
-  },
-  {
-    num: "03",
-    title: "Upload the whole night",
-    body: "Drag in 300 phone photos, the drone clip and the committee headshots. Originals are kept at full quality, and smaller copies are made for fast browsing. Uploads keep going while you use the rest of the app, and pick up again if your connection drops.",
-  },
-  {
-    num: "04",
     title: "Everyone sees their club, nobody else does",
     body: "Albums are private to the people on that club's member list. Every photo is served through a link that expires within minutes, so nothing escapes into a group chat. Members can download originals when you allow it.",
   },
   {
-    num: "05",
+    title: "Members find the photos they're in",
+    body: `${FACE.lead} ${FACE.points[0].body}`,
+  },
+  {
     title: "People join and leave",
-    body: "Give roles like Committee or Treasurer, and decide what each role can do: add members, make albums, upload photos, post to the feed. When someone leaves, they keep access to earlier albums for 30 days, get an email about it, and then their access ends by itself.",
+    body: "Give roles like Committee or Treasurer and decide what each role can do: add members, make albums, upload photos. When someone leaves, they keep access to earlier albums for 30 days, get an email about it, and then their access ends by itself.",
   },
 ];
 
-const FAQ: [string, string][] = [
-  ["What does it cost?", "A$20 per club per month. One price, unlimited members, unlimited photos and videos."],
-  ["Who can see our photos?", "Only people on your member list who have confirmed their email. Nothing is public and nothing is indexed by search engines."],
-  ["Can members add their own photos?", "Yes, per album. Turn on \"Any member\" for an album and everyone's phone photos land in the same place."],
-  ["Where is our data stored?", "In Sydney, Australia."],
-  ["Can we leave?", "Cancel any time. You keep access until the end of the month you paid for, and we give 30 days' notice before deleting anything."],
+const ALL_STEPS = [...STEPS.map((s) => ({ title: s.title, body: s.body })), ...MORE_STEPS];
+
+const FAQS = [
+  { q: "What does it cost?", a: `${PRICE.line}. One price, unlimited members, unlimited photos and videos.` },
+  {
+    q: "Who can see our photos?",
+    a: "Only people on your member list who have confirmed their email. Nothing is public and nothing is indexed by search engines.",
+  },
+  {
+    q: "Is face recognition on by default?",
+    a: "No. A committee member turns it on for the club after reading what it does, and every member is told. Only members who add their own selfie are ever matched.",
+  },
+  { q: "Can members add their own photos?", a: "Yes, per album. Set who can add photos to Any member, or leave it on Committee only." },
+  { q: "Where is our data stored?", a: "In Sydney, Australia." },
+  {
+    q: "Can we leave?",
+    a: "Cancel any time. You keep access until the end of the month you paid for, and we give at least 30 days' notice before deleting anything.",
+  },
 ];
+
+function Panel({ children }: { children: ReactNode }) {
+  return <div className="flex items-center justify-center rounded-[var(--kb-r-panel)] lg:min-h-[320px] bg-[color:var(--kb-sand)] p-4 sm:p-10">{children}</div>;
+}
+
+function MappingVisual() {
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5">
+      <div className="flex items-baseline justify-between">
+        <span className="font-bold">members-s2-2026.csv</span>
+        <span className="text-[14px] text-[color:var(--kb-ink-3)]">128 rows</span>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 text-[14px]">
+        {[
+          ["Name column", "Full name"],
+          ["Email column", "Email"],
+        ].map(([label, value]) => (
+          <span key={label} className="flex flex-col gap-1">
+            <span className="font-bold">{label}</span>
+            <span className="rounded-[12px] border-[1.5px] border-[color:var(--kb-line-input)] px-3 py-2">{value}</span>
+          </span>
+        ))}
+      </div>
+      <ul className="m-0 mt-4 flex list-none flex-col p-0 text-[14px]">
+        {[
+          ["Tilly Nguyen", "t.nguyen@student.unimelb.edu.au"],
+          ["Mahi Patel", "m.patel@student.unimelb.edu.au"],
+        ].map(([name, email]) => (
+          <li key={name} className="flex justify-between gap-3 border-t border-[color:var(--kb-line)] py-2">
+            <span className="font-medium">{name}</span>
+            <span className="truncate text-[color:var(--kb-ink-3)]">{email}</span>
+          </li>
+        ))}
+      </ul>
+      <span className="btn btn-primary mt-3 w-full !min-h-[44px]" aria-hidden>
+        Add 128 members
+      </span>
+    </div>
+  );
+}
+
+function CodeVisual() {
+  const digits = ["4", "8", "1", "7", "", "", "", ""];
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5 text-center">
+      <span className="text-[14px] text-[color:var(--kb-ink-3)]">Code sent to t.nguyen@student…</span>
+      <div className="mt-4 flex justify-center gap-1 sm:gap-1.5">
+        {digits.map((digit, i) => (
+          <span
+            key={i}
+            className={`flex h-11 w-[30px] items-center sm:h-12 sm:w-9 justify-center rounded-[10px] border-[1.5px] font-[family-name:var(--kb-font-display)] text-[20px] font-semibold ${digit ? "border-[color:var(--kb-ink)]" : "border-[color:var(--kb-line-strong)]"}`}
+          >
+            {digit}
+          </span>
+        ))}
+      </div>
+      <span className="mt-4 flex items-center justify-center gap-2 text-[14px] font-medium">
+        <CheckIcon size={16} className="text-[color:var(--kb-ember-deep)]" />
+        On the list, code correct: you&rsquo;re in.
+      </span>
+    </div>
+  );
+}
+
+function UploadVisual() {
+  const rows = [
+    ["IMG_4482.HEIC", 100],
+    ["IMG_4483.HEIC", 72],
+    ["MVI_0091.MOV · 1.4 GB", 18],
+  ] as const;
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5">
+      <span className="font-bold">Adding 412 files to Semester 2 Ball</span>
+      <ul className="m-0 mt-4 flex list-none flex-col gap-3 p-0 text-[14px]">
+        {rows.map(([name, pct]) => (
+          <li key={name}>
+            <span className="flex justify-between">
+              <span>{name}</span>
+              <span className="text-[color:var(--kb-ink-3)]">{pct === 100 ? "Done" : `${pct}%`}</span>
+            </span>
+            <span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-[color:var(--kb-sand)]">
+              <span className="block h-full rounded-full bg-[color:var(--kb-ember)]" style={{ width: `${pct}%` }} />
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function AlbumsVisual() {
+  const albums = [
+    ["Semester 2 Ball", "/marketing/night-ball.jpg"],
+    ["Round 7 vs Monash", "/marketing/night-grandfinal.jpg"],
+    ["First social", "/marketing/hero-1.jpg"],
+    ["End of season", "/marketing/night-bigone.jpg"],
+  ];
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5">
+      <div className="flex items-center justify-between">
+        <span className="font-bold">UniMelb FC albums</span>
+        <span className="soft-chip">
+          <LockIcon size={14} />
+          Members only
+        </span>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        {albums.map(([title, src]) => (
+          <span key={title}>
+            <span className="relative block aspect-[4/3] overflow-hidden rounded-[12px]">
+              <Image src={src} alt="" fill sizes="190px" className="object-cover" />
+            </span>
+            <span className="mt-1.5 block truncate text-[14px] font-medium">{title}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FacesVisual() {
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5">
+      <div className="flex items-center gap-3">
+        <span className="relative h-12 w-12 flex-none overflow-hidden rounded-full ring-4 ring-[color:var(--kb-ember-tint)]">
+          <Image src="/marketing/avatar-hannah.jpg" alt="" fill sizes="48px" className="object-cover" />
+        </span>
+        <span>
+          <span className="block font-bold">Photos of you</span>
+          <span className="block text-[14px] text-[color:var(--kb-ink-3)]">Only you see this page</span>
+        </span>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-1.5">
+        {["/marketing/hero-2.jpg", "/marketing/night-dancefloor.jpg", "/marketing/hero-1.jpg"].map((src) => (
+          <span key={src} className="relative block aspect-square overflow-hidden rounded-[10px]">
+            <Image src={src} alt="" fill sizes="130px" className="object-cover" />
+          </span>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-[14px] bg-[color:var(--kb-sand)] p-3 text-[14px]">
+        <span className="flex items-center gap-2 font-medium">
+          <FaceIcon size={16} />
+          Is this you?
+        </span>
+        <span className="flex gap-2">
+          <span className="rounded-full bg-white px-3 py-1 font-bold">Not me</span>
+          <span className="rounded-full bg-[color:var(--kb-ember)] px-3 py-1 font-bold text-white">Yes</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MembersVisual() {
+  const people = [
+    ["MP", "Mahi Patel", "Committee"],
+    ["LD", "Lachlan Doyle", "Treasurer"],
+    ["TN", "Tilly Nguyen", "Member"],
+  ];
+  return (
+    <div className="kb-card w-full max-w-[420px] p-5">
+      <ul className="m-0 flex list-none flex-col p-0">
+        {people.map(([initials, name, role]) => (
+          <li key={name} className="flex items-center gap-3 border-b border-[color:var(--kb-line)] py-2.5 text-[15px]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--kb-sand)] text-[14px] font-bold" aria-hidden>
+              {initials}
+            </span>
+            <span className="flex-1 font-medium">{name}</span>
+            <span className="soft-chip soft-chip-muted">{role}</span>
+          </li>
+        ))}
+        <li className="flex items-center gap-3 py-2.5 text-[15px]">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[color:var(--kb-sand)] text-[14px] font-bold" aria-hidden>
+            JR
+          </span>
+          <span className="flex-1">
+            <span className="block font-medium">Jack Ryan</span>
+            <span className="block text-[14px] text-[color:var(--kb-ember-deep)]">Left the list · 30 days of access left</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+const VISUALS = [<MappingVisual key="a" />, <UploadVisual key="c" />, <CodeVisual key="b" />, <AlbumsVisual key="d" />, <FacesVisual key="f" />, <MembersVisual key="e" />];
 
 export default function HowItWorksPage() {
   return (
-    <main className="mx-auto flex w-full max-w-[1000px] flex-col px-4 sm:px-6">
-      <header className="soft-card mt-5 flex items-center gap-3 !rounded-full py-2 pl-5 pr-3">
-        <Link href="/" className="soft-wordmark text-[22px] text-ink no-underline">
-          klubbies
-        </Link>
-        <nav className="ml-auto flex items-center gap-2">
-          <Link href="/start" className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[14px] no-underline">
-            Start a club
-          </Link>
-          <Link href="/signin" className="soft-btn soft-btn-primary !min-h-[40px] !px-5 !text-[14px] no-underline">
-            Log in
-          </Link>
-        </nav>
-      </header>
-
-      <section className="pb-6 pt-12">
-        <h1 className="max-w-[20ch] text-[clamp(34px,5vw,58px)] leading-[1.03]">
-          One member list. One <span className="soft-word">private</span> place for the photos.
-        </h1>
-        <SquiggleUnderline className="soft-squiggle mt-1 !w-[min(240px,55%)]" />
-        <p className="mt-5 max-w-[60ch] text-[17px] leading-[1.5] text-[color:var(--ink-70)]">
-          Klubbies replaces the shared drive folder that half the committee can edit and anyone can forward. Here is the
-          whole thing, start to finish.
-        </p>
-      </section>
-
-      {STEPS.map((step) => (
-        <section
-          key={step.num}
-          className="soft-card mt-4 grid items-start gap-6 p-6 sm:p-7"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
-        >
-          <div>
-            <span className="soft-chip">{step.num}</span>
-            <h2 className="mt-3 text-[24px]">{step.title}</h2>
+    <div className="flex flex-1 flex-col">
+      <SiteNav current="how" />
+      <main className="flex-1">
+        <section className="kb-section !pb-10">
+          <div className="kb-wrap">
+            <span className="soft-chip soft-chip-muted">How it works</span>
+            <h1 className="kb-h1 mt-5 max-w-[18ch]">
+              One member list. One <span className="kb-accent">private</span> place for the photos.
+            </h1>
+            <p className="kb-lead mt-6 max-w-[60ch]">
+              Klubbies replaces the shared drive folder that half the committee can edit and anyone can forward. Here is
+              the whole thing, start to finish.
+            </p>
           </div>
-          <p className="max-w-[56ch] text-[16px] leading-[1.55] text-[color:var(--ink-70)]">{step.body}</p>
         </section>
-      ))}
 
-      <section className="pt-12">
-        <h2 className="text-[clamp(26px,4vw,36px)]">
-          Questions we <span className="soft-word">get</span>.
-        </h2>
-        <dl className="mt-6 flex flex-col gap-3">
-          {FAQ.map(([q, a]) => (
-            <div key={q} className="soft-card p-6">
-              <dt className="soft-display text-[18px]">{q}</dt>
-              <dd className="mt-2 max-w-[60ch] text-[15px] leading-[1.55] text-[color:var(--ink-70)]">{a}</dd>
-            </div>
+        <div className="kb-wrap flex flex-col gap-16 pb-[var(--kb-section-y)] sm:gap-24">
+          {ALL_STEPS.map((step, i) => (
+            <section key={step.title} className="grid items-center gap-8 lg:grid-cols-2 lg:gap-16">
+              <div className={i % 2 ? "lg:order-2" : ""}>
+                <span className="text-[16px] font-bold text-[color:var(--kb-ember-deep)]">Step {i + 1}</span>
+                <h2 className="mt-2 font-[family-name:var(--kb-font-display)] text-[30px] font-bold leading-[1.1] sm:text-[36px]">{step.title}</h2>
+                <p className="mt-4 max-w-[54ch] text-[17px] leading-[1.6] text-[color:var(--kb-ink-2)]">{step.body}</p>
+              </div>
+              <Panel>{VISUALS[i]}</Panel>
+            </section>
           ))}
-        </dl>
-      </section>
-
-      <section className="soft-cta mt-14 flex flex-col items-start gap-6 p-8 sm:p-12">
-        <h2 className="max-w-[18ch] text-[clamp(28px,4.5vw,46px)] text-white">Ready when your next event is.</h2>
-        <div className="flex flex-wrap gap-3">
-          <Link href="/start" className="soft-btn soft-btn-lg bg-white !text-[color:var(--color-accent-700)] no-underline">
-            Start a club
-          </Link>
-          <Link href="/signin" className="soft-btn soft-btn-lg bg-white/15 !text-white no-underline">
-            Log in
-          </Link>
         </div>
-      </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-4 py-8 text-[13px] text-[color:var(--ink-55)]">
-        <Link href="/" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
-          &larr; Back home
-        </Link>
-        <nav className="flex gap-4">
-          <Link href="/terms" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
-            Terms
-          </Link>
-          <Link href="/refunds" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
-            Refunds
-          </Link>
-          <Link href="/privacy" className="text-[color:var(--ink-55)] no-underline hover:text-accent">
-            Privacy
-          </Link>
-        </nav>
-      </footer>
-    </main>
+        <section className="kb-section kb-sand">
+          <div className="kb-wrap grid items-start gap-10 lg:grid-cols-[360px_minmax(0,1fr)]">
+            <h2 className="kb-h2">
+              Questions we <span className="kb-accent">get</span>.
+            </h2>
+            <Faq items={FAQS} />
+          </div>
+        </section>
+
+        <section className="relative overflow-hidden bg-[color:var(--kb-ink)]">
+          <Image src="/marketing/night-bigone.jpg" alt="" fill sizes="100vw" className="object-cover opacity-35" />
+          <div className="kb-wrap kb-section relative text-center">
+            <h2 className="kb-h2 mx-auto max-w-[18ch] text-white">Ready when your next event is.</h2>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link href="/start" className="btn btn-primary btn-lg">
+                Start your club
+              </Link>
+              <Link href="/signin" className="btn btn-on-dark btn-lg">
+                Log in
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

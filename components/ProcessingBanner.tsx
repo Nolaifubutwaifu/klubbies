@@ -26,7 +26,7 @@ export function ProcessingBanner({ photos, videos }: { photos: number; videos: n
         />
         <span className="min-w-0">
           <span className="block text-[14px] font-bold">{what} still cooking</span>
-          <span className="block text-[12px]">Usually 2&ndash;5 minutes. You can leave the page.</span>
+          <span className="block text-[14px]">Usually 2&ndash;5 minutes. You can leave the page.</span>
         </span>
       </div>
     </div>
@@ -58,7 +58,7 @@ export function ProcessingTiles({ count }: { count: number }) {
           >
             <path d="M12 4a8 8 0 1 1-5.7 2.4" />
           </svg>
-          <span className="text-[10px] font-bold text-[color:var(--color-neutral-700)]">Processing</span>
+          <span className="text-[14px] font-bold text-[color:var(--color-neutral-700)]">Processing</span>
         </span>
       ))}
     </>

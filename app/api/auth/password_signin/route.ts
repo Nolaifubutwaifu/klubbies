@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 const schema = z.object({
   email: z.string().trim().max(254),
   password: z.string().min(1).max(200),
+  club: z.string().regex(/^[a-z0-9_]{1,48}$/i).optional(),
 });
 
 const GENERIC = "That email and password don't match. Try a code instead.";
@@ -34,6 +35,12 @@ export async function POST(request: Request) {
     .eq("clubs.status", "active");
 
   const accepted = (memberships ?? []).filter((m) => m.accepted_at !== null);
-  const redirectTo = accepted.length === 1 ? `/c/${accepted[0].clubs.handle}` : "/clubs";
+  const wanted = parsed.data.club?.toLowerCase();
+  const redirectTo =
+    wanted && accepted.some((m) => m.clubs.handle === wanted)
+      ? `/c/${wanted}`
+      : accepted.length === 1
+        ? `/c/${accepted[0].clubs.handle}`
+        : "/clubs";
   return NextResponse.json({ ok: true, redirectTo });
 }

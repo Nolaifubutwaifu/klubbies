@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import Link from "next/link";
+import { MoreButton, MoreLink, MoreMenu } from "@/components/MoreMenu";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -44,7 +45,7 @@ function GripIcon() {
 function StatusChip({ album }: { album: StackedAlbum }) {
   if (album.status === "published") {
     return (
-      <span className="inline-flex flex-none items-center gap-1.5 rounded-full bg-[#eaf5ea] px-3 py-1 text-[12px] font-bold text-[#245c2b]">
+      <span className="inline-flex flex-none items-center gap-1.5 rounded-full bg-[#eaf5ea] px-3 py-1 text-[14px] font-bold text-[#245c2b]">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full rounded-full bg-[#2f6b36] opacity-60 motion-safe:animate-ping" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-[#2f6b36]" />
@@ -83,7 +84,7 @@ function Figures({ stats }: { stats: AlbumStats }) {
       {cells.map(([value, label]) => (
         <span key={label} className="w-[72px] text-center">
           <span className="soft-display block text-[18px] leading-none">{value.toLocaleString("en-AU")}</span>
-          <span className="block text-[11px] text-[color:var(--ink-55)]">{label}</span>
+          <span className="block text-[14px] text-[color:var(--ink-55)]">{label}</span>
         </span>
       ))}
     </span>
@@ -167,7 +168,7 @@ export function AlbumManager({
     <section className="soft-card flex flex-col gap-4 p-5">
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="soft-display text-[19px]">Manage albums</h2>
-        <span className="text-[13px] text-[color:var(--ink-70)]">
+        <span className="text-[14px] text-[color:var(--ink-70)]">
           Drag to reorder — the top one is what members see first. Hiding keeps the files.
         </span>
         {message ? <span className="soft-chip ml-auto">{message}</span> : null}
@@ -198,7 +199,7 @@ export function AlbumManager({
                 setDragId(null);
                 setOverId(null);
               }}
-              className={`flex flex-wrap items-center gap-3 rounded-[16px] border bg-[color:var(--color-bg)] p-3 transition-[border-color,opacity,transform] ${
+              className={`flex flex-wrap items-center gap-3 rounded-[16px] border bg-white p-3 transition-[border-color,opacity,transform] ${
                 isTarget
                   ? "border-accent shadow-[var(--soft-shadow)]"
                   : "border-[color-mix(in_srgb,var(--color-text)_7%,transparent)]"
@@ -245,10 +246,10 @@ export function AlbumManager({
                     {album.title}
                   </Link>
                   {eventTypeLabel(album.eventType) ? (
-                    <span className="soft-chip soft-chip-muted !py-0.5 !text-[11px]">{eventTypeLabel(album.eventType)}</span>
+                    <span className="soft-chip soft-chip-muted !py-0.5 !text-[14px]">{eventTypeLabel(album.eventType)}</span>
                   ) : null}
                 </span>
-                <span className="block text-[12px] text-[color:var(--ink-70)]">
+                <span className="block text-[14px] text-[color:var(--ink-70)]">
                   {[
                     album.date ? formatDate(album.date) : null,
                     album.photoCount ? `${album.photoCount.toLocaleString("en-AU")} photos` : null,
@@ -258,70 +259,68 @@ export function AlbumManager({
                     .join(" · ")}
                 </span>
                 {album.publishAt ? (
-                  <span className="block text-[12px] text-accent-700">Goes live {formatLongDate(album.publishAt)}</span>
+                  <span className="block text-[14px] text-accent-700">Goes live {formatLongDate(album.publishAt)}</span>
                 ) : null}
               </span>
 
               {album.status === "published" ? (
                 <Figures stats={stats[album.id] ?? { views: 0, downloads: 0, members: 0 }} />
               ) : (
-                <span className="hidden flex-none text-[12px] text-[color:var(--ink-55)] xl:block xl:w-[232px] xl:text-center">
+                <span className="hidden flex-none text-[14px] text-[color:var(--ink-55)] xl:block xl:w-[232px] xl:text-center">
                   {album.status === "hidden" ? "Members can't see it, nothing deleted" : "Nobody can see this yet"}
                 </span>
               )}
 
               <StatusChip album={album} />
 
-              <span className="flex flex-wrap items-center gap-2">
+              {/* One visible action per row (Publish, for drafts); the rest
+                  wait behind the row's menu. */}
+              <span className="flex items-center gap-2">
                 {album.status === "draft" ? (
                   <button
                     type="button"
                     disabled={pending}
                     onClick={() => run(() => setAlbumPublishedAction(album.id, true))}
-                    className="soft-btn soft-btn-primary !min-h-[40px] !px-4 !text-[13px]"
+                    className="btn btn-ghost"
                   >
                     Publish
                   </button>
                 ) : null}
-                {album.status === "draft" ? (
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => {
-                      setScheduling(scheduling === album.id ? null : album.id);
-                      setWhen(toLocalInput(album.publishAt));
-                    }}
-                    className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
-                  >
-                    {album.publishAt ? "Reschedule" : "Schedule"}
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => run(() => setAlbumHiddenAction(album.id, album.status !== "hidden"))}
-                  className="soft-btn soft-btn-tonal !min-h-[40px] !px-4 !text-[13px]"
-                >
-                  {album.status === "hidden" ? "Unhide" : "Hide"}
-                </button>
+                <MoreMenu iconOnly label={`More for ${album.title}`}>
+                  <MoreLink href={`/c/${handle}/a/${album.id}`}>Open album</MoreLink>
+                  {album.status === "draft" ? (
+                    <MoreButton
+                      disabled={pending}
+                      onClick={() => {
+                        setScheduling(scheduling === album.id ? null : album.id);
+                        setWhen(toLocalInput(album.publishAt));
+                      }}
+                    >
+                      {album.publishAt ? "Reschedule" : "Schedule"}
+                    </MoreButton>
+                  ) : null}
+                  <MoreButton disabled={pending} onClick={() => run(() => setAlbumHiddenAction(album.id, album.status !== "hidden"))}>
+                    {album.status === "hidden" ? "Show to members again" : "Hide from members"}
+                  </MoreButton>
+                </MoreMenu>
               </span>
 
               {scheduling === album.id ? (
                 <span className="flex w-full flex-wrap items-end gap-2 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] pt-3">
-                  <label className="flex flex-col gap-1 text-[12px] font-bold text-[color:var(--ink-70)]">
+                  <label className="flex flex-col gap-1 text-[14px] font-bold text-[color:var(--ink-70)]">
                     Go live at
                     <input
                       type="datetime-local"
                       value={when}
                       onChange={(e) => setWhen(e.target.value)}
-                      className="soft-input !min-h-[42px] !w-auto !px-3 !text-[13px]"
+                      className="input !w-auto"
                     />
                   </label>
                   <button
                     type="button"
                     disabled={pending || !when}
                     onClick={() => run(() => scheduleAlbumAction(album.id, when))}
-                    className="soft-btn soft-btn-primary !min-h-[42px] !px-4 !text-[13px]"
+                    className="btn btn-primary btn-sm"
                   >
                     Save schedule
                   </button>
@@ -330,12 +329,12 @@ export function AlbumManager({
                       type="button"
                       disabled={pending}
                       onClick={() => run(() => scheduleAlbumAction(album.id, null))}
-                      className="soft-btn soft-btn-tonal !min-h-[42px] !px-4 !text-[13px]"
+                      className="btn btn-ghost"
                     >
                       Clear
                     </button>
                   ) : null}
-                  <span className="text-[12px] text-[color:var(--ink-55)]">
+                  <span className="text-[14px] text-[color:var(--ink-55)]">
                     Publishing runs once a day, about 9am, so it goes live the first morning after this time.
                   </span>
                 </span>

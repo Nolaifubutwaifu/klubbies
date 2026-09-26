@@ -3,6 +3,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { displayNameFor } from "@/lib/auth/display-name";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
+import { appUrl } from "@/lib/env";
 import { formatDate } from "@/lib/format";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +50,7 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
           counts={{ albums: albums.count ?? 0, members: members.count ?? 0, removals: removals.count ?? 0 }}
           plan={plan}
           person={{ name: displayName, role: ctx.role?.name ?? "Admin" }}
+          host={appUrl().replace(/^https?:\/\//, "")}
         />
         <div className="min-w-0 flex-1">{props.children}</div>
       </div>

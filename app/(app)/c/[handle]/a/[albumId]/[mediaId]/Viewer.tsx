@@ -20,7 +20,7 @@ type Current = {
   takenAt: string;
 };
 
-/** One of the four things you can do to the photo you're looking at. */
+/** A bottom-bar action: favourite, download, and More for everything else. */
 function Action({
   label,
   onClick,
@@ -38,7 +38,7 @@ function Action({
   filled?: boolean;
   children: React.ReactNode;
 }) {
-  const colour = active ? "#ff7a63" : quiet ? "rgba(255,255,255,0.86)" : "#ffffff";
+  const colour = active ? "var(--kb-ember-on-dark)" : quiet ? "rgba(255,255,255,0.9)" : "#ffffff";
   const inner = (
     <>
       <svg
@@ -58,7 +58,7 @@ function Action({
     </>
   );
   const className =
-    "flex min-h-[52px] flex-1 cursor-pointer flex-col items-center justify-center gap-[3px] border-0 bg-transparent text-[11px] font-bold no-underline";
+    "flex min-h-[52px] flex-1 cursor-pointer flex-col items-center justify-center gap-[3px] border-0 bg-transparent text-[14px] font-bold no-underline";
   return href ? (
     <a href={href} className={className} style={{ color: colour }}>
       {inner}
@@ -107,7 +107,7 @@ export function Viewer({
   const router = useRouter();
   const touchX = useRef<number | null>(null);
   const [saved, setSaved] = useState(favourited);
-  const [sheet, setSheet] = useState<"none" | "removal" | "details">("none");
+  const [sheet, setSheet] = useState<"none" | "removal" | "more">("none");
   const [asked, setAsked] = useState(alreadyAsked);
   const [matched, setMatched] = useState(faceMatchId);
   const [message, setMessage] = useState("");
@@ -161,24 +161,13 @@ export function Viewer({
         </Link>
         <div className="min-w-0 flex-1 text-center">
           <div className="truncate text-[14px] font-bold text-white">{albumTitle}</div>
-          <div className="text-[12px] text-white/[0.68]">
+          <div className="text-[14px] text-white/[0.68]">
             {position.toLocaleString("en-AU")} of {total.toLocaleString("en-AU")}
             {current.takenAt ? ` · ${current.takenAt}` : ""}
           </div>
         </div>
-        <button
-          type="button"
-          aria-label="Photo details"
-          aria-expanded={sheet === "details"}
-          onClick={() => setSheet(sheet === "details" ? "none" : "details")}
-          className="flex h-11 w-11 flex-none cursor-pointer items-center justify-center rounded-full border-0 bg-white/[0.14]"
-        >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="#ffffff" aria-hidden>
-            <circle cx="12" cy="5" r="1.8" />
-            <circle cx="12" cy="12" r="1.8" />
-            <circle cx="12" cy="19" r="1.8" />
-          </svg>
-        </button>
+        {/* Keeps the title centred; More lives in the bottom bar. */}
+        <span className="h-11 w-11 flex-none" aria-hidden />
       </div>
 
       <div
@@ -224,7 +213,7 @@ export function Viewer({
           </Link>
         ) : null}
         {nextHref ? (
-          <span className="pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 text-[12px] text-white/70 sm:hidden">
+          <span className="pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 text-[14px] text-white/70 sm:hidden">
             Swipe for the next one
           </span>
         ) : null}
@@ -242,7 +231,7 @@ export function Viewer({
               scroll={false}
               aria-current={here}
               className="block h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px] bg-white/10"
-              style={here ? { border: "2px solid var(--color-accent)" } : { opacity: 0.5 }}
+              style={here ? { border: "2px solid var(--kb-ember-on-dark)" } : { opacity: 0.5 }}
             >
               {item.thumbUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
@@ -267,88 +256,93 @@ export function Viewer({
           <path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
         </Action>
         {canDownload ? (
-          <Action label="Original" href={`/api/media/${current.id}/download`}>
+          <Action label="Download" href={`/api/media/${current.id}/download`}>
             <path d="M12 4v11M7 11l5 5 5-5" />
             <path d="M5 20h14" />
           </Action>
         ) : null}
-        <Action label="Details" quiet onClick={() => setSheet(sheet === "details" ? "none" : "details")}>
-          <circle cx="12" cy="12" r="9" />
-          <path d="M12 11v5M12 7.6v.1" />
+        <Action label="More" quiet onClick={() => setSheet(sheet === "more" ? "none" : "more")}>
+          <circle cx="5" cy="12" r="1.6" />
+          <circle cx="12" cy="12" r="1.6" />
+          <circle cx="19" cy="12" r="1.6" />
         </Action>
-        {/* Getting it wrong has to be one tap to correct, wherever you are
-            when you notice — not only on the Photos of you page. */}
-        {matched ? (
-          <Action
-            label="Not me"
-            quiet
-            onClick={() =>
-              startTransition(async () => {
-                const res = await decideFaceMatchAction(matched, "reject");
-                setMatched(null);
-                setMessage(res.error ?? "Thanks. We won't suggest this one again.");
-              })
-            }
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M9 9l6 6M15 9l-6 6" />
-          </Action>
-        ) : null}
-        {canAskRemoval ? (
-          <Action label={asked ? "Asked" : "Take it down"} quiet onClick={() => setSheet("removal")}>
-            <path d="M12 3 2.5 20h19z" />
-            <path d="M12 10v4M12 17.2v.1" />
-          </Action>
-        ) : null}
       </div>
 
       {message ? (
         <div
           role="status"
-          className="pointer-events-none absolute bottom-[104px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-[13px] font-bold text-ink shadow-lg"
+          className="pointer-events-none absolute bottom-[104px] left-1/2 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-ink shadow-lg"
         >
           {message}
         </div>
       ) : null}
 
-      {sheet === "details" ? (
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--color-bg)] p-5 pb-6 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
-          <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color-mix(in_srgb,var(--color-text)_18%,transparent)]" />
+      {sheet === "more" ? (
+        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--kb-cream)] p-5 pb-6 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
+          <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color:var(--kb-line-strong)]" />
+          {/* Getting a face match wrong has to be one tap to correct,
+              wherever you are when you notice. */}
+          {matched || canAskRemoval ? (
+            <div className="mb-4 flex flex-col">
+              {matched ? (
+                <button
+                  type="button"
+                  className="kb-menu-item !min-h-[52px] !text-[16px]"
+                  disabled={pending}
+                  onClick={() =>
+                    startTransition(async () => {
+                      const res = await decideFaceMatchAction(matched, "reject");
+                      setMatched(null);
+                      setSheet("none");
+                      setMessage(res.error ?? "Thanks. We won't suggest this one again.");
+                    })
+                  }
+                >
+                  This isn&rsquo;t me
+                </button>
+              ) : null}
+              {canAskRemoval ? (
+                <button type="button" className="kb-menu-item !min-h-[52px] !text-[16px]" data-danger="true" onClick={() => setSheet("removal")}>
+                  {asked ? "Removal requested" : "Ask for it to come down"}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
           <h2 className="soft-display text-[19px]">About this one</h2>
           <dl className="m-0 mt-3 grid gap-x-5 gap-y-2.5" style={{ gridTemplateColumns: "auto 1fr" }}>
             {details.map((d) => (
               <div key={d.label} className="contents">
-                <dt className="text-[13px] text-[color:var(--ink-70)]">{d.label}</dt>
-                <dd className="m-0 text-[14px] font-semibold">{d.value}</dd>
+                <dt className="text-[15px] text-[color:var(--kb-ink-2)]">{d.label}</dt>
+                <dd className="m-0 text-[15px] font-semibold">{d.value}</dd>
               </div>
             ))}
           </dl>
-          <p className="m-0 mt-3 text-[13px] text-[color:var(--ink-70)]">
+          <p className="m-0 mt-3 text-[15px] text-[color:var(--kb-ink-2)]">
             Only people on the club member list can open this. Views and downloads are logged.
           </p>
-          <button type="button" className="soft-btn soft-btn-tonal mt-4 w-full" onClick={() => setSheet("none")}>
+          <button type="button" className="btn btn-secondary mt-4 w-full" onClick={() => setSheet("none")}>
             Close
           </button>
         </div>
       ) : null}
 
       {sheet === "removal" ? (
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--color-bg)] px-5 pb-6 pt-4.5 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
+        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--kb-cream)] px-5 pb-6 pt-4.5 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
           <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color-mix(in_srgb,var(--color-text)_18%,transparent)]" />
           <h2 className="soft-display text-[21px]">{asked ? "Already on its way down." : "Take this one down?"}</h2>
-          <p className="mt-1.5 text-[14px] text-[color:var(--ink-70)]">
+          <p className="mt-1.5 text-[15px] text-[color:var(--kb-ink-2)]">
             {asked
               ? "It's hidden from the album. Your media officer confirms it within seven days, and if they don't, it deletes itself."
               : "It hides from the album straight away. Your media officer gets a note and confirms it — no reason needed."}
           </p>
           <div className="mt-4 flex gap-2.5">
-            <button type="button" className="soft-btn soft-btn-tonal flex-1" onClick={() => setSheet("none")}>
+            <button type="button" className="btn btn-secondary flex-1" onClick={() => setSheet("none")}>
               {asked ? "Close" : "Not now"}
             </button>
             {asked ? null : (
               <button
                 type="button"
-                className="soft-btn soft-btn-primary flex-1"
+                className="btn btn-primary flex-1"
                 disabled={pending}
                 onClick={() =>
                   startTransition(async () => {

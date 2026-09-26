@@ -28,14 +28,14 @@ export function UnfinishedUploads({
         </strong>{" "}
         They aren&apos;t visible to members. Upload them again, or remove them from the album.
       </span>
-      <ul className="flex flex-col gap-1 text-[13px] text-accent-800">
+      <ul className="flex flex-col gap-1 text-[14px] text-accent-800">
         {items.map((item) => (
           <li key={item.id} className="flex flex-wrap items-center gap-2">
             <span className="font-semibold">{item.original_filename ?? "Unnamed file"}</span>
             <span className="text-ink-70">started {formatDateTime(item.created_at)}</span>
             <button
               type="button"
-              className="btn btn-ghost text-[12px]"
+              className="btn btn-ghost text-[14px]"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
@@ -49,7 +49,7 @@ export function UnfinishedUploads({
           </li>
         ))}
       </ul>
-      <Link href={addHref} className="btn btn-primary self-start text-[13px]">
+      <Link href={addHref} className="btn btn-primary self-start text-[14px]">
         Upload again
       </Link>
     </div>

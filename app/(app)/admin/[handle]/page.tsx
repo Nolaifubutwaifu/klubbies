@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MoreLink, MoreMenu } from "@/components/MoreMenu";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { formatBytes, formatDate, formatDateTime } from "@/lib/format";
@@ -121,28 +122,30 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle kicker={ctx.club.name} title={today} underline>
+        <PageTitle kicker={ctx.club.name} title={today}>
           {tasks.length
             ? `${tasks.length} thing${tasks.length === 1 ? "" : "s"} need you. Everything else is running itself.`
             : "Nothing needs you. Everything is running itself."}
         </PageTitle>
-        <div className="flex flex-wrap gap-2">
-          <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
-            See it as a member
-          </Link>
-          <Link href={`/admin/${handle}/upload`} className="soft-btn soft-btn-accent no-underline">
+        <div className="flex items-center gap-2">
+          <Link href={`/admin/${handle}/upload`} className={`btn ${firstRun ? "btn-secondary" : "btn-primary"}`}>
             New album
           </Link>
+          <MoreMenu iconOnly label="More actions">
+            <MoreLink href={`/c/${handle}`}>See it as a member</MoreLink>
+            <MoreLink href={`/admin/${handle}/guests`}>Make a guest upload link</MoreLink>
+            <MoreLink href={`/admin/${handle}/activity`}>Full activity log</MoreLink>
+          </MoreMenu>
         </div>
       </div>
 
       {firstRun ? (
-        <div className="soft-bordered flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="kb-card flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
             <span className="soft-chip">Getting started</span>
             <div className="soft-display mt-2 text-[20px]">Five minutes, once. Then every event is a drag and drop.</div>
           </div>
-          <Link href={`/admin/${handle}/setup`} className="soft-btn soft-btn-primary no-underline">
+          <Link href={`/admin/${handle}/setup`} className="btn btn-primary">
             Open the checklist
           </Link>
         </div>
@@ -196,11 +199,11 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                     />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[14px] font-bold">{task.title}</span>
-                      <span className="block truncate text-[12px] text-[color:var(--ink-70)]">{task.body}</span>
+                      <span className="block truncate text-[14px] text-[color:var(--ink-70)]">{task.body}</span>
                     </span>
                     <Link
                       href={task.href}
-                      className={`soft-btn ${task.urgent ? "soft-btn-primary" : "soft-btn-accent"} !min-h-[40px] !px-4 !text-[13px] no-underline`}
+                      className="btn btn-ghost"
                     >
                       {task.cta}
                     </Link>
@@ -217,7 +220,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           <section className="soft-card flex flex-col gap-4 p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="soft-display text-[19px]">Recent albums</h2>
-              <Link href={`/admin/${handle}/albums`} className="text-[13px] font-bold">
+              <Link href={`/admin/${handle}/albums`} className="text-[14px] font-bold">
                 See all {(albumCount.count ?? 0).toLocaleString("en-AU")}
               </Link>
             </div>
@@ -230,14 +233,14 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                       <span className="soft-tile relative block aspect-[4/3]">
                         {album.coverUrl ? <img src={album.coverUrl} alt="" loading="lazy" /> : null}
                         {album.status !== "published" ? (
-                          <span className="absolute left-2 top-2 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-0.5 text-[11px] font-bold text-white">
+                          <span className="absolute left-2 top-2 rounded-full bg-[rgba(25,18,22,0.72)] px-2.5 py-0.5 text-[14px] font-bold text-white">
                             {album.status === "hidden" ? "Hidden" : "Draft"}
                           </span>
                         ) : null}
                       </span>
                       <span>
                         <span className="block truncate text-[14px] font-bold">{album.title}</span>
-                        <span className="block text-[12px] text-[color:var(--ink-70)]">
+                        <span className="block text-[14px] text-[color:var(--ink-70)]">
                           {(album.photoCount + album.videoCount).toLocaleString("en-AU")} ·{" "}
                           {album.status === "published"
                             ? `${(row?.view_count ?? 0).toLocaleString("en-AU")} views`
@@ -260,7 +263,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           <section className="soft-card flex flex-col gap-4 p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="soft-display text-[19px]">Activity</h2>
-              <Link href={`/admin/${handle}/activity`} className="text-[13px] font-bold">
+              <Link href={`/admin/${handle}/activity`} className="text-[14px] font-bold">
                 Full log
               </Link>
             </div>
@@ -277,7 +280,7 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
                         <strong className="font-bold">{e.memberships?.roster_name ?? "Admin"}</strong>{" "}
                         {e.action === "download" ? "downloaded" : "viewed"} {e.media?.original_filename ?? "an item"}
                       </span>
-                      <span className="block text-[12px] text-[color:var(--ink-55)]">{formatDateTime(e.occurred_at)}</span>
+                      <span className="block text-[14px] text-[color:var(--ink-55)]">{formatDateTime(e.occurred_at)}</span>
                     </span>
                   </li>
                 ))}
@@ -291,9 +294,9 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
 
           {mostOpenedTitle ? (
             <section className="rounded-[var(--soft-r)] bg-[color:var(--tone-support)] p-5 text-[color:var(--tone-support-ink)]">
-              <span className="block text-[12px] font-bold">Most opened album</span>
+              <span className="block text-[14px] font-bold">Most opened album</span>
               <span className="soft-display mt-1 block text-[21px] text-ink">{mostOpenedTitle}</span>
-              <span className="mt-1 block text-[13px]">
+              <span className="mt-1 block text-[14px]">
                 {(mostOpened?.view_count ?? 0).toLocaleString("en-AU")} views ·{" "}
                 {(mostOpened?.download_count ?? 0).toLocaleString("en-AU")} downloads ·{" "}
                 {(mostOpened?.member_count ?? 0).toLocaleString("en-AU")} members
@@ -302,17 +305,17 @@ export default async function AdminDashboard(props: PageProps<"/admin/[handle]">
           ) : null}
 
           <section className="soft-card flex flex-col gap-2 p-5">
-            <span className="text-[13px] font-bold">Guest links</span>
-            <span className="text-[13px] text-[color:var(--ink-70)]">
+            <span className="text-[14px] font-bold">Guest links</span>
+            <span className="text-[14px] text-[color:var(--ink-70)]">
               Hired a photographer? Give them a link that uploads into one album and shows them nothing else.
             </span>
-            <Link href={`/admin/${handle}/guests`} className="soft-btn soft-btn-tonal !min-h-[40px] mt-2 !px-4 !text-[13px] no-underline self-start">
+            <Link href={`/admin/${handle}/guests`} className="kb-link self-start">
               Make a guest link
             </Link>
           </section>
 
           {stacked[0] ? (
-            <p className="m-0 text-[12px] text-[color:var(--ink-55)]">
+            <p className="m-0 text-[14px] text-[color:var(--ink-55)]">
               Newest album added {formatDate(stacked[0].date)}.
             </p>
           ) : null}

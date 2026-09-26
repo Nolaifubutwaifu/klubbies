@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const cookieStore = await cookies();
   const email = cookieStore.get(SIGNIN_COOKIE)?.value;
   if (!email) {
-    return NextResponse.json({ error: "Your sign-in timed out. Start again." }, { status: 400 });
+    return NextResponse.json({ error: "Your sign in timed out. Start again." }, { status: 400 });
   }
 
   const { ip } = await clientFingerprint();
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: CODE_REJECTED }, { status: 400 });
   }
 
-  const result = await verifyCode(email, parsed.data.code);
+  const result = await verifyCode(email, parsed.data.code, parsed.data.club);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
   cookieStore.delete(SIGNIN_COOKIE);

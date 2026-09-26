@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { SoftBackdrop } from "@/components/soft/SoftBackdrop";
 import { formatLongDate } from "@/lib/format";
 import { resolveGuestLink, type GuestLinkState } from "@/lib/guest/links";
 import { clubToneStyle } from "@/lib/theme";
@@ -36,7 +35,6 @@ export default async function GuestUploadPage(props: PageProps<"/g/[token]">) {
     const copy = DEAD[state as Exclude<GuestLinkState, "ok">] ?? DEAD.unknown;
     return (
       <div className="theme-soft relative flex min-h-dvh flex-col">
-        <SoftBackdrop />
         <main className="relative z-10 mx-auto flex w-full max-w-[560px] flex-1 flex-col justify-center gap-4 px-5 py-14">
           <span className="soft-wordmark text-[22px]">klubbies</span>
           <h1 className="text-[clamp(28px,6vw,38px)]">{copy.title}</h1>
@@ -48,7 +46,6 @@ export default async function GuestUploadPage(props: PageProps<"/g/[token]">) {
 
   return (
     <div className="theme-soft relative flex min-h-dvh flex-col" style={clubToneStyle(session.clubAccent)}>
-      <SoftBackdrop />
       <main className="relative z-10 mx-auto flex w-full max-w-[720px] flex-1 flex-col gap-6 px-5 py-10">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="soft-wordmark text-[20px]">klubbies</span>
@@ -73,7 +70,7 @@ export default async function GuestUploadPage(props: PageProps<"/g/[token]">) {
             add shows as &ldquo;added by guest&rdquo; in the committee&apos;s album.
           </p>
           {session.fileCount > 0 ? (
-            <p className="m-0 mt-2 text-[13px]">
+            <p className="m-0 mt-2 text-[14px]">
               {session.fileCount.toLocaleString("en-AU")} file{session.fileCount === 1 ? "" : "s"} already came in on this
               link.
             </p>

@@ -14,7 +14,7 @@ export default function ErrorPage({ error, retry }: { error: Error & { digest?: 
         <p className="text-[15px] text-ink-70">
           We&apos;ve been notified. Try again, and if it keeps happening, come back in a few minutes.
         </p>
-        {error.digest ? <p className="text-[12px] text-ink-55">Reference: {error.digest}</p> : null}
+        {error.digest ? <p className="text-[14px] text-ink-55">Reference: {error.digest}</p> : null}
         <div className="flex gap-3 pt-2">
           <button type="button" className="btn btn-primary" onClick={() => retry()}>
             Try again

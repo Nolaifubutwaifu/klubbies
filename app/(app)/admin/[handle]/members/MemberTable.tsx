@@ -124,7 +124,7 @@ export function MemberTable({
             <button
               key={f.key}
               type="button"
-              className="btn btn-secondary text-[13px]"
+              className="btn btn-secondary text-[14px]"
               aria-pressed={filter === f.key}
               onClick={() => setFilter(f.key)}
             >
@@ -150,7 +150,7 @@ export function MemberTable({
           {canManageRoles ? (
             <>
               <select
-                className="input max-w-[200px] text-[13px]"
+                className="input max-w-[200px] text-[14px]"
                 value={roleTarget}
                 onChange={(e) => setRoleTarget(e.target.value)}
                 aria-label="Change role"
@@ -164,7 +164,7 @@ export function MemberTable({
               </select>
               <button
                 type="button"
-                className="btn btn-secondary text-[13px]"
+                className="btn btn-secondary text-[14px]"
                 disabled={!roleTarget || pending}
                 onClick={() =>
                   run(
@@ -180,10 +180,10 @@ export function MemberTable({
               </button>
             </>
           ) : null}
-          <button type="button" className="btn btn-primary text-[13px]" onClick={() => setConfirmRemove(true)}>
+          <button type="button" className="btn btn-danger btn-sm" onClick={() => setConfirmRemove(true)}>
             Remove from list
           </button>
-          <button type="button" className="btn btn-ghost text-[13px]" onClick={() => setSelected(new Set())}>
+          <button type="button" className="btn btn-ghost text-[14px]" onClick={() => setSelected(new Set())}>
             Clear
           </button>
         </div>
@@ -236,7 +236,7 @@ export function MemberTable({
                 <td>
                   {canManageRoles && member.userId !== currentUserId ? (
                     <select
-                      className="input max-w-[160px] text-[13px]"
+                      className="input max-w-[160px] text-[14px]"
                       value={member.roleId ?? ""}
                       disabled={pending}
                       aria-label={`Role for ${member.name}`}
@@ -259,7 +259,7 @@ export function MemberTable({
                     <>
                       <button
                         type="button"
-                        className="btn btn-ghost text-[13px]"
+                        className="btn btn-ghost text-[14px]"
                         onClick={() => {
                           setTypedName("");
                           setEndTarget(member);
@@ -267,12 +267,12 @@ export function MemberTable({
                       >
                         End access now
                       </button>
-                      <button type="button" className="btn btn-ghost text-[13px]" disabled={pending} onClick={() => run(() => restoreMemberAction(clubId, member.id))}>
+                      <button type="button" className="btn btn-ghost text-[14px]" disabled={pending} onClick={() => run(() => restoreMemberAction(clubId, member.id))}>
                         Restore
                       </button>
                     </>
                   ) : member.status === "revoked" ? (
-                    <button type="button" className="btn btn-ghost text-[13px]" disabled={pending} onClick={() => run(() => restoreMemberAction(clubId, member.id))}>
+                    <button type="button" className="btn btn-ghost text-[14px]" disabled={pending} onClick={() => run(() => restoreMemberAction(clubId, member.id))}>
                       Restore
                     </button>
                   ) : null}
@@ -283,7 +283,7 @@ export function MemberTable({
         </table>
       </div>
 
-      <span className="text-[12px] text-[color:var(--ink-55)]">
+      <span className="text-[14px] text-[color:var(--ink-55)]">
         {visible.length.toLocaleString("en-AU")} shown of {members.length.toLocaleString("en-AU")}
       </span>
 
@@ -305,7 +305,7 @@ export function MemberTable({
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-danger"
             disabled={pending}
             onClick={() =>
               run(
@@ -336,7 +336,7 @@ export function MemberTable({
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-danger"
             disabled={pending || !endTarget || typedName.trim().toLowerCase() !== endTarget.name.trim().toLowerCase()}
             onClick={() => endTarget && run(() => endGraceAction(clubId, endTarget.id, typedName), () => setEndTarget(null))}
           >

@@ -24,17 +24,17 @@ export function RemovalDecision({ requestId }: { requestId: string }) {
       <div className="flex flex-wrap gap-2.5">
         <button
           type="button"
-          className="soft-btn soft-btn-tonal"
+          className="btn btn-ghost"
           disabled={pending}
           onClick={() => run(() => restorePhotoAction(requestId))}
         >
           Put it back
         </button>
-        <button type="button" className="soft-btn soft-btn-primary" disabled={pending} onClick={() => setConfirming(true)}>
+        <button type="button" className="btn btn-danger btn-sm" disabled={pending} onClick={() => setConfirming(true)}>
           Delete it for good
         </button>
       </div>
-      {error ? <p className="m-0 mt-2 text-[13px] text-accent-800">{error}</p> : null}
+      {error ? <p className="m-0 mt-2 text-[14px] text-accent-800">{error}</p> : null}
 
       <Dialog open={confirming} onClose={() => setConfirming(false)} title="Delete this photo for good?">
         <p className="text-[15px]">
@@ -46,7 +46,7 @@ export function RemovalDecision({ requestId }: { requestId: string }) {
           </button>
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-danger"
             disabled={pending}
             onClick={() => run(() => confirmRemovalAction(requestId))}
           >

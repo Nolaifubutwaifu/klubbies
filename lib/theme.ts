@@ -1,13 +1,13 @@
-// Per-club tone. Klubbies' vermillion is fixed brand — it carries headline
+// Per-club tone. Klubbies' ember is fixed brand — it carries headline
 // emphasis, tags, eyebrows and the tier-2 button in every club. What a club
 // picks is its *quiet* layer: the tier-3 button, the accessory labels and the
 // supporting surfaces. Settings stores one hex value and these three tokens
 // are mixed from it.
 
-const DEFAULT_ACCENT = "#ec3013";
+const DEFAULT_ACCENT = "#cf2e12";
 
 export const ACCENT_SWATCHES = [
-  "#ec3013",
+  "#cf2e12",
   "#c2410c",
   "#b45309",
   "#15803d",
@@ -48,25 +48,26 @@ export function isValidAccent(hex: string | null | undefined): boolean {
 
 /**
  * Builds the supporting tones for a club. Returns undefined when the club has
- * not picked one, so those pages fall back to the neutral lilac in the
+ * not picked one, so those pages fall back to the neutral sand in the
  * stylesheet. The club's colour never touches --color-accent: the red is
  * Klubbies' own and stays the same in every club.
  *
- * Each token mixes the club's hue into the lilac rather than into white, which
- * keeps the result calm enough to sit under the fixed vermillion and lands the
- * quiet tier around 1.9:1 against white — better than the flat lilac's 1.45:1.
+ * Each token mixes the club's hue into sand, line or ink, so a club's colour
+ * shows in avatars and quiet surfaces while ember stays the only accent.
  */
 export function clubToneStyle(hex: string | null | undefined): Record<string, string> | undefined {
   if (!hex) return undefined;
   const rgb = parse(hex);
   if (!rgb) return undefined;
-  const lilac: [number, number, number] = [241, 233, 251];
-  const lilacDeep: [number, number, number] = [216, 200, 240];
-  const lilacInk: [number, number, number] = [67, 51, 92];
+  // Mixed into sand and ink rather than lilac: the club's hue tints the quiet
+  // layer without adding a new colour family beside ember.
+  const sand: [number, number, number] = [248, 238, 233];
+  const line: [number, number, number] = [234, 221, 215];
+  const ink: [number, number, number] = [43, 34, 40];
   return {
-    "--tone-support": mix(rgb, lilac, 0.9),
-    "--tone-support-deep": mix(rgb, lilacDeep, 0.84),
-    "--tone-support-ink": mix(rgb, lilacInk, 0.78),
+    "--tone-support": mix(rgb, sand, 0.88),
+    "--tone-support-deep": mix(rgb, line, 0.8),
+    "--tone-support-ink": mix(rgb, ink, 0.75),
   } as Record<string, string>;
 }
 

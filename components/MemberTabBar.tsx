@@ -70,7 +70,7 @@ export function MemberTabBar({ handle }: { handle: string }) {
               key={tab.href}
               href={tab.href}
               aria-current={here ? "page" : undefined}
-              className="flex min-h-[48px] flex-1 flex-col items-center justify-center gap-[3px] text-[11px] font-bold no-underline"
+              className="flex min-h-[48px] flex-1 flex-col items-center justify-center gap-[3px] text-[14px] font-bold no-underline"
               style={{ color: colour }}
             >
               <svg

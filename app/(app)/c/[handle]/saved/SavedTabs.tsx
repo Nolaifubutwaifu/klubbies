@@ -79,11 +79,11 @@ export function SavedTabs({
                 <Link href={`/c/${handle}/a/${group.albumId}`} className="soft-display text-[18px] text-ink no-underline">
                   {group.albumTitle}
                 </Link>
-                {group.albumDate ? <span className="text-[12px] text-[color:var(--ink-55)]">{formatDate(group.albumDate)}</span> : null}
-                <span className="text-[13px] text-[color:var(--ink-55)]">{group.items.length} saved</span>
+                {group.albumDate ? <span className="text-[14px] text-[color:var(--ink-55)]">{formatDate(group.albumDate)}</span> : null}
+                <span className="text-[14px] text-[color:var(--ink-55)]">{group.items.length} saved</span>
                 <a
                   href={`/api/albums/${group.albumId}/zip?only=${group.items.map((i) => i.id).join(",")}`}
-                  className="soft-btn soft-btn-tonal !min-h-[36px] ml-auto !px-3.5 !text-[12px] no-underline"
+                  className="kb-link ml-auto"
                 >
                   Download these
                 </a>
@@ -98,7 +98,7 @@ export function SavedTabs({
                   >
                     {item.thumbUrl ? <img src={item.thumbUrl} alt="" loading="lazy" className="h-full w-full object-cover" /> : null}
                     {item.kind === "video" ? (
-                      <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2 py-0.5 text-[10px] font-bold text-white">
+                      <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2 py-0.5 text-[14px] font-bold text-white">
                         {duration(item.durationSeconds) || "Video"}
                       </span>
                     ) : null}
@@ -123,7 +123,7 @@ export function SavedTabs({
                 ) : (
                   <span className="soft-display text-[18px]">{items[0].albumTitle}</span>
                 )}
-                <span className="text-[13px] text-[color:var(--ink-55)]">
+                <span className="text-[14px] text-[color:var(--ink-55)]">
                   {items.length} download{items.length === 1 ? "" : "s"}
                 </span>
               </div>

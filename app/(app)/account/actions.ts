@@ -78,5 +78,5 @@ export async function notifyOnNewAlbumsAction(): Promise<AccountResult> {
   const { error } = await supabase.from("users").update({ notify_new_album: true }).eq("id", user.id);
   if (error) return { error: "Could not turn that on. Try again." };
   revalidatePath("/account");
-  return { ok: true, message: "We'll email you the morning after the first album lands." };
+  return { ok: true, message: "We'll email you when the next album is shared." };
 }

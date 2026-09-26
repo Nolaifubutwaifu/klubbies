@@ -31,7 +31,7 @@ export function ProfileForm({
       <label className="field">
         Email
         <input className="input" value={email} disabled />
-        <span className="text-[13px] font-normal leading-normal text-ink-70">
+        <span className="text-[14px] font-normal leading-normal text-ink-70">
           This is the address your clubs have on file. Ask a club admin to change it.
         </span>
       </label>
@@ -88,17 +88,17 @@ export function AvatarUploader({ userId, avatarUrl }: { userId: string; avatarUr
         <img src={avatarUrl} alt="" className="h-[104px] w-[104px] flex-none rounded-full object-cover" />
       ) : (
         <span
-          className="flex h-[104px] w-[104px] flex-none items-center justify-center rounded-full text-[13px] text-[color:var(--ink-55)]"
+          className="flex h-[104px] w-[104px] flex-none items-center justify-center rounded-full text-[14px] text-[color:var(--ink-55)]"
           style={{ background: "var(--tone-support)" }}
         >
           No photo
         </span>
       )}
       <div className="flex min-w-[180px] flex-1 flex-col gap-2">
-        <button type="button" className="soft-btn soft-btn-tonal self-start !min-h-[40px] !px-4 !text-[13px]" onClick={() => input.current?.click()} disabled={busy}>
+        <button type="button" className="soft-btn soft-btn-tonal self-start !min-h-[40px] !px-4 !text-[14px]" onClick={() => input.current?.click()} disabled={busy}>
           {busy ? "Uploading…" : avatarUrl ? "Change photo" : "Add a photo"}
         </button>
-        <span className="text-[13px] leading-normal text-ink-70">
+        <span className="text-[14px] leading-normal text-ink-70">
           Your photo and display name are visible to other members of clubs you&apos;re in.
         </span>
         {error ? <span className="notice">{error}</span> : null}
@@ -123,7 +123,7 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
       <span className="text-[14px]">
         <strong>Password</strong>
         <br />
-        <span className="text-[13px] text-ink-70">
+        <span className="text-[14px] text-ink-70">
           {hasPassword ? "Set. You can sign in with email and password." : "Faster if you sign in often."}
         </span>
       </span>
@@ -133,16 +133,16 @@ export function PasswordForm({ hasPassword }: { hasPassword: boolean }) {
           <input className="input" type="password" name="confirm" placeholder="Repeat password" minLength={10} required autoComplete="new-password" />
           <FormMessage state={state} />
           <div className="flex gap-2">
-            <SubmitButton className="btn btn-primary text-[13px]" pendingText="Saving…">
+            <SubmitButton className="btn btn-primary text-[14px]" pendingText="Saving…">
               Save password
             </SubmitButton>
-            <button type="button" className="btn btn-ghost text-[13px]" onClick={() => setOpen(false)}>
+            <button type="button" className="btn btn-ghost text-[14px]" onClick={() => setOpen(false)}>
               Cancel
             </button>
           </div>
         </form>
       ) : (
-        <button type="button" className="btn btn-secondary text-[13px]" onClick={() => setOpen(true)}>
+        <button type="button" className="btn btn-secondary text-[14px]" onClick={() => setOpen(true)}>
           {hasPassword ? "Change password" : "Set a password"}
         </button>
       )}
@@ -185,7 +185,7 @@ export function NotificationToggles({
           {label}
         </label>
       ))}
-      {message ? <span className="text-[12px] text-ink-55">{message}</span> : null}
+      {message ? <span className="text-[14px] text-ink-55">{message}</span> : null}
     </div>
   );
 }

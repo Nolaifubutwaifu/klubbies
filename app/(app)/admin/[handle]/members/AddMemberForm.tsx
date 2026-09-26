@@ -14,7 +14,7 @@ export function AddMemberForm({ clubId }: { clubId: string }) {
 
   return (
     <form ref={form} action={action} className="flex flex-col gap-3 soft-card p-4">
-      <span className="text-[13px] font-semibold">Or add one by hand</span>
+      <span className="text-[14px] font-semibold">Or add one by hand</span>
       <input className="input text-[14px]" name="name" placeholder="Full name" required maxLength={200} aria-label="Full name" />
       <input className="input text-[14px]" name="email" type="email" placeholder="Email" required aria-label="Email" />
       <FormMessage state={state} />

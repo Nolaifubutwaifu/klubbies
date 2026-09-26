@@ -13,7 +13,7 @@ export const MAX_VERIFY_ATTEMPTS = 5;
 
 export const NEUTRAL_MESSAGE =
   "If that address is on a club member list, we've sent it a sign-in code. It expires in 10 minutes.";
-export const CODE_REJECTED = "That code didn't work or has expired. Check the latest email, or request a new code.";
+export const CODE_REJECTED = "That code didn't match. Check the latest email or send a new code.";
 
 export const requestCodeSchema = z.object({
   fullName: z.string().trim().min(1, "Enter your full name").max(200),
@@ -24,6 +24,8 @@ export const requestCodeSchema = z.object({
 export const verifyCodeSchema = z.object({
   // Supabase issues 6 to 10 digit codes depending on the project setting.
   code: z.string().trim().regex(/^\d{6,10}$/, "Enter the code from the email"),
+  /** The club the member arrived for, so they land back in it. */
+  club: z.string().regex(/^[a-z0-9_]{1,48}$/i).optional(),
 });
 
 export type RequestCodeInput = z.infer<typeof requestCodeSchema>;
@@ -93,7 +95,7 @@ export async function processCodeRequest(input: RequestCodeInput, ip: string): P
 
 export type VerifyResult = { ok: true; redirectTo: string } | { ok: false; error: string };
 
-export async function verifyCode(rawEmail: string, code: string): Promise<VerifyResult> {
+export async function verifyCode(rawEmail: string, code: string, clubHandle?: string): Promise<VerifyResult> {
   const email = normaliseEmail(rawEmail);
   const admin = createAdminClient();
 
@@ -135,6 +137,10 @@ export async function verifyCode(rawEmail: string, code: string): Promise<Verify
   }
 
   if (pending.flow === "create") return { ok: true, redirectTo: "/admin/new" };
+  // A member who came in through a club's own link goes back to that club,
+  // but only if they are actually on its list.
+  const wanted = clubHandle?.toLowerCase();
+  if (wanted && memberships.some((m) => m.clubs.handle === wanted)) return { ok: true, redirectTo: `/c/${wanted}` };
   if (pending.flow === "signup") return { ok: true, redirectTo: memberships.length === 1 ? `/c/${memberships[0].clubs.handle}` : "/clubs" };
   if (memberships.length === 1) return { ok: true, redirectTo: `/c/${memberships[0].clubs.handle}` };
   return { ok: true, redirectTo: "/clubs" };

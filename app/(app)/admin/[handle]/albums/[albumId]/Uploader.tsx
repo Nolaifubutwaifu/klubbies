@@ -54,7 +54,7 @@ export function Uploader({ albumId }: { albumId: string }) {
           onDrop={onDrop}
         >
           <span className="soft-display text-[16px]">Drop files, or choose from your phone</span>
-          <span className="text-[13px] text-[color:var(--ink-70)]">JPG, PNG, HEIC, WebP, MP4, MOV · originals kept at full quality</span>
+          <span className="text-[14px] text-[color:var(--ink-70)]">JPG, PNG, HEIC, WebP, MP4, MOV · originals kept at full quality</span>
           <input
             ref={input}
             type="file"
@@ -69,7 +69,7 @@ export function Uploader({ albumId }: { albumId: string }) {
         </div>
         <div className="flex flex-col gap-2 soft-card p-4">
           <span className="text-[14px] font-semibold">You can keep using Klubbies while this runs.</span>
-          <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
+          <span className="text-[14px] leading-normal text-[color:var(--ink-70)]">
             Uploads continue as you move around the app, and a progress box follows you. Leave this tab open until it
             finishes; if your connection drops, each file picks up where it left off.
           </span>
@@ -84,7 +84,7 @@ export function Uploader({ albumId }: { albumId: string }) {
 
       <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between">
-          <span className="text-[13px] font-semibold">
+          <span className="text-[14px] font-semibold">
             {jobs.length === 0
               ? "Nothing queued yet"
               : busy
@@ -93,14 +93,14 @@ export function Uploader({ albumId }: { albumId: string }) {
                   ? "Some files need another go"
                   : "Upload complete"}
           </span>
-          <span className="text-[13px] text-[color:var(--ink-70)]">{jobs.length ? `${pct}%` : ""}</span>
+          <span className="text-[14px] text-[color:var(--ink-70)]">{jobs.length ? `${pct}%` : ""}</span>
         </div>
         <div className="h-[10px] bg-neutral-300">
           <div className="h-full bg-accent transition-[width]" style={{ width: `${pct}%` }} />
         </div>
         <div className="soft-card">
           {jobs.length === 0 ? (
-            <p className="m-0 p-3 text-[13px] text-[color:var(--ink-70)]">Files you choose show up here with their status.</p>
+            <p className="m-0 p-3 text-[14px] text-[color:var(--ink-70)]">Files you choose show up here with their status.</p>
           ) : (
             jobs.slice(-40).map((job) => (
               <div key={job.key} className="flex items-center justify-between gap-3 border-b border-divider px-3 py-[10px] last:border-b-0">
@@ -111,11 +111,11 @@ export function Uploader({ albumId }: { albumId: string }) {
                   ) : (
                     <span className="h-7 w-7 flex-none bg-neutral-400" />
                   )}
-                  <span className="truncate text-[13px]">{job.name}</span>
+                  <span className="truncate text-[14px]">{job.name}</span>
                 </span>
                 <span className="flex flex-none items-center gap-2">
                   <span
-                    className="text-[12px] font-bold tracking-[0.06em]"
+                    className="text-[14px] font-bold tracking-[0.06em]"
                     style={{ color: job.status === "failed" ? "var(--color-accent)" : "var(--color-neutral-700)" }}
                   >
                     {job.status === "done"
@@ -127,7 +127,7 @@ export function Uploader({ albumId }: { albumId: string }) {
                           : job.status.toUpperCase()}
                   </span>
                   {job.status === "failed" ? (
-                    <button type="button" className="btn btn-secondary text-[12px]" onClick={() => queue.retry(job.key)}>
+                    <button type="button" className="btn btn-secondary text-[14px]" onClick={() => queue.retry(job.key)}>
                       Retry
                     </button>
                   ) : null}
@@ -137,7 +137,7 @@ export function Uploader({ albumId }: { albumId: string }) {
           )}
         </div>
         {jobs.length ? (
-          <span className="text-[13px] text-[color:var(--ink-70)]">
+          <span className="text-[14px] text-[color:var(--ink-70)]">
             {done} of {jobs.length} ready{failed.length ? ` · ${failed.length} failed` : ""}
           </span>
         ) : null}

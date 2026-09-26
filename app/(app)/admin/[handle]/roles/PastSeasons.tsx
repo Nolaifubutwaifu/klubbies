@@ -35,7 +35,7 @@ export function PastSeasons({ seasons }: { seasons: Season[] }) {
                 {season.year}
                 {season.people.length ? ` · ${season.people.slice(0, 2).join(", ")}` : ""}
               </span>
-              <span className="block text-[12px] text-[color:var(--ink-70)]">
+              <span className="block text-[14px] text-[color:var(--ink-70)]">
                 {plural(season.albums, "album")} · {season.photos.toLocaleString("en-AU")}{" "}
                 {season.photos === 1 ? "photo" : "photos"}
               </span>

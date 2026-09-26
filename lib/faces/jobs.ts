@@ -1,4 +1,5 @@
 import "server-only";
+import { after } from "next/server";
 import type { FaceJob, FaceJobKind } from "@/lib/db/types";
 import { removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -18,7 +19,7 @@ export type DrainResult = { claimed: number; done: number; failed: number; purge
  * and safe from all of them:
  *
  *   1. the existing daily cron,
- *   2. fire-and-forget at the end of an upload, so a new photo matches within
+ *   2. after the response of an upload, so a new photo matches within
  *      seconds rather than by tomorrow,
  *   3. an admin "Run now" button, for backfill and for when something sticks.
  *
@@ -217,9 +218,20 @@ export function kickFaceJobs(): void {
   // Short budget: this rides on an upload request, and its job is to get the
   // photo just uploaded matched within seconds. Clearing a backfill is the
   // cron's work, or the admin's "Run now".
-  void runFaceJobs({ budgetMs: UPLOAD_KICK_BUDGET_MS, batchSize: JOB_CONCURRENCY }).catch((error) =>
-    console.error("face drain failed", error),
-  );
+  //
+  // `after`, not a bare promise: on Vercel a function can be frozen the moment
+  // its response is sent, so an unawaited drain was never guaranteed to run.
+  // `after` holds the invocation open until the work settles. Outside a
+  // request (a script, a test) it throws, and the drain just runs inline.
+  const drain = () =>
+    runFaceJobs({ budgetMs: UPLOAD_KICK_BUDGET_MS, batchSize: JOB_CONCURRENCY })
+      .then(() => undefined)
+      .catch((error) => console.error("face drain failed", error));
+  try {
+    after(drain);
+  } catch {
+    void drain();
+  }
 }
 
 export type FaceQueueStats = { pending: number; running: number; failed: number };

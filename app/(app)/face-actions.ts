@@ -357,3 +357,36 @@ export async function decideFaceMatchAction(matchId: string, decision: "confirm"
   if (ctx) revalidatePath(`/c/${ctx.club.handle}`, "layout");
   return { ok: true };
 }
+
+/**
+ * What the "Looking now" card polls while a member's enrolment is pending.
+ *
+ * It also nudges the queue. The enrol job is kicked when the selfie arrives,
+ * but a throttled or timed-out job goes back with a delay and, on a daily
+ * Hobby cron, nothing else would pick it up until tomorrow. The member is the
+ * one person actually waiting, so their open page does the asking: a short
+ * drain, enrol jobs first (see claim_face_jobs), and never longer than a
+ * request can bear.
+ */
+export async function enrolStatusAction(clubId: string): Promise<{ status: "none" | "pending" | "ready" | "failed" }> {
+  if (!z.uuid().safeParse(clubId).success) return { status: "none" };
+  const ctx = await getClubContextById(clubId);
+  if (!ctx?.membership) return { status: "none" };
+
+  const read = async () => {
+    const { data } = await (await createClient())
+      .from("member_face_profiles")
+      .select("status")
+      .eq("club_id", clubId)
+      .eq("user_id", ctx.userId)
+      .maybeSingle();
+    return (data?.status as "pending" | "ready" | "failed" | undefined) ?? "none";
+  };
+
+  const before = await read();
+  if (before !== "pending" || !facesConfigured()) return { status: before };
+  await runFaceJobs({ budgetMs: 12_000, batchSize: 4 }).catch((error) => console.error("enrol nudge failed", error));
+  const after = await read();
+  if (after !== "pending") revalidatePath(`/c/${ctx.club.handle}`, "layout");
+  return { status: after };
+}

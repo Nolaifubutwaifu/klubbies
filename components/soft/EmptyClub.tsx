@@ -56,7 +56,7 @@ export function EmptyClub({ clubName, alreadySubscribed }: { clubName: string; a
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden>
             <path d="M4 12.5 9.5 18 20 6.5" />
           </svg>
-          {message || "You'll get an email the morning after."}
+          {message || "You'll get an email when it's shared."}
         </p>
       ) : (
         <button
@@ -75,9 +75,9 @@ export function EmptyClub({ clubName, alreadySubscribed }: { clubName: string; a
           {pending ? "Setting that up…" : "Email me when photos land"}
         </button>
       )}
-      {message && !done ? <p className="mt-2 text-[13px] text-accent-800">{message}</p> : null}
+      {message && !done ? <p className="mt-2 text-[14px] text-accent-800">{message}</p> : null}
 
-      <p className="mt-3.5 text-center text-[13px] text-[color:var(--ink-55)]">
+      <p className="mt-3.5 text-center text-[14px] text-[color:var(--ink-55)]">
         Got shots on your phone from Friday? Ask your committee to open uploads on an album.
       </p>
     </div>

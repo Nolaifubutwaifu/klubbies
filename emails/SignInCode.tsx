@@ -13,10 +13,11 @@ export default function SignInCode({ code, name, clubName }: SignInCodeProps) {
       <Text
         style={{
           fontSize: 40,
-          fontWeight: 900,
+          fontWeight: 700,
           letterSpacing: "0.18em",
-          background: "#f3f2f2",
-          border: "2px solid #201e1d",
+          background: "#fff8f4",
+          border: "1px solid #eaddd7",
+          borderRadius: 16,
           padding: "14px 18px",
           margin: "0 0 16px",
           textAlign: "center",

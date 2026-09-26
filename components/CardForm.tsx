@@ -14,18 +14,18 @@ const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
 const appearance: Appearance = {
   theme: "flat",
   variables: {
-    colorPrimary: "#ec3013",
-    colorBackground: "#eae9e9",
-    colorText: "#201e1d",
+    colorPrimary: "#cf2e12",
+    colorBackground: "#ffffff",
+    colorText: "#2b2228",
     colorDanger: "#ae1800",
-    fontFamily: "Archivo, system-ui, sans-serif",
-    borderRadius: "0px",
+    fontFamily: "DM Sans, system-ui, sans-serif",
+    borderRadius: "14px",
     spacingUnit: "4px",
   },
   rules: {
-    ".Input": { border: "1px solid rgba(32,30,29,0.4)", boxShadow: "none", padding: "10px" },
-    ".Input:focus": { border: "1px solid #ec3013", boxShadow: "none" },
-    ".Label": { fontSize: "13px", fontWeight: "600" },
+    ".Input": { border: "1.5px solid #968990", boxShadow: "none", padding: "14px" },
+    ".Input:focus": { border: "2px solid #2b2228", boxShadow: "0 0 0 4px #ffe7df" },
+    ".Label": { fontSize: "15px", fontWeight: "700" },
   },
 };
 
@@ -80,7 +80,7 @@ function Inner({ clubId, doneHref }: { clubId: string; doneHref: string }) {
           Cancel
         </a>
       </div>
-      <span className="text-[12px] text-ink-55">
+      <span className="text-[14px] text-ink-55">
         Card details go straight to Stripe. Klubbies only stores the brand and last four digits.
       </span>
     </form>

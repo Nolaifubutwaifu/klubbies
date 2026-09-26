@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Brand, PageTitle } from "@/components/ui";
+import { LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = { title: "Privacy" };
 
@@ -10,7 +10,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Who can see club media",
-    "Only people on that club's member list who have confirmed their email with a one-time code. Nothing is public, and every image is served through a link that expires within minutes.",
+    "Only people on that club's member list who have confirmed their email with a one time code. Nothing is public, and every image is served through a link that expires within minutes.",
   ],
   [
     "We log who opens what",
@@ -22,11 +22,11 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Where data lives",
-    "Club data is stored in Sydney, Australia. Sign-in emails are delivered by Resend.",
+    "Club data is stored in Sydney, Australia. Sign in emails are delivered by Resend.",
   ],
   [
     "Removing a photo of you",
-    "Ask the club's committee to remove it; admins can delete any item. A built-in report button is coming soon.",
+    "Open the photo and choose Take it down. It is hidden from everyone straight away while the committee decides, and if they have not answered within 7 days it is removed. You do not have to give a reason. A club can switch this off, in which case ask the committee directly; admins can delete any item.",
   ],
   // The masterfile's rule about the access log applies here too: say the
   // uncomfortable part plainly rather than burying it. The uncomfortable part
@@ -38,7 +38,7 @@ const SECTIONS: [string, string][] = [
   ],
   [
     "Face recognition: what we use it for",
-    "To show you photos you appear in. Nothing else. Only you can see your own matches: no other member, no club committee and no Klubbies staff can search a club's photos for a particular person.",
+    "To show you photos you appear in. Nothing else. Only you can see your own matches. Klubbies has no feature that searches a club's photos for a particular person, for members, for committees or for our own staff, and we have not built one.",
   ],
   [
     "Face recognition: accuracy",
@@ -55,17 +55,14 @@ const SECTIONS: [string, string][] = [
 ];
 
 export default function PrivacyPage() {
+  const words = SECTIONS.reduce((sum, [title, body]) => sum + `${title} ${body}`.split(/\s+/).length, 0);
   return (
-    <main className="mx-auto flex w-full max-w-[760px] flex-col gap-8 px-6 py-8">
-      <Brand />
-      <PageTitle kicker="Plain English" title="Privacy at Klubbies" />
-      <div className="hr" />
-      {SECTIONS.map(([title, body]) => (
-        <section key={title} className="flex flex-col gap-2">
-          <h2 className="font-heading text-[22px] font-bold">{title}</h2>
-          <p className="text-[16px] leading-normal text-ink-70">{body}</p>
-        </section>
-      ))}
-    </main>
+    <LegalPage
+      doc="privacy"
+      title="Privacy at Klubbies"
+      updated="[DATE]"
+      minutes={Math.max(1, Math.round(words / 220))}
+      sections={SECTIONS.map(([title, body]) => ({ title, body: <p>{body}</p> }))}
+    />
   );
 }

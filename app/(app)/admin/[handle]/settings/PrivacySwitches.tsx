@@ -35,7 +35,7 @@ export function PrivacySwitches({ clubId, initial }: { clubId: string; initial: 
         >
           <span className="min-w-0 flex-1">
             <span className="block text-[14px] font-bold">{row.label}</span>
-            <span className="block text-[12px] text-[color:var(--ink-70)]">{row.hint}</span>
+            <span className="block text-[14px] text-[color:var(--ink-70)]">{row.hint}</span>
           </span>
           <input
             type="checkbox"
@@ -53,7 +53,7 @@ export function PrivacySwitches({ clubId, initial }: { clubId: string; initial: 
         </label>
       ))}
       {message ? (
-        <span className="block border-t border-[color-mix(in_srgb,var(--color-text)_7%,transparent)] px-4 py-2 text-[12px] text-[color:var(--ink-55)]">
+        <span className="block border-t border-[color-mix(in_srgb,var(--color-text)_7%,transparent)] px-4 py-2 text-[14px] text-[color:var(--ink-55)]">
           {message}
         </span>
       ) : null}

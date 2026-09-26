@@ -21,7 +21,7 @@ export default async function UploadPage(props: PageProps<"/admin/[handle]/uploa
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={ctx.club.name} title="New album" underline>
+      <PageTitle kicker={ctx.club.name} title="New album">
         Drop the whole night in. Name it, say when it goes live, then upload — it keeps going in the background.
       </PageTitle>
 
@@ -46,7 +46,7 @@ export default async function UploadPage(props: PageProps<"/admin/[handle]/uploa
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[14px] font-bold">{album.title}</span>
-                        <span className="block text-[12px] text-[color:var(--ink-70)]">
+                        <span className="block text-[14px] text-[color:var(--ink-70)]">
                           {formatDate(album.date)} ·{" "}
                           {(album.photoCount + album.videoCount).toLocaleString("en-AU")} files
                         </span>

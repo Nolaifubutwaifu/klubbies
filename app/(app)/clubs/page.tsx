@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccountMenu } from "@/components/AccountMenu";
 import { InviteCard } from "@/components/InviteCard";
 import { Brand, EmptyState, PageTitle } from "@/components/ui";
 import { PhotoStackArt } from "@/components/soft/illustrations";
@@ -17,22 +18,13 @@ export default async function ClubsPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <header className="soft-card mx-4 mt-5 flex flex-wrap items-center justify-between gap-4 !rounded-[28px] px-5 py-2.5 sm:mx-6">
-        <Brand href="/clubs" />
-        <div className="flex items-center gap-3">
-          <Link href="/account" className="text-[13px] text-ink-70">
-            {profile?.display_name ?? profile?.email}
-          </Link>
-          <form action="/api/auth/signout" method="post">
-            <button type="submit" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
-              Sign out
-            </button>
-          </form>
-        </div>
+      <header className="flex items-center justify-between gap-4 border-b border-[color:var(--kb-line)] px-4 py-3 sm:px-6">
+        <Brand href="/clubs" size={24} />
+        <AccountMenu name={profile?.display_name ?? profile?.email ?? "You"} />
       </header>
 
       <div className="flex flex-col gap-6 px-6 py-8">
-        <PageTitle title="Your clubs" underline>
+        <PageTitle title="Your clubs">
           Pick a club to see its event albums.
         </PageTitle>
 
@@ -50,8 +42,8 @@ export default async function ClubsPage() {
             title={invites.length ? "Accept an invitation to get started" : "You're not on any club list yet"}
             art={<PhotoStackArt size={120} />}
             action={
-              <Link href="/admin/new" className="soft-btn soft-btn-primary no-underline">
-                Start a club
+              <Link href="/admin/new" className="btn btn-primary">
+                Start your club
               </Link>
             }
           >
@@ -91,7 +83,7 @@ export default async function ClubsPage() {
                         ))}
                       </span>
                     ) : (
-                      <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-[13px] text-[color:var(--ink-55)]">
+                      <span className="flex h-full w-full flex-col items-center justify-center gap-1 text-[14px] text-[color:var(--ink-55)]">
                         <span className="text-accent-400">
                           <PhotoStackArt size={92} />
                         </span>
@@ -99,12 +91,12 @@ export default async function ClubsPage() {
                       </span>
                     )}
                     {card && card.newCount > 0 ? (
-                      <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute left-3 top-3 rounded-full bg-accent px-3 py-1 text-[14px] font-bold text-white">
                         {card.newCount} new
                       </span>
                     ) : null}
                     {club.status === "grace" ? (
-                      <span className="absolute right-3 top-3 rounded-full bg-[rgba(25,18,22,0.72)] px-3 py-1 text-[12px] font-bold text-white">
+                      <span className="absolute right-3 top-3 rounded-full bg-[rgba(25,18,22,0.72)] px-3 py-1 text-[14px] font-bold text-white">
                         Access ends {formatDate(club.graceEndsAt)}
                       </span>
                     ) : null}
@@ -114,22 +106,22 @@ export default async function ClubsPage() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className={club.isAdmin ? "soft-chip" : "soft-chip soft-chip-muted"}>{club.roleName}</span>
                       {club.organisation ? (
-                        <span className="text-[12px] text-[color:var(--ink-55)]">{club.organisation}</span>
+                        <span className="text-[14px] text-[color:var(--ink-55)]">{club.organisation}</span>
                       ) : null}
                     </span>
                     <span className="soft-display text-[24px]">{club.name}</span>
-                    <span className="text-[13px] text-[color:var(--ink-70)]">
+                    <span className="text-[14px] text-[color:var(--ink-70)]">
                       {card && card.albumCount
                         ? `${card.albumCount.toLocaleString("en-AU")} album${card.albumCount === 1 ? "" : "s"} · ${card.itemCount.toLocaleString("en-AU")} photos and videos`
                         : "Nothing uploaded yet"}
                     </span>
                     {card?.latestTitle ? (
-                      <span className="mt-auto pt-2 text-[13px] text-[color:var(--ink-55)]">
+                      <span className="mt-auto pt-2 text-[14px] text-[color:var(--ink-55)]">
                         Latest: {card.latestTitle}
                         {card.latestDate ? ` · ${formatDate(card.latestDate)}` : ""}
                       </span>
                     ) : (
-                      <span className="mt-auto pt-2 text-[12px] text-[color:var(--ink-55)]">
+                      <span className="mt-auto pt-2 text-[14px] text-[color:var(--ink-55)]">
                         Member since {formatLongDate(club.since)}
                       </span>
                     )}
@@ -140,20 +132,9 @@ export default async function ClubsPage() {
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-3 pt-2 text-[13px] text-[color:var(--ink-70)]">
-          <Link href="/admin/new" className="soft-btn soft-btn-tonal no-underline">
-            Start another club
-          </Link>
-          <Link href="/account" className="soft-btn soft-btn-tonal no-underline">
-            Your profile
-          </Link>
-          <form action="/api/auth/signout" method="post">
-            <input type="hidden" name="scope" value="global" />
-            <button type="submit" className="btn btn-ghost !min-h-[38px] !px-4 text-[13px]">
-              Sign out of all devices
-            </button>
-          </form>
-        </div>
+        <Link href="/admin/new" className="kb-link self-start">
+          Start another club
+        </Link>
       </div>
     </main>
   );

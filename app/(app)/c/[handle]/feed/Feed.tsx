@@ -39,7 +39,7 @@ export function Composer({
             ))}
           </select>
         </label>
-        <SubmitButton className="btn btn-primary ml-auto text-[13px]" pendingText="Posting…">
+        <SubmitButton className="btn btn-primary ml-auto text-[14px]" pendingText="Posting…">
           Post to {memberCount.toLocaleString("en-AU")} members
         </SubmitButton>
       </div>
@@ -63,18 +63,18 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
       {posts.map((post) => (
         <article key={post.id} className="flex flex-col gap-3 border-t-2 border-divider px-6 py-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="flex h-[34px] w-[34px] items-center justify-center bg-neutral-900 text-[12px] font-extrabold text-white">
+            <span className="flex h-[34px] w-[34px] items-center justify-center bg-neutral-900 text-[14px] font-extrabold text-white">
               {post.authorInitials}
             </span>
             <span className="text-[14px] font-semibold">{post.authorName}</span>
-            {post.authorRole ? <span className="tag tag-accent text-[10px]">{post.authorRole}</span> : null}
-            <span className="text-[13px] text-ink-55">{formatDateTime(post.createdAt)}</span>
-            {post.pinned ? <span className="tag tag-outline text-[10px]">Pinned</span> : null}
+            {post.authorRole ? <span className="tag tag-accent text-[14px]">{post.authorRole}</span> : null}
+            <span className="text-[14px] text-ink-55">{formatDateTime(post.createdAt)}</span>
+            {post.pinned ? <span className="tag tag-outline text-[14px]">Pinned</span> : null}
             <span className="ml-auto flex gap-2">
               {canPin ? (
                 <button
                   type="button"
-                  className="btn btn-ghost text-[12px]"
+                  className="btn btn-ghost text-[14px]"
                   disabled={pending}
                   onClick={() => run(() => togglePinAction(handle, post.id, !post.pinned))}
                 >
@@ -84,7 +84,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
               {post.canDelete ? (
                 <button
                   type="button"
-                  className="btn btn-ghost text-[12px]"
+                  className="btn btn-ghost text-[14px]"
                   disabled={pending}
                   onClick={() => run(() => deletePostAction(handle, post.id))}
                 >
@@ -109,7 +109,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
               )}
               <span>
                 <span className="block font-heading text-[15px] font-bold">{post.album.title}</span>
-                <span className="block text-[12px] text-ink-70">{post.album.meta}</span>
+                <span className="block text-[14px] text-ink-70">{post.album.meta}</span>
               </span>
             </Link>
           ) : null}
@@ -119,7 +119,7 @@ export function PostList({ handle, posts, canPin }: { handle: string; posts: Fee
               <button
                 key={reaction.emoji}
                 type="button"
-                className="border-2 px-[10px] py-[6px] text-[13px] font-semibold"
+                className="border-2 px-[10px] py-[6px] text-[14px] font-semibold"
                 style={{
                   borderColor: reaction.mine ? "var(--color-accent)" : "var(--color-divider)",
                   background: reaction.mine ? "var(--color-accent-100)" : "transparent",

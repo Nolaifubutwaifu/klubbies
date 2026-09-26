@@ -22,17 +22,17 @@ function Tile({ item, cover, saved }: { item: GridItem; cover: boolean; saved: b
         // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
         <img src={item.thumbUrl} alt={item.original_filename ?? ""} className="h-full w-full object-cover" loading="lazy" />
       ) : (
-        <span className="flex h-full w-full items-center justify-center bg-neutral-400 p-2 text-center text-[11px] text-ink">
+        <span className="flex h-full w-full items-center justify-center bg-neutral-400 p-2 text-center text-[14px] text-ink">
           {item.status === "ready" ? "No preview" : item.original_filename || "Not finished"}
         </span>
       )}
       {item.kind === "video" ? (
-        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2 py-0.5 text-[10px] font-bold text-white">
+        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-[rgba(25,18,22,0.72)] px-2 py-0.5 text-[14px] font-bold text-white">
           {item.duration_seconds ? duration(item.duration_seconds) : "Video"}
         </span>
       ) : null}
       {cover ? (
-        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink px-2 py-0.5 text-[10px] font-bold text-white">Cover</span>
+        <span className="absolute left-1.5 top-1.5 rounded-full bg-ink px-2 py-0.5 text-[14px] font-bold text-white">Cover</span>
       ) : null}
       {saved ? (
         <span className="absolute bottom-1.5 right-1.5 text-white drop-shadow" aria-label="Saved">
@@ -42,7 +42,7 @@ function Tile({ item, cover, saved }: { item: GridItem; cover: boolean; saved: b
         </span>
       ) : null}
       {item.status !== "ready" ? (
-        <span className="absolute inset-x-1.5 top-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_14%,white)] px-2 py-0.5 text-center text-[10px] font-bold text-accent-800">
+        <span className="absolute inset-x-1.5 top-1.5 rounded-full bg-[color-mix(in_srgb,var(--color-accent)_14%,white)] px-2 py-0.5 text-center text-[14px] font-bold text-accent-800">
           {item.status === "failed" ? "Failed" : "Processing"}
         </span>
       ) : null}
@@ -125,11 +125,11 @@ export function AlbumGrid({
           cover and deletes. */}
       <div className="flex min-h-[40px] flex-wrap items-center gap-2 px-4 text-[14px] sm:px-6">
         {selecting ? null : (
-          <button type="button" className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]" onClick={() => setSelecting(true)}>
+          <button type="button" className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[14px]" onClick={() => setSelecting(true)}>
             Select photos
           </button>
         )}
-        {!selecting && message ? <span className="text-[13px] text-[color:var(--ink-70)]">{message}</span> : null}
+        {!selecting && message ? <span className="text-[14px] text-[color:var(--ink-70)]">{message}</span> : null}
       </div>
 
       {selecting ? (
@@ -140,7 +140,7 @@ export function AlbumGrid({
 
           <button
             type="button"
-            className="ml-auto min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white disabled:opacity-50"
+            className="ml-auto min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[14px] font-bold text-white disabled:opacity-50"
             disabled={pending || !selected.size}
             onClick={() =>
               startTransition(async () => {
@@ -161,7 +161,7 @@ export function AlbumGrid({
             <a
               href={`/api/albums/${albumId}/zip?only=${selectedIds.join(",")}`}
               aria-disabled={!selected.size}
-              className={`flex min-h-[40px] items-center rounded-full bg-white px-4 text-[13px] font-bold text-accent-800 no-underline ${
+              className={`flex min-h-[40px] items-center rounded-full bg-white px-4 text-[14px] font-bold text-accent-800 no-underline ${
                 selected.size ? "" : "pointer-events-none opacity-50"
               }`}
             >
@@ -172,7 +172,7 @@ export function AlbumGrid({
           {canManage && selected.size === 1 ? (
             <button
               type="button"
-              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white"
+              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[14px] font-bold text-white"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
@@ -189,7 +189,7 @@ export function AlbumGrid({
           {canManage ? (
             <button
               type="button"
-              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[13px] font-bold text-white disabled:opacity-50"
+              className="min-h-[40px] cursor-pointer rounded-full border-0 bg-white/[0.16] px-4 text-[14px] font-bold text-white disabled:opacity-50"
               disabled={!selected.size}
               onClick={() => setConfirm(true)}
             >
@@ -199,7 +199,7 @@ export function AlbumGrid({
 
           <button
             type="button"
-            className="min-h-[40px] cursor-pointer rounded-full border-0 bg-transparent px-3 text-[13px] font-bold text-white/80"
+            className="min-h-[40px] cursor-pointer rounded-full border-0 bg-transparent px-3 text-[14px] font-bold text-white/80"
             onClick={() => {
               setSelected(new Set());
               setSelecting(false);
@@ -228,7 +228,7 @@ export function AlbumGrid({
               type="button"
               aria-pressed={kind === value}
               onClick={() => setKind(value)}
-              className={`soft-btn !min-h-[38px] !px-4 !text-[13px] ${
+              className={`soft-btn !min-h-[38px] !px-4 !text-[14px] ${
                 kind === value ? "!bg-ink !text-white" : "soft-btn-tonal"
               }`}
             >

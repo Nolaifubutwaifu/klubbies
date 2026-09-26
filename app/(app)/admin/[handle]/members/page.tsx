@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MoreLink, MoreMenu } from "@/components/MoreMenu";
 import { BillingGate } from "@/components/BillingGate";
 import { PageTitle, Stat } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
@@ -61,25 +62,26 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       {search.step === "3" ? (
-        <div className="soft-bordered flex flex-wrap items-center justify-between gap-4 p-5">
+        <div className="kb-card flex flex-wrap items-center justify-between gap-4 p-5">
           <div>
             <span className="soft-chip">Step 3 of 4</span>
             <div className="soft-display mt-2 text-[20px]">Add the people who should see your photos.</div>
           </div>
-          <Link href={`/admin/${handle}/albums`} className="soft-btn soft-btn-primary no-underline">
+          <Link href={`/admin/${handle}/albums`} className="btn btn-primary">
             Step 4: first album
           </Link>
         </div>
       ) : null}
 
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <PageTitle kicker={ctx.club.name} title="Member list" underline>
+        <PageTitle kicker={ctx.club.name} title="Member list">
           {onList.toLocaleString("en-AU")} on the list. That list is the door: anyone on it can sign in and see your albums.
         </PageTitle>
         {ctx.perms.manage_club ? (
-          <Link href={`/admin/${handle}/roles`} className="soft-btn soft-btn-tonal no-underline">
-            Roles and permissions
-          </Link>
+          <MoreMenu iconOnly label="More actions">
+            <MoreLink href={`/admin/${handle}/roles`}>Roles and handover</MoreLink>
+            <MoreLink href={`/admin/${handle}/activity`}>Who opened what</MoreLink>
+          </MoreMenu>
         ) : null}
       </div>
 
@@ -109,14 +111,14 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
       />
 
       {rows.length >= MAX_ROWS ? (
-        <p className="text-[13px] text-[color:var(--ink-70)]">
+        <p className="text-[14px] text-[color:var(--ink-70)]">
           Showing the first {MAX_ROWS.toLocaleString("en-AU")} members. Search to narrow the list.
         </p>
       ) : null}
 
       {imports.data?.length ? (
-        <section className="soft-card flex flex-col gap-3 p-5">
-          <h2 className="soft-display text-[19px]">Import history</h2>
+        <details className="soft-card flex flex-col gap-3 p-5">
+          <summary className="soft-display min-h-[44px] cursor-pointer content-center text-[19px]">Import history</summary>
           <table className="table">
             <thead>
               <tr>
@@ -139,7 +141,7 @@ export default async function MembersPage(props: PageProps<"/admin/[handle]/memb
               ))}
             </tbody>
           </table>
-        </section>
+        </details>
       ) : null}
     </main>
   );

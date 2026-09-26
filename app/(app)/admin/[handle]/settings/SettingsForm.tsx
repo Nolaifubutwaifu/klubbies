@@ -38,10 +38,10 @@ export function SettingsForm({
       </label>
 
       <div className="flex flex-col gap-3">
-        <span className="text-[13px] font-semibold">Club tone</span>
-        <span className="text-[13px] leading-normal text-[color:var(--ink-70)]">
-          The quiet buttons and the small labels across this club take this colour. Headlines, tags and the main
-          buttons keep the Klubbies red, so your club still looks like Klubbies.
+        <span className="text-[14px] font-semibold">Club tone</span>
+        <span className="text-[14px] leading-normal text-[color:var(--ink-70)]">
+          Avatars, badges and the quiet labels across this club take this colour. Buttons and headlines keep the
+          Klubbies red, so your club still looks like Klubbies.
         </span>
         <input type="hidden" name="accentColour" value={accent} />
         <div className="flex flex-wrap items-center gap-2">
@@ -74,16 +74,16 @@ export function SettingsForm({
               ) : null}
             </button>
           ))}
-          <label className="flex items-center gap-2 text-[13px]">
+          <label className="flex items-center gap-2 text-[14px]">
             <input
               type="color"
-              value={accent || "#d8c8f0"}
+              value={accent || "#cf2e12"}
               onChange={(e) => setAccent(e.target.value)}
               className="h-9 w-9 cursor-pointer soft-card bg-transparent p-0"
               aria-label="Pick a custom colour"
             />
             <input
-              className="input w-[120px] font-mono text-[13px]"
+              className="input w-[120px] font-mono text-[14px]"
               value={accent}
               onChange={(e) => setAccent(e.target.value.startsWith("#") ? e.target.value : `#${e.target.value}`)}
               pattern="#[0-9a-fA-F]{6}"
@@ -91,19 +91,19 @@ export function SettingsForm({
             />
           </label>
           {accent ? (
-            <button type="button" className="btn btn-ghost text-[13px]" onClick={() => setAccent("")}>
+            <button type="button" className="btn btn-ghost text-[14px]" onClick={() => setAccent("")}>
               Use the default tone
             </button>
           ) : null}
         </div>
-        {/* The preview shows what actually changes: the quiet tier and the
-            accessory label. The primary and the tag are there to show what
-            stays the same in every club. */}
-        <div className="flex flex-wrap items-center gap-3 soft-card p-3" style={preview}>
-          <span className="btn btn-ghost">Download all</span>
-          <span className="tag tag-neutral">Members only</span>
-          <span className="btn btn-primary">Add photos</span>
-          <span className="tag tag-accent">Formal</span>
+        {/* The preview shows what actually changes (the avatar and the quiet
+            label) beside what stays the same in every club (the button). */}
+        <div className="flex flex-wrap items-center gap-3 soft-card p-3" style={preview} aria-hidden>
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--tone-support)] text-[14px] font-bold text-[color:var(--tone-support-ink)]">
+            MP
+          </span>
+          <span className="soft-chip soft-chip-muted">Committee</span>
+          <span className="btn btn-primary btn-sm">Add photos</span>
         </div>
       </div>
 

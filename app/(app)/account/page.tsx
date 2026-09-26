@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AccountMenu } from "@/components/AccountMenu";
 import { Brand } from "@/components/ui";
 import { InviteCard } from "@/components/InviteCard";
 import { MemberTabBar } from "@/components/MemberTabBar";
@@ -39,18 +40,9 @@ export default async function AccountPage() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <header className="soft-card mx-4 mt-5 flex flex-wrap items-center justify-between gap-4 !rounded-[28px] px-5 py-2.5 sm:mx-6">
-        <Brand href="/clubs" />
-        <div className="flex items-center gap-3">
-          <Link href="/clubs" className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px] no-underline">
-            Your clubs
-          </Link>
-          <form action="/api/auth/signout" method="post">
-            <button type="submit" className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px]">
-              Sign out
-            </button>
-          </form>
-        </div>
+      <header className="flex items-center justify-between gap-4 border-b border-[color:var(--kb-line)] px-4 py-3 sm:px-6">
+        <Brand href="/clubs" size={24} />
+        <AccountMenu name={name} avatarUrl={avatarUrl} />
       </header>
 
       <div className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6">
@@ -60,7 +52,7 @@ export default async function AccountPage() {
           </span>
           <div className="min-w-0">
             <h1 className="soft-display text-[clamp(24px,4vw,32px)]">{name}</h1>
-            <p className="text-[13px] text-[color:var(--ink-70)]">
+            <p className="text-[14px] text-[color:var(--ink-70)]">
               {profile.email} · on Klubbies since {formatLongDate(profile.created_at)}
             </p>
           </div>
@@ -81,7 +73,7 @@ export default async function AccountPage() {
               </strong>{" "}
               Download anything you want to keep before then.
             </span>
-            <Link href={`/c/${club.handle}`} className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[13px] no-underline">
+            <Link href={`/c/${club.handle}`} className="soft-btn soft-btn-tonal !min-h-[38px] !px-4 !text-[14px] no-underline">
               Open it
             </Link>
           </div>
@@ -99,14 +91,14 @@ export default async function AccountPage() {
                     className="soft-card flex items-center gap-3 p-3.5 text-ink no-underline"
                   >
                     <span
-                      className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] text-[13px] font-extrabold text-white"
+                      className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] text-[14px] font-extrabold text-white"
                       style={{ background: club.accentColour ?? "var(--color-accent)" }}
                     >
                       {initials(club.name)}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[15px] font-bold">{club.name}</span>
-                      <span className="block text-[12px] text-[color:var(--ink-70)]">
+                      <span className="block text-[14px] text-[color:var(--ink-70)]">
                         {club.roleName} · joined {formatLongDate(club.since)}
                       </span>
                     </span>
@@ -114,7 +106,7 @@ export default async function AccountPage() {
                       <span className="soft-chip flex-none">{daysLeft(club.graceEndsAt)} days left</span>
                     ) : (
                       <span
-                        className="flex-none rounded-full px-2.5 py-1 text-[12px] font-bold"
+                        className="flex-none rounded-full px-2.5 py-1 text-[14px] font-bold"
                         style={{ background: "#eaf5ea", color: "#2f6b36" }}
                       >
                         Active
@@ -159,14 +151,14 @@ export default async function AccountPage() {
                 <span className="text-[14px]">
                   <strong>Email code</strong>
                   <br />
-                  <span className="text-[13px] text-[color:var(--ink-70)]">We email a code each time. Always available.</span>
+                  <span className="text-[14px] text-[color:var(--ink-70)]">We email a code each time. Always available.</span>
                 </span>
                 <span className="soft-chip">On</span>
               </div>
               <PasswordForm hasPassword={hasPassword} />
             </div>
 
-            <p className="m-0 text-[13px] leading-normal text-[color:var(--ink-70)]">
+            <p className="m-0 text-[14px] leading-normal text-[color:var(--ink-70)]">
               To delete your account or get a copy of everything shared with you, ask your club admin or contact us. We
               reply within a few days.
             </p>

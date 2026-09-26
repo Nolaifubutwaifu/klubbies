@@ -27,7 +27,7 @@ function PermissionFields({ role }: { role?: Role }) {
           />
           <span>
             <span className="font-semibold">{PERMISSION_LABELS[perm].label}</span>
-            <span className="block text-[13px] text-[color:var(--ink-70)]">{PERMISSION_LABELS[perm].hint}</span>
+            <span className="block text-[14px] text-[color:var(--ink-70)]">{PERMISSION_LABELS[perm].hint}</span>
           </span>
         </label>
       ))}
@@ -46,19 +46,19 @@ function RoleCard({ clubId, role }: { clubId: string; role: Role }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <span className="soft-display text-[18px]">{role.name}</span>
-          <span className="ml-2 text-[13px] text-[color:var(--ink-70)]">
+          <span className="ml-2 text-[14px] text-[color:var(--ink-70)]">
             {role.memberCount.toLocaleString("en-AU")} {role.memberCount === 1 ? "member" : "members"}
             {role.is_default ? " · given to new members" : ""}
           </span>
         </div>
         <div className="flex gap-2">
-          <button type="button" className="btn btn-secondary text-[13px]" onClick={() => setOpen((v) => !v)}>
+          <button type="button" className="btn btn-secondary text-[14px]" onClick={() => setOpen((v) => !v)}>
             {open ? "Close" : "Edit"}
           </button>
           {!role.is_builtin ? (
             <button
               type="button"
-              className="btn btn-ghost text-[13px]"
+              className="btn btn-ghost text-[14px]"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
@@ -98,7 +98,7 @@ function RoleCard({ clubId, role }: { clubId: string; role: Role }) {
             Give this role to new members
           </label>
           <FormMessage state={state} />
-          <SubmitButton className="btn btn-primary self-start text-[13px]" pendingText="Saving…">
+          <SubmitButton className="btn btn-primary self-start text-[14px]" pendingText="Saving…">
             Save role
           </SubmitButton>
         </form>
@@ -131,10 +131,10 @@ export function RoleEditor({ clubId, roles }: { clubId: string; roles: Role[] })
           </label>
           <FormMessage state={state} />
           <div className="flex gap-2">
-            <SubmitButton className="btn btn-primary text-[13px]" pendingText="Creating…">
+            <SubmitButton className="btn btn-primary text-[14px]" pendingText="Creating…">
               Create role
             </SubmitButton>
-            <button type="button" className="btn btn-ghost text-[13px]" onClick={() => setAdding(false)}>
+            <button type="button" className="btn btn-ghost text-[14px]" onClick={() => setAdding(false)}>
               Cancel
             </button>
           </div>

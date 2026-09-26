@@ -1,58 +1,115 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
-/* Design tokens from design/Klubbies.dc.html. Component classes below are a
-   direct port of the Modernist design system used by the mockup. */
+/* ---------------------------------------------------------------------------
+   Klubbies tokens (design audit, 26 Sep 2026)
+   One accent, one ink, one rhythm. Ember is the only brand colour; ink carries
+   everything secondary. Nothing on the site goes below 14px, and no text is
+   set with opacity.
+   --------------------------------------------------------------------------- */
 :root {
-  --color-bg: #f3f2f2;
-  --color-surface: #eae9e9;
-  --color-text: #201e1d;
-  --color-accent: #ec3013;
-  --color-accent-2: #e15b47;
-  --color-divider: color-mix(in srgb, #201e1d 40%, transparent);
-  --color-neutral-100: #f8f4f4;
-  --color-neutral-200: #eae7e7;
-  --color-neutral-300: #d7d3d3;
-  --color-neutral-400: #bab6b6;
-  --color-neutral-500: #9b9797;
-  --color-neutral-600: #7d7979;
-  --color-neutral-700: #605d5d;
-  --color-neutral-800: #444141;
-  --color-neutral-900: #2d2b2b;
-  --color-accent-100: #fff2ef;
-  --color-accent-200: #ffe0d9;
-  --color-accent-300: #ffc4b8;
-  --color-accent-400: #ff9783;
-  --color-accent-500: #ff563c;
-  --color-accent-600: #dd2b0f;
-  --color-accent-700: #ae1800;
-  --color-accent-800: #7c1405;
-  --color-accent-900: #4d170e;
-  --color-accent-2-100: #fff2ef;
-  --color-accent-2-800: #71261b;
-  --font-heading: var(--font-fredoka), system-ui, sans-serif;
-  --font-body: var(--font-dm-sans), system-ui, sans-serif;
-  /* Ink tiers: one warm ramp, mixed from the page's own text colour. Declared
-     here so the Tailwind `text-ink-*` utilities always resolve, and redeclared
-     inside .theme-soft against that theme's ink. */
-  --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
-  --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
-  --ink-35: color-mix(in srgb, var(--color-text) 35%, transparent);
-  /* 60/30/10. Cream is the 60, the club's accent is the 30, and this violet is
-     the 10: it means "this is the action" and is used for nothing else. It is
-     the lilac's own ink (#43335c) pushed to full saturation, so it already
-     belongs to the family under every tonal chip. Global, not per-club. */
-  --brand: #5b2bd6;
-  --brand-deep: #4a22b8;
-  --brand-tint: #ede7fc;
-  --brand-ink: #3d1f8f;
+  /* Surfaces */
+  --kb-cream: #fff8f4; /* page background, theme colour */
+  --kb-sand: #f8eee9; /* alternate sections, info boxes */
+  --kb-white: #ffffff; /* cards, inputs */
+  --kb-line: #eaddd7; /* borders, dividers */
+  --kb-line-strong: #cdbdb6; /* secondary button borders */
+  /* Input edges need 3:1 against white to read as a field (WCAG 1.4.11);
+     line-strong is 1.8:1, so fields, checkboxes and radios use this. */
+  --kb-line-input: #968990;
+
+  /* Ink */
+  --kb-ink: #2b2228; /* headings, dark sections */
+  --kb-ink-2: #5f545a; /* body text, 6.9:1 on cream */
+  --kb-ink-3: #776b70; /* captions, 14px minimum; use ink-2 on sand */
+
+  /* Accent */
+  --kb-ember: #cf2e12; /* primary buttons, white text 5.2:1 */
+  --kb-ember-deep: #ae1800; /* accent words, links, hover */
+  --kb-ember-tint: #ffe7df; /* chips, highlights, focus halo */
+  --kb-ember-on-dark: #ffb3a1; /* accent on ink backgrounds */
+
+  /* Type */
+  --kb-font-display: var(--font-fredoka), system-ui, sans-serif;
+  --kb-font-body: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* Radius */
+  --kb-r-pill: 999px;
+  --kb-r-input: 14px;
+  --kb-r-photo: 16px;
+  --kb-r-card: 24px;
+  --kb-r-panel: 28px;
+
+  /* Section rhythm */
+  --kb-section-y: 112px;
+  --kb-gutter: 80px;
+  --kb-content: 1280px;
+
+  /* -------------------------------------------------------------------------
+     Aliases. The app was built on an older token set; these point every old
+     name at the new values so no call site can reach a retired colour.
+     ------------------------------------------------------------------------- */
+  --color-bg: var(--kb-cream);
+  --color-surface: var(--kb-white);
+  --color-text: var(--kb-ink);
+  --color-accent: var(--kb-ember);
+  --color-divider: var(--kb-line);
+  --color-neutral-100: var(--kb-sand);
+  --color-neutral-200: var(--kb-sand);
+  --color-neutral-300: var(--kb-line);
+  --color-neutral-400: var(--kb-line-strong);
+  --color-neutral-500: var(--kb-ink-3);
+  --color-neutral-600: var(--kb-ink-3);
+  --color-neutral-700: var(--kb-ink-2);
+  --color-neutral-800: var(--kb-ink-2);
+  --color-neutral-900: var(--kb-ink);
+  --color-accent-100: var(--kb-ember-tint);
+  --color-accent-200: var(--kb-ember-tint);
+  --color-accent-300: #f7b9a8;
+  --color-accent-400: #e8765c;
+  --color-accent-500: var(--kb-ember);
+  --color-accent-600: var(--kb-ember-deep);
+  --color-accent-700: var(--kb-ember-deep);
+  --color-accent-800: var(--kb-ember-deep);
+  --color-accent-900: #6e1403;
+  /* Salmon is retired: the old second accent now resolves to sand and ink. */
+  --color-accent-2: var(--kb-sand);
+  --color-accent-2-100: var(--kb-sand);
+  --color-accent-2-800: var(--kb-ink);
+  --ink-70: var(--kb-ink-2);
+  --ink-55: var(--kb-ink-3);
+  --ink-35: var(--kb-line-input);
+  --font-heading: var(--kb-font-display);
+  --font-body: var(--kb-font-body);
+
+  /* The club's quiet layer (lib/theme.ts regenerates these per club). The
+     default is sand, not lilac. */
+  --tone-base: var(--kb-cream);
+  --tone-support: var(--kb-sand);
+  --tone-support-deep: var(--kb-line);
+  --tone-support-ink: var(--kb-ink);
+
+  --soft-r-lg: var(--kb-r-panel);
+  --soft-r: var(--kb-r-card);
+  --soft-r-sm: var(--kb-r-photo);
+  --soft-shadow: 0 1px 2px rgb(43 34 40 / 0.04);
+  --soft-shadow-lift: 0 10px 28px -12px rgb(43 34 40 / 0.22);
+  --soft-ease: 180ms cubic-bezier(0.22, 0.68, 0.32, 1);
+  --shadow-lg: 0 18px 44px -14px rgb(43 34 40 / 0.3);
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-6: 24px;
   --space-8: 32px;
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent);
+}
+
+@media (max-width: 639px) {
+  :root {
+    --kb-section-y: 64px;
+    --kb-gutter: 20px;
+  }
 }
 
 @layer base {
@@ -64,16 +121,15 @@
 
   html,
   body {
-    background: var(--color-bg);
-    color: var(--color-text);
+    background: var(--kb-cream);
+    color: var(--kb-ink);
   }
 
   body {
     margin: 0;
-    font-family: var(--font-body);
-    font-size: 15px;
-    line-height: 1.55;
-    font-weight: 400;
+    font-family: var(--kb-font-body);
+    font-size: 16px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -83,11 +139,12 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-heading);
-    font-weight: 800;
-    line-height: 1.12;
-    letter-spacing: -0.015em;
+    font-family: var(--kb-font-display);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
     margin: 0;
+    color: var(--kb-ink);
   }
 
   p {
@@ -95,1102 +152,374 @@
   }
 
   a {
-    color: var(--color-accent);
-    text-underline-offset: 3px;
+    color: var(--kb-ember-deep);
+    text-underline-offset: 4px;
   }
 
+  /* One focus ring everywhere: 3px ink, 3px off the edge. */
   :focus {
     outline: none;
   }
-
   :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 3px solid var(--kb-ink);
+    outline-offset: 3px;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 30%, transparent);
-  }
-}
-
-@layer components {
-  .hr {
-    height: 2px;
-    border: 0;
-    margin: 0;
-    background: var(--color-divider);
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-    text-decoration: none;
-    font-family: var(--font-heading);
-    font-weight: 800;
-    font-size: 14px;
-    line-height: 1.2;
-    color: var(--color-text);
-    background: transparent;
-    border: 1px solid transparent;
-    padding: var(--space-2) calc(var(--space-3) * 1.2);
-    border-radius: 0;
-    white-space: nowrap;
-    min-height: 40px;
-    transition:
-      background-color 160ms ease,
-      border-color 160ms ease,
-      color 160ms ease;
-  }
-  /* Touch devices get the full 44px target; desktop keeps its density. */
-  @media (pointer: coarse) {
-    .btn {
-      min-height: 44px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .btn {
-      transition: none;
-    }
-  }
-  .btn:disabled,
-  .btn[aria-disabled="true"] {
-    opacity: 0.45;
-    cursor: not-allowed;
-  }
-  .btn-primary {
-    background: var(--color-accent);
-    color: var(--color-bg);
-  }
-  .btn-primary:hover:not(:disabled) {
-    background: var(--color-accent-600);
-  }
-  .btn-primary:active:not(:disabled) {
-    background: var(--color-accent-700);
-  }
-  .btn-secondary {
-    border-color: var(--color-divider);
-  }
-  .btn-secondary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-text) 7%, transparent);
-  }
-  .btn-secondary:active:not(:disabled) {
-    background: color-mix(in srgb, var(--color-text) 14%, transparent);
-  }
-  .btn-secondary[aria-pressed="true"] {
-    background: var(--color-text);
-    color: var(--color-bg);
-    border-color: var(--color-text);
-  }
-  .btn-ghost {
-    color: var(--color-accent);
-    padding-inline: var(--space-1);
-  }
-  .btn-ghost:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
-  }
-  .btn-lg {
-    font-size: 15px;
-    padding: 12px 18px;
-  }
-
-  .input {
-    width: 100%;
-    min-height: 40px;
-    padding: 6px 10px;
-    font: inherit;
-    font-size: 15px;
-    color: var(--color-text);
-    caret-color: var(--color-accent);
-    background: var(--color-surface);
-    border: 1px solid var(--color-divider);
-    border-radius: 0;
-  }
-  .input:hover {
-    border-color: color-mix(in srgb, var(--color-text) 45%, transparent);
-  }
-  .input:focus-visible {
-    border-color: var(--color-accent);
-    outline-offset: 0;
-  }
-  textarea.input {
-    min-height: 90px;
-    resize: vertical;
-  }
-
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-
-  .kicker {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--color-accent-700);
-  }
-
-  .label-caps {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-neutral-600);
-  }
-
-  .display {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.02;
-  }
-
-  .brand {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: -0.02em;
-    color: var(--color-text);
-    text-decoration: none;
-  }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    padding: 3px 10px;
-    white-space: nowrap;
-  }
-  .tag-accent {
-    background: var(--color-accent-100);
-    color: var(--color-accent-800);
-  }
-  .tag-accent-2 {
-    background: var(--color-accent-2-100);
-    color: var(--color-accent-2-800);
-  }
-  .tag-neutral {
-    background: var(--color-neutral-100);
-    color: var(--color-neutral-800);
-  }
-  .tag-outline {
-    border: 1px solid var(--color-accent);
-    color: var(--color-accent);
-  }
-
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-  }
-  .table th {
-    text-align: left;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--color-text) 60%, transparent);
-    padding: var(--space-2);
-    border-bottom: 2px solid var(--color-divider);
-    font-weight: 600;
-  }
-  .table td {
-    padding: var(--space-2);
-    border-bottom: 1px solid var(--color-divider);
-    vertical-align: middle;
-  }
-  .table tbody tr:hover {
-    background: color-mix(in srgb, var(--color-text) 4%, transparent);
-  }
-
-  .radio {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  .radio input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-  }
-  .radio .dot {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 auto;
-    border-radius: 50%;
-    border: 1.5px solid var(--color-divider);
-  }
-  .radio input:checked + .dot {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    box-shadow: inset 0 0 0 4px var(--color-bg);
-  }
-
-  .dialog-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    display: grid;
-    place-items: center;
-    padding: var(--space-4);
-    background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
-  }
-  .dialog {
-    width: min(560px, 100%);
-    max-height: calc(100dvh - 32px);
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-6);
-    background: var(--color-bg);
-    border: 2px solid var(--color-text);
-    box-shadow: var(--shadow-lg);
-  }
-  .dialog-title {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 24px;
-    letter-spacing: -0.02em;
-  }
-  .dialog-actions {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin-top: var(--space-2);
-  }
-
-  .notice {
-    border-left: 4px solid var(--color-accent);
-    background: var(--color-accent-100);
-    padding: var(--space-3) var(--space-4);
-    font-size: 14px;
-    line-height: 1.45;
-    color: var(--color-accent-800);
-  }
-
-  .dropzone {
-    border: 2px dashed var(--color-neutral-400);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    text-align: center;
-    cursor: pointer;
-  }
-  .dropzone[data-active="true"] {
-    border-color: var(--color-accent);
-    background: var(--color-accent-100);
-  }
-
-  .tile-grid {
-    display: grid;
-    gap: 2px;
-    background: var(--color-divider);
-  }
-
-  /* Photo tiles lift slightly on hover so grids feel alive. */
-  .tile {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    background: var(--color-neutral-300);
-  }
-  .tile img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    transition: transform 240ms ease, filter 240ms ease;
-  }
-  .tile:hover img,
-  .tile:focus-visible img {
-    transform: scale(1.04);
-  }
-
-  .panel {
-    background: var(--color-surface);
-    border: 2px solid var(--color-divider);
-  }
-
-  .stat {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: var(--space-1);
-    padding: var(--space-4);
-    background: var(--color-surface);
-    border: 2px solid var(--color-divider);
-  }
-  .stat::before {
-    content: "";
-    position: absolute;
-    inset: -2px -2px auto -2px;
-    height: 6px;
-    background: var(--color-accent);
-  }
-
-  .chip-date {
-    display: inline-block;
-    background: var(--color-accent);
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 4px 8px;
-  }
-
-  .overlay-title {
-    position: absolute;
-    inset: auto 0 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: var(--space-6);
-    background: linear-gradient(to top, rgba(32, 30, 29, 0.85), rgba(32, 30, 29, 0));
-    color: #ffffff;
-  }
-
-  .masonry {
-    column-gap: 2px;
-    columns: 2 160px;
-  }
-  @media (min-width: 768px) {
-    /* Photo tiles lift slightly on hover so grids feel alive. */
-  .tile {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    background: var(--color-neutral-300);
-  }
-  .tile img {
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-    transition: transform 240ms ease, filter 240ms ease;
-  }
-  .tile:hover img,
-  .tile:focus-visible img {
-    transform: scale(1.04);
-  }
-
-  .panel {
-    background: var(--color-surface);
-    border: 2px solid var(--color-divider);
-  }
-
-  .stat {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: var(--space-1);
-    padding: var(--space-4);
-    background: var(--color-surface);
-    border: 2px solid var(--color-divider);
-  }
-  .stat::before {
-    content: "";
-    position: absolute;
-    inset: -2px -2px auto -2px;
-    height: 6px;
-    background: var(--color-accent);
-  }
-
-  .chip-date {
-    display: inline-block;
-    background: var(--color-accent);
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 4px 8px;
-  }
-
-  .overlay-title {
-    position: absolute;
-    inset: auto 0 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: var(--space-6);
-    background: linear-gradient(to top, rgba(32, 30, 29, 0.85), rgba(32, 30, 29, 0));
-    color: #ffffff;
-  }
-
-  .masonry {
-      columns: 4 200px;
-    }
-  }
-  .masonry > * {
-    break-inside: avoid;
-    margin-bottom: 2px;
+    background: var(--kb-ember-tint);
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Soft theme (prototype, scoped to .theme-soft)
-   A bubbly alternative to the modernist system: warm cream ground, rounded
-   cards, soft double shadows, pill controls. Tokens are redeclared on the
-   wrapper so Tailwind utilities inside it pick them up, and the per-club
-   accent still drives every highlight.
+   Layout: sections and the content column
    --------------------------------------------------------------------------- */
-.theme-soft {
-  --color-bg: #fff8f4;
-  --color-surface: #ffffff;
-  --color-text: #2b2228;
-  --color-divider: color-mix(in srgb, #2b2228 7%, transparent);
-  --color-neutral-600: #7a6e74;
-  --color-neutral-700: #5f545a;
-  --soft-r-lg: 28px;
-  --soft-r: 22px;
-  --soft-r-sm: 16px;
-  --soft-shadow: 0 1px 2px color-mix(in srgb, #2b2228 5%, transparent), 0 10px 24px -8px color-mix(in srgb, #2b2228 18%, transparent);
-  --soft-shadow-lift: 0 2px 4px color-mix(in srgb, #2b2228 6%, transparent), 0 18px 36px -10px color-mix(in srgb, #2b2228 26%, transparent);
-  --soft-ease: 200ms cubic-bezier(0.22, 0.68, 0.32, 1);
-  /* 60/30/10: cream ground, lilac supporting surfaces, accent for action only. */
-  --tone-base: #fff8f4;
-  /* Supporting tones — the quiet layer. This is the neutral default, used by
-     the marketing pages and by clubs that have not picked a tone; a club that
-     has one gets these three regenerated from it in lib/theme.ts. The club's
-     colour lives here and nowhere else: --color-accent stays Klubbies
-     vermillion in every club, so headlines, tags and the tier-2 button look
-     the same everywhere. Deepened from #ded0f4 (1.45:1 against white) so the
-     quiet button tier reads as a button rather than a ghost. */
-  --tone-support: #f1e9fb;
-  --tone-support-deep: #d8c8f0;
-  --tone-support-ink: #43335c;
-  --ink-70: color-mix(in srgb, var(--color-text) 72%, transparent);
-  --ink-55: color-mix(in srgb, var(--color-text) 55%, transparent);
-  --ink-35: color-mix(in srgb, var(--color-text) 35%, transparent);
-  font-family: var(--font-dm-sans), system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  background:
-    radial-gradient(60% 45% at 8% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 70%),
-    radial-gradient(50% 40% at 100% 12%, color-mix(in srgb, var(--color-accent-2) 12%, transparent), transparent 70%),
-    var(--color-bg);
-  color: var(--color-text);
+@layer components {
+  .kb-section {
+    padding-block: var(--kb-section-y);
+  }
+  .kb-wrap {
+    width: 100%;
+    max-width: calc(var(--kb-content) + 2 * var(--kb-gutter));
+    margin-inline: auto;
+    padding-inline: var(--kb-gutter);
+  }
+  .kb-sand {
+    background: var(--kb-sand);
+  }
+  .kb-ink-band {
+    background: var(--kb-ink);
+    color: #fff;
+  }
+  .kb-ink-band h1,
+  .kb-ink-band h2,
+  .kb-ink-band h3 {
+    color: #fff;
+  }
+
+  .kb-h1 {
+    font-family: var(--kb-font-display);
+    font-weight: 700;
+    font-size: 68px;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+  }
+  .kb-h2 {
+    font-family: var(--kb-font-display);
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .kb-h3 {
+    font-family: var(--kb-font-display);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .kb-lead {
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--kb-ink-2);
+  }
+  .kb-body {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--kb-ink-2);
+  }
+  .kb-caption {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--kb-ink-3);
+  }
+  @media (max-width: 639px) {
+    .kb-h1 {
+      font-size: 42px;
+    }
+    .kb-h2 {
+      font-size: 32px;
+    }
+    .kb-h3 {
+      font-size: 19px;
+    }
+    .kb-lead {
+      font-size: 17px;
+    }
+  }
+  /* The accent word in a heading. */
+  .kb-accent,
+  .soft-word {
+    color: var(--kb-ember-deep);
+  }
+  .kb-ink-band .kb-accent {
+    color: var(--kb-ember-on-dark);
+  }
 }
 
+/* ---------------------------------------------------------------------------
+   Buttons
+   Two kinds, nothing else: primary (ember, one per view) and secondary
+   (white with an ink border). Text links cover the rest. The old class names
+   all resolve to one of these two, so every screen draws the same buttons.
+   --------------------------------------------------------------------------- */
 @layer components {
-  .theme-soft h1,
-  .theme-soft h2,
-  .theme-soft h3,
-  .theme-soft .soft-display {
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-  }
-
-  .soft-card {
-    background: var(--color-surface);
-    border-radius: var(--soft-r);
-    box-shadow: var(--soft-shadow);
-    border: 1px solid color-mix(in srgb, #2b2228 6%, transparent);
-  }
-  a.soft-card,
-  button.soft-card {
-    transition:
-      transform var(--soft-ease),
-      box-shadow var(--soft-ease);
-  }
-  a.soft-card:hover,
-  button.soft-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--soft-shadow-lift);
-  }
-
+  .btn,
   .soft-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 44px;
-    padding: 10px 18px;
-    border: 0;
-    border-radius: 999px;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 15px;
+    min-height: 52px;
+    padding: 0 26px;
+    border: 1.5px solid var(--kb-line-strong);
+    border-radius: var(--kb-r-pill);
+    background: var(--kb-white);
+    color: var(--kb-ink);
+    font-family: var(--kb-font-body);
+    font-weight: 700;
+    font-size: 16px;
     line-height: 1.2;
-    cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    cursor: pointer;
     transition:
-      transform var(--soft-ease),
-      box-shadow var(--soft-ease),
-      background-color var(--soft-ease);
+      background-color var(--soft-ease),
+      border-color var(--soft-ease),
+      color var(--soft-ease);
   }
-  .soft-btn:active:not(:disabled) {
-    transform: scale(0.97);
+  .btn:hover:not(:disabled),
+  .soft-btn:hover:not(:disabled) {
+    border-color: var(--kb-ink);
   }
-  /* A disabled soft button has to look disabled. The consent gates lean on
-     this: a filled primary button that cannot be pressed, with no visual
-     difference, reads as a broken screen rather than as "tick the box". */
+  .btn:disabled,
+  .btn[aria-disabled="true"],
   .soft-btn:disabled,
   .soft-btn[aria-disabled="true"] {
     opacity: 0.45;
     cursor: not-allowed;
   }
-  /* Three filled tiers. No outlines, no transparent buttons — they separate
-     on colour, size and type weight so the ladder survives greyscale.
-     Tier 1 is the global brand violet (the 10%), tier 2 the club's own accent
-     (the 30%), tier 3 the supporting lilac. Rule: a tier-3 button is never the
-     only button in a group; a lone action is tier 2 or higher. */
 
-  /* Tier 1 — the single action of the screen. */
+  /* Primary: the one thing this screen is for. */
+  .btn-primary,
   .soft-btn-primary {
+    background: var(--kb-ember);
+    border-color: var(--kb-ember);
     color: #fff;
-    background: linear-gradient(135deg, var(--brand), var(--brand-deep));
-    box-shadow: 0 8px 20px -7px color-mix(in srgb, var(--brand) 55%, transparent);
-    min-height: 48px;
-    padding: 12px 24px;
-    font-size: 16px;
   }
-  .soft-btn-primary:hover {
-    box-shadow: 0 12px 26px -7px color-mix(in srgb, var(--brand) 65%, transparent);
+  .btn-primary:hover:not(:disabled),
+  .soft-btn-primary:hover:not(:disabled) {
+    background: var(--kb-ember-deep);
+    border-color: var(--kb-ember-deep);
   }
 
-  /* Tier 2 — the club's accent, tinted to 55% so accent-800 ink clears 4.5:1. */
-  .soft-btn-accent {
-    color: var(--color-accent-800);
-    background: color-mix(in srgb, var(--color-accent) 55%, #fff);
-  }
-  .soft-btn-accent:hover {
-    background: color-mix(in srgb, var(--color-accent) 68%, #fff);
-  }
-
-  /* Tier 3 — the long tail. Deepened from #f1e9fb, which sat at 1.12:1
-     against the page and read as a ghost button. */
+  /* Secondary. accent / tonal / ghost are old names for the same button. */
+  .btn-secondary,
+  .btn-ghost,
+  .soft-btn-accent,
   .soft-btn-tonal {
-    color: var(--tone-support-ink);
-    background: var(--tone-support-deep);
-    box-shadow: none;
-    min-height: 40px;
-    padding: 9px 16px;
-    font-weight: 600;
-    font-size: 14px;
+    background: var(--kb-white);
+    border-color: var(--kb-line-strong);
+    color: var(--kb-ink);
   }
-  .soft-btn-tonal:hover {
-    background: color-mix(in srgb, var(--color-text) 8%, var(--tone-support-deep));
+  .btn-secondary[aria-pressed="true"],
+  .btn-ghost[aria-pressed="true"] {
+    background: var(--kb-ink);
+    border-color: var(--kb-ink);
+    color: #fff;
   }
-  @media (pointer: coarse) {
-    .soft-btn-tonal {
-      min-height: 44px;
-    }
+  /* Compact secondary, for rows and toolbars inside the app. */
+  .btn-ghost,
+  .soft-btn-tonal {
+    min-height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
   }
 
-  /* Destructive: the odd one out, without shouting. */
+  /* Destructive: secondary shape, ember-deep ink. */
+  .btn-danger,
   .soft-btn-danger {
-    color: var(--color-accent-900);
-    background: color-mix(in srgb, var(--color-accent) 30%, #fff);
-    box-shadow: none;
+    background: var(--kb-white);
+    border-color: var(--kb-ember-deep);
+    color: var(--kb-ember-deep);
   }
-  .soft-btn-danger:hover {
-    background: color-mix(in srgb, var(--color-accent) 42%, #fff);
+  .btn-danger:hover:not(:disabled),
+  .soft-btn-danger:hover:not(:disabled) {
+    background: var(--kb-ember-tint);
+    border-color: var(--kb-ember-deep);
   }
 
+  .btn-lg,
   .soft-btn-lg {
     min-height: 56px;
-    padding: 14px 28px;
-    font-size: 18px;
+    padding: 0 30px;
+    font-size: 17px;
+  }
+  .btn-sm {
+    min-height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
   }
 
-  .soft-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 700;
-    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
-    color: var(--color-accent-700);
-  }
-  .soft-chip-muted {
-    background: var(--tone-support);
-    color: var(--tone-support-ink);
-  }
-
-  .soft-input {
-    width: 100%;
-    min-height: 46px;
-    padding: 10px 16px;
-    font: inherit;
-    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--soft-shadow);
-  }
-  .soft-input::placeholder {
-    color: var(--color-neutral-600);
-  }
-  .soft-input:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
-  }
-
-  .soft-tile {
-    position: relative;
-    display: block;
-    overflow: hidden;
-    border-radius: var(--soft-r-sm);
-    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
-  }
-  .soft-tile img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 400ms cubic-bezier(0.22, 0.68, 0.32, 1);
-  }
-  .soft-tile:hover img {
-    transform: scale(1.05);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .theme-soft *,
-    .theme-soft *::before,
-    .theme-soft *::after {
-      transition: none !important;
-      animation: none !important;
-    }
-    a.soft-card:hover,
-    button.soft-card:hover {
-      transform: none;
-    }
-    .soft-tile:hover img {
-      transform: none;
-    }
-  }
-}
-
-/* Loading is a skeleton, never a spinner: the page arrives in the shape it
-   will keep, so nothing jumps when the data lands. */
-@layer components {
-  .soft-skeleton {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--soft-r-sm);
-    background: color-mix(in srgb, var(--color-text) 7%, transparent);
-  }
-  .soft-skeleton::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 55%, transparent), transparent);
-    animation: soft-shimmer 1.4s infinite;
-  }
-  @keyframes soft-shimmer {
-    to {
-      transform: translateX(100%);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .soft-skeleton::after {
-      animation: none;
-    }
-  }
-}
-
-/* Soft theme decoration: blobs, dot grid, grain, hand-drawn accents. */
-@layer components {
-  .soft-backdrop {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .soft-blob {
-    position: absolute;
-    display: block;
-    filter: blur(70px);
-    opacity: 0.3;
-    will-change: transform;
-  }
-  .soft-blob-a {
-    top: -14%;
-    left: -8%;
-    width: 46vw;
-    height: 46vw;
-    max-width: 620px;
-    max-height: 620px;
-    background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 70%);
-    border-radius: 58% 42% 47% 53% / 52% 45% 55% 48%;
-    animation: soft-drift-a 34s ease-in-out infinite;
-  }
-  .soft-blob-b {
-    top: 6%;
-    right: -12%;
-    width: 40vw;
-    height: 40vw;
-    max-width: 540px;
-    max-height: 540px;
-    background: radial-gradient(circle at 60% 40%, color-mix(in srgb, var(--tone-support) 85%, transparent), transparent 72%);
-    border-radius: 44% 56% 58% 42% / 48% 52% 44% 56%;
-    animation: soft-drift-b 42s ease-in-out infinite;
-  }
-  .soft-blob-c {
-    bottom: 2%;
-    left: 22%;
-    width: 52vw;
-    height: 38vw;
-    max-width: 700px;
-    max-height: 480px;
-    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-accent-300) 60%, transparent), transparent 72%);
-    border-radius: 52% 48% 40% 60% / 56% 44% 56% 44%;
-    animation: soft-drift-c 50s ease-in-out infinite;
-    opacity: 0.26;
-  }
-
-  /* Dot grid, faded out towards the bottom so it never fights the cards. */
-  .soft-dots {
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(color-mix(in srgb, var(--color-text) 22%, transparent) 1.2px, transparent 1.2px);
-    background-size: 22px 22px;
-    opacity: 0.22;
-    mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.35) 45%, transparent 85%);
-  }
-
-  /* Fine paper grain: keeps the large flat areas from looking like flat CSS. */
-  .soft-grain {
-    position: absolute;
-    inset: 0;
-    opacity: 0.5;
-    mix-blend-mode: soft-light;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
-  }
-
-  @keyframes soft-drift-a {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-      transform: translate3d(3%, 4%, 0) scale(1.08);
-    }
-  }
-  @keyframes soft-drift-b {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1.04);
-    }
-    50% {
-      transform: translate3d(-4%, 3%, 0) scale(1);
-    }
-  }
-  @keyframes soft-drift-c {
-    0%,
-    100% {
-      transform: translate3d(0, 0, 0) scale(1);
-    }
-    50% {
-      transform: translate3d(4%, -3%, 0) scale(1.06);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .soft-blob {
-      animation: none !important;
-    }
-  }
-
-  /* Hand-drawn underline that sits under a heading. */
-  .soft-squiggle {
-    display: block;
-    width: clamp(120px, 22vw, 190px);
-    height: 12px;
-    margin-top: 2px;
-    color: var(--color-accent);
-  }
-
-  /* Sticker: a small rotated label pinned to a card corner. */
-  .soft-sticker {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 7px 14px;
-    border-radius: 999px;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 13px;
+  /* Secondary on an ink band. */
+  .btn-on-dark {
+    background: var(--kb-ink);
+    border-color: #fff;
     color: #fff;
-    background: linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
-    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--color-accent) 70%, transparent);
-    transform: rotate(-3deg);
   }
-}
-
-/* Soft theme: landing-page pieces (wordmark, numerals, panels, CTA band). */
-@layer components {
-  /* The chunky voice: wide, rounded, slightly overweight. Used for the
-     wordmark and for one accent word per heading, never for running text. */
-  .soft-wordmark {
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-  /* TODO(display-voice): the emphasised word in a headline is marked by colour
-     alone. That disappears in greyscale and competes with the category chips,
-     which use the same red. It should carry a second signal: a display face of
-     its own, set here as `font-family: var(--font-accent)` once one is picked
-     and added to app/layout.tsx. Fraunces, Syne, Big Shoulders Display,
-     Unbounded, Archivo Black, Familjen Grotesk and Instrument Serif were all
-     rejected on looks — see DECISIONS.md #76. */
-  .theme-soft .soft-word {
-    color: var(--color-accent-700);
-    font-weight: 600;
+  .btn-on-dark:hover:not(:disabled) {
+    background: #3a2f36;
+    border-color: #fff;
   }
 
-  /* Big step numeral: hierarchy by opacity, not by another colour. */
-  /* Hidden on phones, where the card is too narrow for the numeral to sit
-     behind the copy without touching it. */
-  .soft-numeral {
-    display: none;
-    position: absolute;
-    bottom: -22px;
-    right: 8px;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 86px;
-    line-height: 1;
-    color: color-mix(in srgb, var(--color-accent) 13%, transparent);
-    pointer-events: none;
+  /* Text link: for the third action, when there is one. */
+  .kb-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--kb-ember-deep);
+    font: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
   }
-  @media (min-width: 640px) {
-    .soft-numeral {
-      display: block;
-    }
+  .kb-link-quiet {
+    color: var(--kb-ink-2);
   }
 
-  /* 30% supporting surface. */
-  .soft-panel {
-    border-radius: var(--soft-r-lg);
-    background: color-mix(in srgb, var(--tone-support) 78%, white);
-    box-shadow: var(--soft-shadow);
-  }
-
-  .soft-bubble {
+  /* Icon-only round button (menus, "more"). Always carries an aria-label. */
+  .kb-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 999px;
-    color: var(--color-accent-700);
-    background: color-mix(in srgb, white 72%, transparent);
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 1.5px solid var(--kb-line-strong);
+    border-radius: var(--kb-r-pill);
+    background: var(--kb-white);
+    color: var(--kb-ink);
+    cursor: pointer;
+  }
+  .kb-icon-btn:hover {
+    border-color: var(--kb-ink);
   }
 
-  /* 10% colour, used once per page at full strength. */
-  .soft-cta {
-    border-radius: var(--soft-r-lg);
-    background:
-      radial-gradient(70% 120% at 85% 10%, color-mix(in srgb, white 22%, transparent), transparent 60%),
-      linear-gradient(135deg, var(--color-accent-500), var(--color-accent-700));
-    box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--color-accent) 80%, transparent);
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .soft-btn {
+      transition: none;
+    }
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Soft theme adoption layer
-   Re-skins the existing component classes inside .theme-soft, so a page joins
-   the new design by being wrapped rather than rewritten.
+   Fields
    --------------------------------------------------------------------------- */
 @layer components {
-  .theme-soft .btn {
-    min-height: 44px;
-    padding: 10px 20px;
-    border: 0;
-    border-radius: 999px;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
+  .kb-label {
+    display: block;
     font-size: 15px;
-    transition:
-      transform var(--soft-ease),
-      box-shadow var(--soft-ease),
-      background-color var(--soft-ease);
+    font-weight: 700;
+    color: var(--kb-ink);
   }
-  .theme-soft .btn:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  /* Three tiers, all solid fills — no outlines and no transparent buttons.
-     They separate on colour, size and type weight, so the ladder survives
-     greyscale. Tier 3 is the one compromise: on a cream ground no pale fill
-     can clear the 3:1 WCAG threshold for a control edge, so the rule is that
-     a tier-3 button is never the only button in a group. A lone action is
-     tier 2 or higher. */
-
-  /* Tier 1 — the single action of the screen. */
-  .theme-soft .btn-primary {
-    color: #fff;
-    background: linear-gradient(135deg, var(--brand), var(--brand-deep));
-    box-shadow: 0 8px 20px -7px color-mix(in srgb, var(--brand) 55%, transparent);
-    min-height: 48px;
-    padding: 12px 24px;
-    font-size: 16px;
-  }
-  .theme-soft .btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, var(--brand-deep), var(--brand-deep));
-  }
-
-  /* Tier 2 — the club's accent, tinted so dark accent ink clears 4.5:1 on it. */
-  .theme-soft .btn-secondary {
-    color: var(--color-accent-800);
-    background: color-mix(in srgb, var(--color-accent) 55%, #fff);
-    border: 0;
-    box-shadow: none;
-    min-height: 44px;
-    font-size: 15px;
-  }
-  .theme-soft .btn-secondary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 68%, #fff);
-  }
-  .theme-soft .btn-secondary[aria-pressed="true"] {
-    color: #fff;
-    background: var(--color-accent-700);
-  }
-
-  /* Tier 3 — the long tail. Deepened from the old #f1e9fb, which sat at
-     1.12:1 against the page and read as a ghost. */
-  .theme-soft .btn-ghost {
-    color: var(--tone-support-ink);
-    background: var(--tone-support-deep);
-    border: 0;
-    box-shadow: none;
-    min-height: 40px;
-    padding: 8px 16px;
-    font-weight: 500;
+  .kb-help {
     font-size: 14px;
+    color: var(--kb-ink-3);
   }
-  .theme-soft .btn-ghost:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-text) 8%, var(--tone-support-deep));
-  }
-  .theme-soft .btn-ghost[aria-pressed="true"] {
-    color: #fff;
-    background: var(--color-accent-700);
-  }
-
-  /* Every tier still clears the 44px touch target on a finger. */
-  @media (pointer: coarse) {
-    .theme-soft .btn-ghost {
-      min-height: 44px;
-    }
+  .kb-error {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--kb-ember-deep);
   }
 
-  /* Destructive: reads as the odd one out without shouting. */
-  .theme-soft .btn-danger {
-    color: var(--color-accent-900);
-    background: color-mix(in srgb, var(--color-accent) 30%, #fff);
-    border: 0;
+  .input,
+  .soft-input,
+  .field input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  .field select,
+  .field textarea,
+  .theme-soft select,
+  .theme-soft input[type="date"],
+  .theme-soft input[type="datetime-local"],
+  .theme-soft input[type="time"] {
+    width: 100%;
+    min-height: 52px;
+    padding: 12px 16px;
+    border: 1.5px solid var(--kb-line-input);
+    border-radius: var(--kb-r-input);
+    background: var(--kb-white);
+    color: var(--kb-ink);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.3;
+    caret-color: var(--kb-ember);
     box-shadow: none;
   }
-  .theme-soft .btn-danger:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-accent) 42%, #fff);
+  .input::placeholder,
+  .soft-input::placeholder,
+  .field input::placeholder,
+  .field textarea::placeholder {
+    color: var(--kb-ink-3);
+  }
+  .input:focus-visible,
+  .soft-input:focus-visible,
+  .field input:focus-visible,
+  .field select:focus-visible,
+  .field textarea:focus-visible,
+  .theme-soft select:focus-visible {
+    outline: none;
+    border: 2px solid var(--kb-ink);
+    box-shadow: 0 0 0 4px var(--kb-ember-tint);
+  }
+  .input[aria-invalid="true"],
+  .soft-input[aria-invalid="true"] {
+    border: 2px solid var(--kb-ember-deep);
+  }
+  textarea.input,
+  .field textarea {
+    min-height: 96px;
+    resize: vertical;
   }
 
-  .theme-soft .btn-lg {
-    min-height: 56px;
-    padding: 14px 28px;
-    font-size: 18px;
-  }
-
-  .theme-soft .input,
-  .theme-soft .field input,
-  .theme-soft .field select,
-  .theme-soft .field textarea {
-    min-height: 46px;
-    padding: 10px 16px;
-    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
-    border-radius: 14px;
-    background: var(--color-surface);
-    box-shadow: var(--soft-shadow);
-  }
-
-  /* ---------------------------------------------------------------------
-     Native controls, wearing the soft system.
-     Styled on the element rather than a class, so every select, checkbox,
-     radio and date field in the app is covered without touching components.
-     The native element is kept in all cases — mobile still gets the OS
-     picker wheel and the OS date sheet.
-     --------------------------------------------------------------------- */
   .theme-soft select {
     appearance: none;
     -webkit-appearance: none;
-    min-height: 46px;
-    padding: 10px 42px 10px 16px;
-    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
-    border-radius: 14px;
-    background-color: var(--color-surface);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2343335c' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    padding-right: 44px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%232b2228' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 16px center;
     background-size: 12px;
-    box-shadow: var(--soft-shadow);
-    font-family: inherit;
-    font-size: 15px;
-    color: var(--color-text);
-    line-height: 1.3;
   }
   .theme-soft select:disabled {
     opacity: 0.5;
   }
 
-  .theme-soft input[type="date"],
-  .theme-soft input[type="datetime-local"],
-  .theme-soft input[type="time"] {
-    min-height: 46px;
-    padding: 10px 16px;
-    border: 1px solid color-mix(in srgb, #2b2228 8%, transparent);
-    border-radius: 14px;
-    background: var(--color-surface);
-    box-shadow: var(--soft-shadow);
-    font-family: inherit;
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     font-size: 15px;
-    color: var(--color-text);
-  }
-  .theme-soft input[type="date"]::-webkit-calendar-picker-indicator,
-  .theme-soft input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    opacity: 0.55;
-    cursor: pointer;
+    font-weight: 700;
+    color: var(--kb-ink);
   }
 
+  /* Checkboxes and radios keep the native element, drawn in ink. */
   .theme-soft input[type="checkbox"],
   .theme-soft input[type="radio"] {
     appearance: none;
     -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    flex: none;
-    margin: 0;
-    border: 1.5px solid var(--ink-35);
-    background: var(--color-surface);
-    cursor: pointer;
     display: inline-grid;
     place-content: center;
-    transition: background-color var(--soft-ease), border-color var(--soft-ease);
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    border: 1.5px solid var(--kb-line-input);
+    background: var(--kb-white);
+    cursor: pointer;
   }
   .theme-soft input[type="checkbox"] {
     border-radius: 7px;
@@ -1203,7 +532,6 @@
     width: 11px;
     height: 11px;
     transform: scale(0);
-    transition: transform var(--soft-ease);
     background: #fff;
     clip-path: polygon(14% 45%, 0 60%, 39% 100%, 100% 22%, 84% 8%, 39% 70%);
   }
@@ -1213,13 +541,12 @@
     height: 9px;
     border-radius: 50%;
     transform: scale(0);
-    transition: transform var(--soft-ease);
     background: #fff;
   }
   .theme-soft input[type="checkbox"]:checked,
   .theme-soft input[type="radio"]:checked {
-    background: var(--brand);
-    border-color: var(--brand);
+    background: var(--kb-ink);
+    border-color: var(--kb-ink);
   }
   .theme-soft input[type="checkbox"]:checked::before,
   .theme-soft input[type="radio"]:checked::before {
@@ -1230,465 +557,521 @@
     opacity: 0.45;
     cursor: not-allowed;
   }
-  /* A 22px control needs a 44px target: the label row carries the rest. */
   .theme-soft label:has(> input[type="checkbox"]),
   .theme-soft label:has(> input[type="radio"]) {
     min-height: 44px;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .theme-soft input[type="checkbox"],
-    .theme-soft input[type="radio"],
-    .theme-soft input[type="checkbox"]::before,
-    .theme-soft input[type="radio"]::before {
-      transition: none;
-    }
-  }
 
-  /* Focus belongs to the brand, like every other action signal. */
-  .theme-soft :focus-visible {
-    outline: 2px solid var(--brand);
-    outline-offset: 2px;
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 15px;
   }
-
-  .theme-soft .panel,
-  .theme-soft .stat,
-  .theme-soft .dialog,
-  .theme-soft .notice,
-  .theme-soft .dropzone {
-    border: 1px solid color-mix(in srgb, #2b2228 6%, transparent);
-    border-radius: var(--soft-r);
-    background: var(--color-surface);
-    box-shadow: var(--soft-shadow);
+  .radio input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
   }
-  .theme-soft .dropzone {
-    border-style: dashed;
-    border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  .radio .dot {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border-radius: 50%;
+    border: 1.5px solid var(--kb-line-input);
   }
-
-  .theme-soft .tag,
-  .theme-soft .chip-date {
-    border: 0;
-    border-radius: 999px;
-    padding: 5px 12px;
-    font-weight: 700;
-  }
-  .theme-soft .tag-accent,
-  .theme-soft .chip-date {
-    color: var(--color-accent-700);
-    background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
-  }
-  .theme-soft .tag-neutral,
-  .theme-soft .tag-outline {
-    color: var(--tone-support-ink);
-    background: var(--tone-support);
-  }
-
-  .theme-soft .tile,
-  .theme-soft .tile-grid > * {
-    border-radius: var(--soft-r-sm);
-    overflow: hidden;
-  }
-
-  .theme-soft .display,
-  .theme-soft .brand {
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-  .theme-soft .kicker,
-  .theme-soft .label-caps {
-    color: var(--color-accent-700);
-  }
-  .theme-soft .hr {
-    height: 1px;
-    background: color-mix(in srgb, #2b2228 10%, transparent);
+  .radio input:checked + .dot {
+    border-color: var(--kb-ink);
+    background: var(--kb-ink);
+    box-shadow: inset 0 0 0 4px var(--kb-white);
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Soft theme: landing page furniture
-   Bordered card variants, hover states, marquee, carousel and scroll reveals.
+   Surfaces: cards, info boxes, chips, tables, dialogs
    --------------------------------------------------------------------------- */
 @layer components {
-  /* Card variants so sections don't all look the same. */
-  .soft-bordered {
-    border: 2px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
-    border-radius: var(--soft-r);
-    background: var(--color-surface);
-    transition:
-      transform var(--soft-ease),
-      border-color var(--soft-ease),
-      box-shadow var(--soft-ease);
-  }
-  .soft-bordered:hover {
-    border-color: var(--color-accent);
-    transform: translateY(-4px);
-    box-shadow: var(--soft-shadow-lift);
-  }
-  .soft-dashed {
-    border: 2px dashed color-mix(in srgb, var(--color-accent) 42%, transparent);
-    border-radius: var(--soft-r);
-    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
-  }
-  /* Offset "sticker" card: a flat shadow that snaps in on hover. */
-  .soft-offset {
-    border: 2px solid var(--color-text);
-    border-radius: var(--soft-r);
-    background: var(--color-surface);
-    box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-accent) 85%, transparent);
-    transition:
-      transform var(--soft-ease),
-      box-shadow var(--soft-ease);
-  }
-  .soft-offset:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 10px 10px 0 var(--color-accent);
-  }
-
-  /* Buttons: lift and deepen on hover, like the reference site's fills. */
-  .soft-btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 14px 28px -8px color-mix(in srgb, var(--brand) 70%, transparent);
-  }
-  .soft-btn-accent:hover,
-  .soft-btn-tonal:hover {
-    transform: translateY(-2px);
-  }
-
-  /* Ticker strip. Duplicated content in the markup makes the loop seamless. */
-  .soft-marquee {
-    display: flex;
-    overflow: hidden;
-    gap: 0;
-    padding: 14px 0;
-    background: var(--color-text);
-    color: var(--tone-base);
-    user-select: none;
-  }
-  .soft-marquee-track {
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
-    gap: 40px;
-    padding-right: 40px;
-    animation: soft-marquee 38s linear infinite;
-  }
-  .soft-marquee:hover .soft-marquee-track {
-    animation-play-state: paused;
-  }
-  .soft-marquee-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 40px;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 17px;
-    white-space: nowrap;
-  }
-  .soft-marquee-item::after {
-    content: "";
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: var(--color-accent-500);
-  }
-  @keyframes soft-marquee {
-    from {
-      transform: translate3d(0, 0, 0);
-    }
-    to {
-      transform: translate3d(-100%, 0, 0);
-    }
-  }
-
-  /* Carousel slides cross-fade; the track keeps the height. */
-  .soft-slide {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    transition: opacity 600ms ease;
-  }
-  .soft-slide[data-active="true"] {
-    opacity: 1;
-  }
-  .soft-dot {
-    width: 10px;
-    height: 10px;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-    cursor: pointer;
-    background: color-mix(in srgb, var(--color-text) 22%, transparent);
-    transition:
-      width var(--soft-ease),
-      background-color var(--soft-ease);
-  }
-  .soft-dot[aria-current="true"] {
-    width: 26px;
-    background: var(--color-accent);
-  }
-
-  /* Scroll reveal. Hidden state only applies once JS has marked the element,
-     so the page is readable with JS off or before hydration. */
-  .reveal[data-reveal="pending"] {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  .reveal[data-reveal="in"] {
-    opacity: 1;
-    transform: none;
-    transition:
-      opacity 620ms cubic-bezier(0.22, 0.68, 0.32, 1),
-      transform 620ms cubic-bezier(0.22, 0.68, 0.32, 1);
-  }
-
-  /* FAQ */
-  .soft-faq summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 18px 22px;
-    cursor: pointer;
-    font-family: var(--font-fredoka), system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 18px;
-    list-style: none;
-  }
-  .soft-faq summary::-webkit-details-marker {
-    display: none;
-  }
-  .soft-faq summary::after {
-    content: "+";
-    font-size: 24px;
-    line-height: 1;
-    color: var(--color-accent);
-    transition: transform var(--soft-ease);
-  }
-  .soft-faq[open] summary::after {
-    transform: rotate(45deg);
-  }
-  .soft-faq p {
-    margin: 0;
-    padding: 0 22px 20px;
-    font-size: 15px;
-    line-height: 1.55;
-    color: var(--ink-70);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .soft-marquee-track {
-      animation: none;
-    }
-    .reveal[data-reveal="pending"] {
-      opacity: 1;
-      transform: none;
-    }
-    .soft-bordered:hover,
-    .soft-offset:hover,
-    .soft-btn-primary:hover,
-    .soft-btn-accent:hover,
-    .soft-btn-tonal:hover {
-      transform: none;
-    }
-  }
-}
-
-/* Soft theme: entrance pop. */
-@layer components {
-  .soft-pop {
-    animation: soft-pop 720ms cubic-bezier(0.2, 0.85, 0.3, 1.15) both;
-  }
-  @keyframes soft-pop {
-    from {
-      opacity: 0;
-      transform: translateY(18px) scale(0.92);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .soft-pop {
-      animation: none;
-    }
-  }
-}
-
-/* Adoption layer, part 2: pages built with the modernist border utilities.
-   Rather than rewriting 58 call sites, boxes drawn with `border-2
-   border-divider` become soft cards, and the 2px rules become hairlines. */
-@layer components {
+  .soft-card,
+  .kb-card,
+  .panel,
+  .stat,
   .theme-soft .border-2.border-divider {
-    border-width: 1px;
-    border-radius: var(--soft-r);
-    background: var(--color-surface);
-    box-shadow: var(--soft-shadow);
+    background: var(--kb-white);
+    border: 1px solid var(--kb-line);
+    border-radius: var(--kb-r-card);
+    box-shadow: none;
+  }
+  a.soft-card,
+  button.soft-card {
+    transition: border-color var(--soft-ease);
+  }
+  a.soft-card:hover,
+  button.soft-card:hover {
+    border-color: var(--kb-line-strong);
+  }
+  .theme-soft .grid.border-2.border-divider,
+  .theme-soft .grid.border-b-2 {
+    background: transparent;
+    border-radius: 0;
   }
   .theme-soft .border-b-2,
   .theme-soft .border-t-2 {
     border-bottom-width: 1px;
     border-top-width: 1px;
   }
-  /* A grid that draws its own cell separators shouldn't gain a card look. */
-  .theme-soft .grid.border-2.border-divider,
-  .theme-soft .grid.border-b-2 {
-    background: transparent;
-    box-shadow: none;
+
+  /* Old decorative card variants: one calm card now. */
+  .soft-bordered,
+  .soft-offset {
+    background: var(--kb-white);
+    border: 1px solid var(--kb-line);
+    border-radius: var(--kb-r-card);
+  }
+  .soft-dashed {
+    border: 1.5px dashed var(--kb-line-strong);
+    border-radius: var(--kb-r-card);
+    background: var(--kb-white);
+  }
+  .soft-panel {
+    border-radius: var(--kb-r-panel);
+    background: var(--kb-sand);
   }
 
-  /* The stat card's accent bar follows the rounded corners. */
-  .theme-soft .stat {
-    overflow: hidden;
+  .stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-4) 20px;
   }
-  .theme-soft .stat::before {
-    height: 5px;
-    border-radius: 0;
+
+  /* Info box: sand, one icon, one sentence. No left border. */
+  .notice,
+  .kb-info {
+    display: flex;
+    gap: 10px;
+    padding: 16px 18px;
+    border: 0;
+    border-radius: var(--kb-r-photo);
+    background: var(--kb-sand);
+    color: var(--kb-ink);
+    font-size: 15px;
+    line-height: 1.5;
   }
-  .theme-soft .stat .display,
-  .theme-soft .display {
-    font-family: var(--font-fredoka), system-ui, sans-serif;
+  .notice[role="alert"] {
+    background: var(--kb-ember-tint);
+    color: var(--kb-ember-deep);
+    font-weight: 500;
+  }
+
+  .soft-chip,
+  .tag,
+  .chip-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: var(--kb-r-pill);
+    background: var(--kb-ember-tint);
+    color: var(--kb-ember-deep);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-transform: none;
+    white-space: nowrap;
+  }
+  /* The quiet chip carries the club's tone (sand and ink by default). */
+  .soft-chip-muted,
+  .tag-neutral,
+  .tag-outline {
+    background: var(--tone-support);
+    color: var(--tone-support-ink);
+  }
+  .kb-chip-ink {
+    background: var(--kb-ink);
+    color: #fff;
+  }
+
+  .kicker,
+  .label-caps {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--kb-ember-deep);
+  }
+
+  .display,
+  .soft-display,
+  .brand,
+  .soft-wordmark {
+    font-family: var(--kb-font-display);
     font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .display {
+    font-weight: 700;
+    line-height: 1.05;
+  }
+  .brand,
+  .soft-wordmark {
+    color: var(--kb-ink);
+    text-decoration: none;
   }
 
-  /* Tables: no heavy rules, just light separation. */
-  .theme-soft .table th {
-    border-bottom-color: color-mix(in srgb, #2b2228 12%, transparent);
-    color: var(--ink-55);
+  .hr {
+    height: 1px;
+    border: 0;
+    margin: 0;
+    background: var(--kb-line);
   }
-  .theme-soft .table td {
-    border-bottom-color: color-mix(in srgb, #2b2228 8%, transparent);
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .table th {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--kb-line);
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--kb-ink-2);
+  }
+  .table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--kb-line);
+    vertical-align: middle;
+  }
+  .table tbody tr:hover {
+    background: var(--kb-cream);
+  }
+
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    background: rgb(43 34 40 / 0.55);
+  }
+  .dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(560px, 100%);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: 28px;
+    border: 0;
+    border-radius: var(--kb-r-card);
+    background: var(--kb-white);
+    box-shadow: var(--shadow-lg);
+  }
+  .dialog-title {
+    font-family: var(--kb-font-display);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+  }
+  .dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+  }
+
+  .dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1.5px dashed var(--kb-line-input);
+    border-radius: var(--kb-r-card);
+    background: var(--kb-white);
+    text-align: center;
+    cursor: pointer;
+  }
+  .dropzone[data-active="true"] {
+    border-color: var(--kb-ember);
+    background: var(--kb-ember-tint);
   }
 }
 
 /* ---------------------------------------------------------------------------
-   Section texture
-   SoftBackdrop decorates the page as a whole, so on a long landing page its
-   blobs sit at the very top and bottom and the middle reads as flat colour.
-   These let one section carry its own grain, dots and blobs: the section
-   becomes a stacking context and the layer sits behind its content.
+   Photos
    --------------------------------------------------------------------------- */
 @layer components {
-  .soft-fx-host {
-    position: relative;
-    z-index: 0;
-  }
-  .soft-fx {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-  /* Softer dot grid for white sections, where the page dots would shout —
-     but not so soft it vanishes. */
-  .soft-fx .soft-dots-faint {
-    opacity: 0.2;
-  }
-
-  /* The page grain uses soft-light, which over a white surface does almost
-     nothing: a grey noise and a white ground cancel out. Inside a section
-     layer it multiplies instead, so the flat areas actually get some tooth.
-     Only cream and white sections carry .soft-fx — the tinted photo bands use
-     .soft-photoband — so this never muddies a dark band. */
-  .soft-fx .soft-grain {
-    opacity: 0.22;
-    mix-blend-mode: multiply;
-  }
-
-  /* Section-scale blobs: fixed px, unlike the page blobs' viewport units. */
-  .soft-blob-s-left {
-    top: -22%;
-    left: -9%;
-    width: 520px;
-    height: 460px;
-    background: radial-gradient(circle at 42% 40%, color-mix(in srgb, var(--color-accent) 55%, transparent), transparent 70%);
-    border-radius: 58% 42% 47% 53% / 52% 45% 55% 48%;
-  }
-  .soft-blob-s-right {
-    bottom: -24%;
-    right: -8%;
-    width: 560px;
-    height: 480px;
-    background: radial-gradient(circle at 42% 40%, color-mix(in srgb, var(--color-accent-2) 52%, transparent), transparent 70%);
-    border-radius: 44% 56% 58% 42% / 48% 52% 44% 56%;
-  }
-  .soft-blob-s-lilac {
-    top: -20%;
-    right: -11%;
-    width: 520px;
-    height: 460px;
-    background: radial-gradient(circle at 45% 45%, color-mix(in srgb, var(--tone-support) 95%, transparent), transparent 72%);
-    border-radius: 52% 48% 40% 60% / 56% 44% 56% 44%;
-    opacity: 0.55;
-  }
-
-  /* ---------------------------------------------------------------------------
-     Tinted photo band
-     The closing CTA's treatment, made reusable: a dense grid of event photos
-     under a colour wash. Dark tints carry white text; the cream wash leaves a
-     section looking like paper with photographs showing through.
-     --------------------------------------------------------------------------- */
-  .soft-photoband {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-  .soft-photoband-grid {
-    position: absolute;
-    inset: 0;
+  .tile-grid {
     display: grid;
+    gap: 6px;
   }
-  .soft-photoband-grid img {
+  .tile,
+  .soft-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--kb-r-photo);
+    background: var(--kb-sand);
+  }
+  .tile img,
+  .soft-tile img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 300ms cubic-bezier(0.22, 0.68, 0.32, 1);
   }
-  .soft-photoband-tint {
-    position: absolute;
-    inset: 0;
+  .tile:hover img,
+  .soft-tile:hover img {
+    transform: scale(1.03);
   }
-  .soft-tint-deep {
-    background: linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--color-accent-800) 88%, transparent),
-      color-mix(in srgb, #2b2228 94%, transparent)
-    );
-  }
-  .soft-tint-diagonal {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--color-accent-800) 90%, transparent),
-      color-mix(in srgb, #2b2228 94%, transparent)
-    );
-  }
-  /* Cream veil: you sense the photos without being able to read them. */
-  .soft-tint-paper {
-    background: linear-gradient(
-      100deg,
-      color-mix(in srgb, var(--color-bg) 97%, transparent) 0%,
-      color-mix(in srgb, var(--color-bg) 94%, transparent) 48%,
-      color-mix(in srgb, var(--color-bg) 87%, transparent) 100%
-    );
-  }
-  .soft-photoband-desaturate img {
-    filter: saturate(0.55);
+  .theme-soft .tile-grid > * {
+    border-radius: var(--kb-r-photo);
+    overflow: hidden;
   }
 
-  /* On a dark band the cards keep their own surface, so only the furniture
-     around them needs inverting. */
-  .soft-on-dark {
+  .overlay-title {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px;
+    background: linear-gradient(to top, rgb(43 34 40 / 0.85), rgb(43 34 40 / 0));
     color: #fff;
   }
-  .soft-on-dark .soft-muted {
-    color: rgb(255 255 255 / 0.84);
+
+  .masonry {
+    columns: 2 160px;
+    column-gap: 6px;
   }
-  .soft-on-dark .soft-faint {
-    color: rgb(255 255 255 / 0.72);
+  @media (min-width: 768px) {
+    .masonry {
+      columns: 4 200px;
+    }
   }
+  .masonry > * {
+    break-inside: avoid;
+    margin-bottom: 6px;
+  }
+
+  /* Loading is a skeleton, never a spinner. */
+  .soft-skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--kb-r-photo);
+    background: var(--kb-sand);
+  }
+  .soft-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.6), transparent);
+    animation: kb-shimmer 1.4s infinite;
+  }
+  @keyframes kb-shimmer {
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* A small live dot for "working on it". */
+  .kb-pulse {
+    width: 9px;
+    height: 9px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--kb-ember);
+    animation: kb-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes kb-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tile img,
+    .soft-tile img {
+      transition: none;
+    }
+    .tile:hover img,
+    .soft-tile:hover img {
+      transform: none;
+    }
+    .soft-skeleton::after,
+    .kb-pulse {
+      animation: none;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   FAQ: native details/summary, one component for Home and How it works.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .kb-faq {
+    border-bottom: 1px solid var(--kb-line);
+  }
+  .kb-faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 16px 0;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--kb-font-display);
+    font-weight: 600;
+    font-size: 19px;
+    line-height: 1.3;
+    color: var(--kb-ink);
+  }
+  .kb-faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .kb-faq summary::after {
+    content: "+";
+    flex: none;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--kb-sand);
+    font-family: var(--kb-font-body);
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .kb-faq[open] summary::after {
+    content: "\2212";
+  }
+  .kb-faq p {
+    margin: 0;
+    padding: 0 48px 22px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--kb-ink-2);
+  }
+
+  /* The older card-style FAQ inside the app, drawn the same way. */
+  .soft-faq summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 16px 22px;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--kb-font-display);
+    font-weight: 600;
+    font-size: 19px;
+  }
+  .soft-faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .soft-faq summary::after {
+    content: "+";
+    font-size: 22px;
+  }
+  .soft-faq[open] summary::after {
+    content: "\2212";
+  }
+  .soft-faq p {
+    padding: 0 22px 20px;
+    font-size: 16px;
+    color: var(--kb-ink-2);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Menus: the "More" popover and the phone menu sheet.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .kb-menu {
+    position: absolute;
+    z-index: 40;
+    min-width: 232px;
+    padding: 6px;
+    border: 1px solid var(--kb-line);
+    border-radius: 18px;
+    background: var(--kb-white);
+    box-shadow: var(--shadow-lg);
+  }
+  .kb-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 12px;
+    background: none;
+    color: var(--kb-ink);
+    font: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .kb-menu-item:hover,
+  .kb-menu-item:focus-visible {
+    background: var(--kb-sand);
+    outline-offset: -3px;
+  }
+  .kb-menu-item[data-danger="true"] {
+    color: var(--kb-ember-deep);
+  }
+  .kb-menu-sep {
+    height: 1px;
+    margin: 6px 8px;
+    background: var(--kb-line);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Theme wrapper. Kept as a class so the app's layouts don't change, but it no
+   longer redefines anything: there is one theme.
+   --------------------------------------------------------------------------- */
+.theme-soft {
+  background: var(--kb-cream);
+  color: var(--kb-ink);
+  font-family: var(--kb-font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.theme-soft h1,
+.theme-soft h2,
+.theme-soft h3 {
+  font-family: var(--kb-font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* Text on a dark photo band. */
+.soft-on-dark {
+  color: #fff;
+}
+.soft-on-dark .soft-muted {
+  color: rgb(255 255 255 / 0.9);
+}
+.soft-on-dark .soft-faint {
+  color: rgb(255 255 255 / 0.84);
 }

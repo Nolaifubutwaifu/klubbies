@@ -68,7 +68,7 @@ export async function createClubAction(_prev: ActionState, form: FormData): Prom
 }
 
 const clubSettingsSchema = clubSchema.extend({
-  accentColour: z.union([z.literal(""), z.string().regex(/^#[0-9a-fA-F]{6}$/, "Colour must look like #ec3013")]),
+  accentColour: z.union([z.literal(""), z.string().regex(/^#[0-9a-fA-F]{6}$/, "Colour must look like #cf2e12")]),
 });
 
 export async function updateClubAction(clubId: string, _prev: ActionState, form: FormData): Promise<ActionState> {

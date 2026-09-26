@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SectionFx } from "@/components/soft/SectionFx";
 import { PhotoStackArt } from "@/components/soft/illustrations";
 import { getClubContext } from "@/lib/auth/session";
 import { listFavourites } from "@/lib/media/favourites";
@@ -64,20 +63,16 @@ export default async function SavedPage(props: PageProps<"/c/[handle]/saved">) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <section className="soft-fx-host">
-        <SectionFx blobs={["left"]} />
+      <section>
         <div className="w-full px-4 pb-16 pt-6 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="soft-chip">{ctx.club.name}</span>
               <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">Saved</h1>
               <p className="mt-2 text-[15px] text-[color:var(--ink-70)]">
-                {total ? "The good ones, kept in one place." : "The good ones, kept in one place."}
+                The good ones, kept in one place.
               </p>
             </div>
-            <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
-              All events
-            </Link>
           </div>
 
           {total === 0 && downloads.length === 0 ? (
@@ -92,7 +87,7 @@ export default async function SavedPage(props: PageProps<"/c/[handle]/saved">) {
               <Link href={`/c/${handle}`} className="soft-btn soft-btn-primary no-underline">
                 Browse the albums
               </Link>
-              <p className="m-0 text-[13px] text-[color:var(--ink-55)]">
+              <p className="m-0 text-[14px] text-[color:var(--ink-55)]">
                 Statistically, you&rsquo;re in some of them.
               </p>
             </div>

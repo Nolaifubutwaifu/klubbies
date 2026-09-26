@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import type { Metadata } from "next";
+import { appUrl } from "@/lib/env";
 import Link from "next/link";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
@@ -21,7 +22,7 @@ type Step = {
 function Tick({ done, index }: { done: boolean; index: number }) {
   return (
     <span
-      className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-[12px] font-extrabold"
+      className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-[14px] font-extrabold"
       style={
         done
           ? { background: "var(--color-accent)", color: "#fff" }
@@ -71,7 +72,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
     {
       key: "handle",
       title: "Pick a handle",
-      hint: `klubbies.app/c/${ctx.club.handle}`,
+      hint: `${appUrl().replace(/^https?:\/\//, "")}/c/${ctx.club.handle}`,
       done: true,
       href: `/admin/${handle}/settings`,
       cta: "Open settings",
@@ -130,7 +131,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
               }}
             />
           </span>
-          <span className="flex-none text-[13px] font-bold text-[color:var(--ink-70)]">
+          <span className="flex-none text-[14px] font-bold text-[color:var(--ink-70)]">
             {doneCount} of {steps.length}
           </span>
         </div>
@@ -143,9 +144,9 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
                 <span className="block text-[14px] font-bold" style={step.done ? { color: "var(--color-neutral-700)" } : undefined}>
                   {step.title}
                 </span>
-                <span className="block text-[12px] text-[color:var(--ink-55)]">{step.hint}</span>
+                <span className="block text-[14px] text-[color:var(--ink-55)]">{step.hint}</span>
               </span>
-              <Link href={step.href} className="flex-none text-[12px] font-bold no-underline">
+              <Link href={step.href} className="flex-none text-[14px] font-bold no-underline">
                 {step.cta}
               </Link>
             </li>
@@ -154,9 +155,9 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
 
         {canWrite(ctx.club.billing_status) ? null : (
           <div className="rounded-[var(--soft-r-sm)] bg-[color:var(--tone-support)] p-4 text-[color:var(--tone-support-ink)]">
-            <span className="block text-[13px] font-bold">Nothing is charged yet</span>
-            <p className="m-0 mt-1 text-[13px]">A$20 a month starts when you publish your first album.</p>
-            <Link href={`/admin/${handle}/billing`} className="mt-2 inline-block text-[13px] font-bold">
+            <span className="block text-[14px] font-bold">Nothing is charged yet</span>
+            <p className="m-0 mt-1 text-[14px]">A$20 a month starts when you activate the club, which unlocks adding members and uploading.</p>
+            <Link href={`/admin/${handle}/billing`} className="mt-2 inline-block text-[14px] font-bold">
               See the plan
             </Link>
           </div>
@@ -202,7 +203,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
 
           <div className="max-w-[340px] rounded-[var(--soft-r)] bg-[color:var(--color-bg)] p-4">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] bg-accent text-[11px] font-extrabold text-white">
+              <span className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] bg-accent text-[14px] font-extrabold text-white">
                 {logoUrl ? (
                   <img src={logoUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
@@ -210,8 +211,8 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
                 )}
               </span>
               <span>
-                <span className="block text-[13px] font-bold">{ctx.club.name}</span>
-                <span className="block text-[11px] text-[color:var(--ink-55)]">Your albums</span>
+                <span className="block text-[14px] font-bold">{ctx.club.name}</span>
+                <span className="block text-[14px] text-[color:var(--ink-55)]">Your albums</span>
               </span>
             </div>
             <div className="mt-3 grid grid-cols-3 gap-1.5">

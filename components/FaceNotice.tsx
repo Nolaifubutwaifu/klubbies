@@ -19,34 +19,34 @@ export function FaceNotice({ clubId, meHref }: { clubId: string; meHref: string 
   if (acked) return null;
 
   return (
-    <section
-      aria-label="Face recognition notice"
-      className="mx-4 mb-4 flex flex-col gap-2.5 rounded-[var(--soft-r)] border-2 border-accent bg-[color:var(--color-surface)] p-4 sm:mx-6"
-    >
-      <span className="text-[15px] font-bold">{MEMBER_NOTICE.title}</span>
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5 text-[13px] leading-normal text-[color:var(--ink-70)]">
-        {MEMBER_NOTICE.points.map((point) => (
-          <li key={point}>{point}</li>
-        ))}
-      </ul>
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          className="soft-btn soft-btn-primary !min-h-[38px] !px-4 !text-[13px]"
-          disabled={pending}
-          onClick={() =>
-            startTransition(async () => {
-              const res = await acknowledgeFaceNoticeAction(clubId);
-              if (!res.error) setAcked(true);
-            })
-          }
-        >
-          {pending ? "Saving…" : MEMBER_NOTICE.tickbox}
-        </button>
-        <a href={meHref} className="text-[13px] font-bold text-accent-700 no-underline">
-          What it would show me
-        </a>
+    <section aria-label="Face recognition notice" className="kb-info mx-4 mb-4 flex-col gap-3 sm:mx-6 sm:flex-row sm:items-center">
+      <div className="min-w-0 flex-1">
+        <span className="block text-[16px] font-bold">{MEMBER_NOTICE.title}</span>
+        <details className="mt-1">
+          <summary className="kb-link !min-h-[36px] cursor-pointer list-none">What this means</summary>
+          <ul className="m-0 mt-1 flex list-disc flex-col gap-1.5 pl-5 text-[15px] leading-normal text-[color:var(--kb-ink-2)]">
+            {MEMBER_NOTICE.points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
+          </ul>
+          <a href={meHref} className="kb-link">
+            See what it would show me
+          </a>
+        </details>
       </div>
+      <button
+        type="button"
+        className="btn btn-secondary btn-sm !whitespace-normal !text-left"
+        disabled={pending}
+        onClick={() =>
+          startTransition(async () => {
+            const res = await acknowledgeFaceNoticeAction(clubId);
+            if (!res.error) setAcked(true);
+          })
+        }
+      >
+        {pending ? "Saving…" : MEMBER_NOTICE.tickbox}
+      </button>
     </section>
   );
 }

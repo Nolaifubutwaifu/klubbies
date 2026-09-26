@@ -24,13 +24,13 @@ export function InviteCard({ invite }: { invite: MyClub }) {
       </span>
       {needsNotice ? (
         <div className="w-full">
-          <span className="block text-[13px] font-bold">{MEMBER_NOTICE.title}</span>
-          <ul className="m-0 mt-1 flex list-disc flex-col gap-1 pl-5 text-[12px] leading-normal text-[color:var(--ink-70)]">
+          <span className="block text-[14px] font-bold">{MEMBER_NOTICE.title}</span>
+          <ul className="m-0 mt-1 flex list-disc flex-col gap-1 pl-5 text-[14px] leading-normal text-[color:var(--ink-70)]">
             {MEMBER_NOTICE.points.map((point) => (
               <li key={point}>{point}</li>
             ))}
           </ul>
-          <label className="mt-2 flex cursor-pointer items-start gap-2 text-[12px]">
+          <label className="mt-2 flex cursor-pointer items-start gap-2 text-[14px]">
             <input
               type="checkbox"
               checked={understood}
@@ -44,7 +44,7 @@ export function InviteCard({ invite }: { invite: MyClub }) {
       <span className="flex gap-2">
         <button
           type="button"
-          className="btn btn-primary text-[13px]"
+          className="btn btn-primary text-[14px]"
           disabled={pending || (needsNotice && !understood)}
           onClick={() =>
             startTransition(async () => {
@@ -60,7 +60,7 @@ export function InviteCard({ invite }: { invite: MyClub }) {
         </button>
         <button
           type="button"
-          className="btn btn-ghost text-[13px]"
+          className="btn btn-ghost text-[14px]"
           disabled={pending}
           onClick={() =>
             startTransition(async () => {

@@ -1,20 +1,22 @@
 import type { Config } from "tailwindcss";
 
-// Tokens extracted from design/Klubbies.dc.html (Modernist design system).
+// Colours resolve to the CSS tokens in app/globals.css, so there is one source.
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        bg: "#f3f2f2",
-        surface: "#eae9e9",
+        bg: "var(--kb-cream)",
+        surface: "var(--kb-white)",
+        sand: "var(--kb-sand)",
+        line: "var(--kb-line)",
         ink: {
           DEFAULT: "var(--color-text)",
           70: "var(--ink-70)",
           55: "var(--ink-55)",
           35: "var(--ink-35)",
         },
-        divider: "color-mix(in srgb, #201e1d 40%, transparent)",
+        divider: "var(--kb-line)",
         neutral: {
           100: "var(--color-neutral-100)",
           200: "var(--color-neutral-200)",
@@ -54,9 +56,9 @@ const config: Config = {
         lg: "0px",
       },
       boxShadow: {
-        sm: "0 1px 2px color-mix(in srgb, #2d2b2b 14%, transparent)",
-        md: "0 3px 10px color-mix(in srgb, #2d2b2b 16%, transparent)",
-        lg: "0 12px 32px color-mix(in srgb, #2d2b2b 22%, transparent)",
+        sm: "0 1px 2px rgb(43 34 40 / 0.06)",
+        md: "0 4px 12px rgb(43 34 40 / 0.1)",
+        lg: "var(--shadow-lg)",
       },
       fontSize: {
         h1: ["42px", { lineHeight: "1.12", letterSpacing: "-0.015em" }],

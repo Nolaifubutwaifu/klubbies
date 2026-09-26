@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Your club's photos, for your club only.",
     start_url: "/clubs",
     display: "standalone",
-    background_color: "#f3f2f2",
-    theme_color: "#f3f2f2",
+    background_color: "#fff8f4",
+    theme_color: "#fff8f4",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml" }],
   };
 }

@@ -534,3 +534,44 @@ says about the rest.
      a suggestion strip capped at 24 with no hint the other 40 exist; and a
      "Photos of you" page that silently stopped at 60. All three now say what
      is actually true.
+
+## 2026-09-26 · The design audit, built
+
+Built from the "Klubbies Design Audit" canvas and its handoff. What was
+followed as written is in the code; these are the places this build chose
+differently, and why.
+
+110. **One accent.** Ember `#CF2E12` is the only brand colour; ink carries
+     everything secondary. Purple, lilac and salmon are gone, and every old
+     token name in `globals.css` now points at the new values, so no call
+     site can reach a retired colour. The club's own colour survives only in
+     the quiet layer (avatars, muted chips), mixed into sand and ink.
+111. **Two buttons, and a More menu.** Primary (ember) and secondary (white,
+     ink border); the old tier names all resolve to one of the two. Each
+     screen shows its one or two main actions and puts the rest behind
+     `MoreMenu`. Destructive confirms use `btn-danger`, never the primary.
+112. **Nothing under 14px, no text set with opacity.** The ink ramp is three
+     solid colours. Input edges use `#968990` rather than the canvas's
+     `#CDBDB6`, because form fields need 3:1 against white (WCAG 1.4.11) and
+     `#CDBDB6` is 1.8:1.
+113. **Face recognition gets its own Home section**, straight after the
+     problem it solves. The canvas's decorative photo band made way for it,
+     keeping Home at nine sections.
+114. **No "That email isn't on the list" error.** The code request is
+     deliberately neutral so nobody can test whether an address is on a
+     club's roster; the handoff's error would leak exactly that.
+115. **No club photo on the public login page.** The canvas showed the club's
+     cover; the product promises that nothing about a club's photos shows to
+     anyone off the list. The club is named and shown by its logo.
+116. **Start asks for you, then the club.** The club is created after the
+     email is confirmed, so the club name stays on step 2 rather than being
+     carried through verification.
+117. **"Nothing is charged until you publish your first album" was never
+     true** (payment unlocks adding members and uploading). Every page now
+     says so from one copy source, `lib/copy/site.ts`, which also lists what
+     was checked against the code and what is deliberately not claimed.
+118. **Face jobs survive the response.** The drain that rides on an upload or
+     an enrolment was a bare promise, which Vercel may freeze once the
+     response is sent. It now runs inside `after()`. The "Looking now" card
+     also polls and nudges the queue, so a throttled enrolment no longer
+     waits for the daily cron.

@@ -1,23 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AuthHeadline, AuthNote, AuthShell } from "@/components/AuthShell";
+import { AuthHeading, AuthNote, AuthShell, type AuthClub } from "@/components/AuthShell";
 import { getSessionUser } from "@/lib/auth/session";
+import { BUCKET } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SignInForm } from "./SignInForm";
 
 export const metadata: Metadata = { title: "Log in" };
 
-async function clubPreview(handle: string | undefined) {
+/**
+ * The club someone followed a link for: its name and logo only. No album
+ * counts, no cover photo: this page is public, and the product's promise is
+ * that nothing about a club's photos shows to anyone off the list.
+ */
+async function clubPreview(handle: string | undefined): Promise<AuthClub | null> {
   if (!handle || !/^[a-z0-9_]{1,48}$/i.test(handle)) return null;
   try {
-    const { data } = await createAdminClient()
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("clubs")
-      .select("name, organisation, handle")
+      .select("name, organisation, handle, logo_path")
       .eq("handle", handle.toLowerCase())
       .eq("status", "active")
       .maybeSingle();
-    return data;
+    if (!data) return null;
+    const logoUrl = data.logo_path
+      ? ((await admin.storage.from(BUCKET).createSignedUrl(data.logo_path, 10 * 60)).data?.signedUrl ?? null)
+      : null;
+    return { name: data.name, handle: data.handle, organisation: data.organisation, logoUrl };
   } catch (error) {
     console.error("club preview failed", error);
     return null;
@@ -30,44 +41,31 @@ export default async function SignInPage(props: PageProps<"/signin">) {
   const user = await getSessionUser();
   if (user) redirect(clubHandle ? `/c/${clubHandle}` : "/clubs");
 
-  // Someone following a club's own link already knows which club they want;
-  // everyone else gets the line the design leads with.
   const club = await clubPreview(clubHandle);
 
   return (
     <AuthShell
-      band
-      footer={
+      club={club}
+      topLink={
         <>
-          Committee instead?{" "}
+          <span className="hidden sm:inline">Running a club? </span>
           <Link href="/start" className="font-bold">
-            Set up your club
+            Start your club
           </Link>
         </>
       }
     >
-      <AuthHeadline>
-        {club ? (
-          <>
-            Every photo from <span className="text-accent-700">{club.name}</span>, waiting for you.
-          </>
-        ) : (
-          <>
-            Every photo from <span className="text-accent-700">Friday</span>, waiting on Saturday.
-          </>
-        )}
-      </AuthHeadline>
-      <p className="mt-2.5 text-[15px] text-[color:var(--color-neutral-700)]">
-        Sign in with the email your club has on its list. No password to forget.
+      <AuthHeading chip={club ? `${club.name} members` : undefined}>Log in</AuthHeading>
+      <p className="kb-lead mt-3 !text-[17px]">
+        Use the email your committee has on the member list. We&rsquo;ll send you a code, so there&rsquo;s no password to
+        remember.
       </p>
 
-      <div className="mt-5">
-        <SignInForm flow="member" />
+      <div className="mt-7">
+        <SignInForm flow="member" club={club?.handle} />
       </div>
 
-      <AuthNote>
-        Klubbies checks that email against your club&rsquo;s member list. If it&rsquo;s there, you&rsquo;re in.
-      </AuthNote>
+      <AuthNote>Not on the list yet? Ask your committee to add your email, then come back here.</AuthNote>
     </AuthShell>
   );
 }

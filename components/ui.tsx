@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { SquiggleUnderline } from "@/components/soft/illustrations";
 
 export function Brand({ href = "/", size = 20 }: { href?: string; size?: number }) {
   return (
@@ -22,22 +21,16 @@ export function PageTitle({
   kicker,
   title,
   children,
-  underline = false,
 }: {
   kicker?: ReactNode;
   title: ReactNode;
   children?: ReactNode;
-  /** Hand-drawn underline, for the first heading on a screen. */
-  underline?: boolean;
 }) {
   return (
     <div className="flex flex-col items-start gap-2">
       {kicker ? <Kicker>{kicker}</Kicker> : null}
-      <h1 className="soft-display" style={{ fontSize: "clamp(28px, 4vw, 42px)" }}>
-        {title}
-      </h1>
-      {underline ? <SquiggleUnderline /> : null}
-      {children ? <p className="max-w-[60ch] text-[15px] text-[color:var(--ink-70)]">{children}</p> : null}
+      <h1 className="font-[family-name:var(--kb-font-display)] text-[32px] font-bold leading-[1.08] sm:text-[40px]">{title}</h1>
+      {children ? <p className="max-w-[60ch] text-[16px] text-[color:var(--kb-ink-2)]">{children}</p> : null}
     </div>
   );
 }
@@ -94,9 +87,9 @@ export function Stat({
     tone === "good" ? "text-[#2f6b36]" : tone === "attention" ? "text-accent-700" : "text-[color:var(--ink-55)]";
   return (
     <div className="soft-card flex flex-col gap-1 p-4">
-      <span className="text-[13px] text-[color:var(--ink-70)]">{label}</span>
+      <span className="text-[14px] text-[color:var(--ink-70)]">{label}</span>
       <span className="soft-display text-[clamp(26px,3vw,32px)] leading-none">{value}</span>
-      {hint ? <span className={`text-[12px] font-bold ${hintColour}`}>{hint}</span> : null}
+      {hint ? <span className={`text-[14px] font-bold ${hintColour}`}>{hint}</span> : null}
     </div>
   );
 }

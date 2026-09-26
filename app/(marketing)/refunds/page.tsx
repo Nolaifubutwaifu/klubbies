@@ -6,9 +6,10 @@ export const metadata: Metadata = { title: "Refunds and cancellation" };
 export default function RefundsPage() {
   return (
     <LegalPage
-      kicker="Billing"
+      doc="refunds"
       title="Refunds and cancellation"
       updated="16 September 2026"
+      minutes={2}
       sections={[
         {
           title: "How billing works",

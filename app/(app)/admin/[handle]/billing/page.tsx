@@ -73,9 +73,9 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
         <section className="flex flex-col gap-4 soft-card p-6">
           <div className="flex flex-wrap items-center gap-3">
             <span className={status === "past_due" ? "tag tag-accent-2" : "tag tag-outline"}>{BILLING_LABEL[status]}</span>
-            {ctx.club.paid_at ? <span className="text-[13px] text-[color:var(--ink-70)]">Paid {formatLongDate(ctx.club.paid_at)}</span> : null}
+            {ctx.club.paid_at ? <span className="text-[14px] text-[color:var(--ink-70)]">Paid {formatLongDate(ctx.club.paid_at)}</span> : null}
             {card ? (
-              <span className="text-[13px] text-[color:var(--ink-70)]">
+              <span className="text-[14px] text-[color:var(--ink-70)]">
                 {card.brand.toUpperCase()} ending {card.last4} · expires {String(card.expMonth).padStart(2, "0")}/
                 {String(card.expYear).slice(-2)}
               </span>
@@ -126,13 +126,13 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
                 {status === "canceled" ? "Reactivate club" : "Pay and activate"}
               </SubmitButton>
             </form>
-            <span className="text-[12px] text-[color:var(--ink-55)]">
+            <span className="text-[14px] text-[color:var(--ink-55)]">
               Payments are handled by Stripe. Klubbies never sees your card details. By activating you agree to the{" "}
               <Link href="/terms">terms</Link> and <Link href="/refunds">refund and cancellation policy</Link>.
             </span>
           </div>
           <div className="flex flex-col gap-3">
-            <span className="text-[13px] font-semibold">What happens next</span>
+            <span className="text-[14px] font-semibold">What happens next</span>
             <ol className="flex flex-col gap-3 text-[15px] leading-normal text-ink-70">
               <li>
                 <strong>1.</strong> Pay on Stripe&apos;s secure checkout page.
@@ -145,7 +145,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
               </li>
             </ol>
             {status === "canceled" ? (
-              <p className="text-[13px] text-[color:var(--ink-70)]">
+              <p className="text-[14px] text-[color:var(--ink-70)]">
                 Members can still open existing albums. Adding members and uploading resume once the club is active again.
               </p>
             ) : null}

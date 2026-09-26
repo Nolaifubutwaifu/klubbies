@@ -71,7 +71,7 @@ export function MemberSidebar({
           klubbies
         </Link>
 
-        <span className="px-2 pb-1 text-[11px] font-extrabold tracking-[0.1em] text-[color:var(--ink-55)]">
+        <span className="px-2 pb-1 text-[14px] font-extrabold tracking-[0.1em] text-[color:var(--ink-55)]">
           YOUR CLUBS
         </span>
         {clubs.map((club) => {
@@ -88,7 +88,7 @@ export function MemberSidebar({
               }}
             >
               <span
-                className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] text-[11px] font-extrabold text-white"
+                className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden rounded-[11px] text-[14px] font-extrabold text-white"
                 style={{ background: logoUrls[club.clubId] ? "transparent" : (club.accentColour ?? "var(--color-accent)") }}
               >
                 {logoUrls[club.clubId] ? (
@@ -100,7 +100,7 @@ export function MemberSidebar({
               </span>
               <span className="min-w-0 flex-1 truncate">{club.name}</span>
               {here && newCount > 0 ? (
-                <span className="flex-none rounded-full bg-accent px-2 py-0.5 text-[11px] font-extrabold text-white">
+                <span className="flex-none rounded-full bg-accent px-2 py-0.5 text-[14px] font-extrabold text-white">
                   {newCount}
                 </span>
               ) : null}
@@ -138,7 +138,7 @@ export function MemberSidebar({
           >
             {row.label}
             {row.badge > 0 ? (
-              <span className="ml-auto rounded-full bg-[color-mix(in_srgb,var(--color-text)_7%,transparent)] px-2 py-0.5 text-[11px] font-extrabold text-[color:var(--color-neutral-700)]">
+              <span className="ml-auto rounded-full bg-[color-mix(in_srgb,var(--color-text)_7%,transparent)] px-2 py-0.5 text-[14px] font-extrabold text-[color:var(--color-neutral-700)]">
                 {row.badge.toLocaleString("en-AU")}
               </span>
             ) : null}
@@ -146,7 +146,7 @@ export function MemberSidebar({
         ))}
 
         <div className="mt-3 flex items-center gap-2.5 border-t border-[color-mix(in_srgb,var(--color-text)_8%,transparent)] px-1.5 pt-3">
-          <span className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-full bg-[color:var(--tone-support)] text-[12px] font-extrabold text-[color:var(--tone-support-ink)]">
+          <span className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-full bg-[color:var(--tone-support)] text-[14px] font-extrabold text-[color:var(--tone-support-ink)]">
             {person.avatarUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
               <img src={person.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -155,12 +155,12 @@ export function MemberSidebar({
             )}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13px] font-bold">{person.name}</span>
-            <span className="block truncate text-[11px] text-[color:var(--ink-55)]">{person.role}</span>
+            <span className="block truncate text-[14px] font-bold">{person.name}</span>
+            <span className="block truncate text-[14px] text-[color:var(--ink-55)]">{person.role}</span>
           </span>
         </div>
         <form action="/api/auth/signout" method="post" className="px-1.5 pt-1">
-          <button type="submit" className="cursor-pointer border-0 bg-transparent p-0 text-[12px] font-bold text-[color:var(--ink-55)]">
+          <button type="submit" className="cursor-pointer border-0 bg-transparent p-0 text-[14px] font-bold text-[color:var(--ink-55)]">
             Sign out
           </button>
         </form>

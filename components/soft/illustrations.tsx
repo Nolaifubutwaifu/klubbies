@@ -1,20 +1,5 @@
 /** Line illustrations for the soft theme's empty states. Accent-aware, decorative. */
 
-export function SquiggleUnderline({ className }: { className?: string }) {
-  return (
-    <svg className={className ?? "soft-squiggle"} viewBox="0 0 190 12" fill="none" aria-hidden focusable="false" preserveAspectRatio="none">
-      <path
-        d="M2 8.5C22 3.5 34 3 54 7.5c20 4.5 32 4 52-1s32-5.5 52-1c10 2.2 18 3.4 28 3.4"
-        stroke="currentColor"
-        strokeWidth="4"
-        strokeLinecap="round"
-        opacity="0.85"
-      />
-    </svg>
-  );
-}
-
-/** A little stack of polaroids, for "this album is empty". */
 export function PhotoStackArt({ size = 120 }: { size?: number }) {
   return (
     <svg width={size} height={(size * 100) / 120} viewBox="0 0 120 100" fill="none" aria-hidden focusable="false">

@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 /** Supabase mints eight digits for this project, so there are eight boxes. */
 const LENGTH = 8;
 
-export function CodeForm({ restartHref }: { restartHref: string }) {
+export function CodeForm({ restartHref, club }: { restartHref: string; club?: string }) {
   const router = useRouter();
   const [digits, setDigits] = useState<string[]>(() => Array(LENGTH).fill(""));
   const [pending, setPending] = useState(false);
@@ -22,7 +22,7 @@ export function CodeForm({ restartHref }: { restartHref: string }) {
       const res = await fetch("/api/auth/verify_code", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ code: value }),
+        body: JSON.stringify({ code: value, club }),
       });
       const body: { error?: string; redirectTo?: string } = await res.json().catch(() => ({}));
       if (!res.ok || !body.redirectTo) {
@@ -81,7 +81,7 @@ export function CodeForm({ restartHref }: { restartHref: string }) {
         event.preventDefault();
         if (code.length === LENGTH) void submit(code);
       }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-5"
     >
       {/* One box per digit, in a row that stays inside a narrow phone. */}
       <div className="flex justify-center gap-1.5 sm:gap-2" role="group" aria-label="Sign-in code">
@@ -101,31 +101,27 @@ export function CodeForm({ restartHref }: { restartHref: string }) {
             aria-label={`Digit ${index + 1} of ${LENGTH}`}
             autoFocus={index === 0}
             disabled={pending}
-            className="soft-display h-[58px] w-full min-w-0 max-w-[46px] rounded-[14px] border bg-[color:var(--color-surface)] text-center text-[24px] text-ink caret-accent outline-none focus-visible:border-accent"
-            style={{ borderColor: digit ? "var(--color-accent)" : "color-mix(in srgb, var(--color-text) 12%, transparent)" }}
+            className="soft-display h-[58px] w-full min-w-0 max-w-[48px] rounded-[14px] bg-white text-center text-[24px] text-[color:var(--kb-ink)] caret-[color:var(--kb-ember)] outline-none focus-visible:border-2 focus-visible:!border-[color:var(--kb-ink)] focus-visible:shadow-[0_0_0_4px_var(--kb-ember-tint)]"
+            style={{ border: `1.5px solid ${digit ? "var(--kb-ink)" : "var(--kb-line-input)"}` }}
           />
         ))}
       </div>
 
       {error ? (
-        <div className="notice" role="alert">
+        <p className="kb-error m-0 text-center" role="alert">
           {error}
-        </div>
+        </p>
       ) : null}
-
-      <p className="text-center text-[14px] text-[color:var(--color-neutral-700)]">
-        Didn&rsquo;t arrive?{" "}
-        <Link href={restartHref} className="font-bold">
-          Send it again
-        </Link>{" "}
-        &middot; check junk
-      </p>
 
       {/* The boxes submit themselves once they're full; this is for anyone who
           gets there another way. */}
-      <button type="submit" className="soft-btn soft-btn-primary !min-h-[52px]" disabled={pending || code.length < LENGTH}>
-        {pending ? "Checking…" : "Sign in"}
+      <button type="submit" className="btn btn-primary w-full" disabled={pending || code.length < LENGTH}>
+        {pending ? "Checking…" : "Log in"}
       </button>
+
+      <Link href={restartHref} className="kb-link self-center">
+        Send a new code
+      </Link>
     </form>
   );
 }

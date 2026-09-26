@@ -59,7 +59,7 @@ export function Suggestions({
     <section className="flex flex-col gap-3">
       <div className="flex flex-col gap-0.5">
         <h2 className="soft-display text-[19px]">Is this you?</h2>
-        <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+        <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
           Saying yes helps us recognise you next time. Saying no means we never suggest that photo again.
           {total > suggestions.length
             ? ` ${total.toLocaleString("en-AU")} waiting — answer these and the next ones appear.`
@@ -68,7 +68,7 @@ export function Suggestions({
       </div>
       <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6">
         {remaining.map((suggestion) => (
-          <div key={suggestion.matchId} className="soft-card flex w-[168px] flex-none flex-col gap-2 p-3">
+          <div key={suggestion.matchId} className="soft-card flex w-[188px] flex-none flex-col gap-2 p-3">
             {suggestion.albumId ? (
               <Link href={`/c/${handle}/a/${suggestion.albumId}/${suggestion.mediaId}`} className="self-center">
                 <FaceCrop suggestion={suggestion} />
@@ -78,11 +78,11 @@ export function Suggestions({
                 <FaceCrop suggestion={suggestion} />
               </span>
             )}
-            <span className="truncate text-[12px] text-[color:var(--ink-55)]">{suggestion.albumTitle}</span>
+            <span className="truncate text-[14px] text-[color:var(--ink-55)]">{suggestion.albumTitle}</span>
             <div className="flex gap-1.5">
               <button
                 type="button"
-                className="soft-btn soft-btn-primary flex-1 !min-h-[34px] !px-2 !text-[12px]"
+                className="btn btn-ghost flex-1 !px-2"
                 onClick={() =>
                   startTransition(async () => {
                     decide(suggestion.matchId);
@@ -94,7 +94,7 @@ export function Suggestions({
               </button>
               <button
                 type="button"
-                className="soft-btn soft-btn-tonal flex-1 !min-h-[34px] !px-2 !text-[12px]"
+                className="btn btn-ghost flex-1 !px-2"
                 onClick={() =>
                   startTransition(async () => {
                     decide(suggestion.matchId);

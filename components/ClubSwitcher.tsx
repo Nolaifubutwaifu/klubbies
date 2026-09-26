@@ -60,13 +60,13 @@ export function ClubSwitcher({
           // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
           <img src={logoUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
         ) : (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-accent-500),var(--color-accent-700))] text-[10px] font-extrabold text-white">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[linear-gradient(135deg,var(--color-accent-500),var(--color-accent-700))] text-[14px] font-extrabold text-white">
             {initials(current?.name ?? "Klubbies")}
           </span>
         )}
         <span className="soft-wordmark text-[17px]">{current?.name ?? "Your clubs"}</span>
-        {invites.length ? <span className="tag tag-accent text-[10px]">{invites.length} new</span> : null}
-        <span className="text-[11px] text-ink-55">▾</span>
+        {invites.length ? <span className="tag tag-accent text-[14px]">{invites.length} new</span> : null}
+        <span className="text-[14px] text-ink-55">▾</span>
       </button>
 
       {open ? (
@@ -77,7 +77,7 @@ export function ClubSwitcher({
           <div className="label-caps px-4 pt-3">Your clubs</div>
           <div className="flex flex-col">
             {others.length === 0 && clubs.length <= 1 ? (
-              <p className="px-4 py-3 text-[13px] text-ink-70">
+              <p className="px-4 py-3 text-[14px] text-ink-70">
                 You&apos;re only in this club. Ask another committee to add your email, or start your own.
               </p>
             ) : null}
@@ -90,7 +90,7 @@ export function ClubSwitcher({
                 aria-current={club.handle === current?.handle}
               >
                 <span
-                  className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden text-[11px] font-extrabold text-white"
+                  className="flex h-8 w-8 flex-none items-center justify-center overflow-hidden text-[14px] font-extrabold text-white"
                   style={{ background: clubLogoUrls[club.clubId] ? "transparent" : "var(--color-neutral-900)" }}
                 >
                   {clubLogoUrls[club.clubId] ? (
@@ -102,7 +102,7 @@ export function ClubSwitcher({
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate font-heading text-[15px] font-bold">{club.name}</span>
-                  <span className="block text-[12px] text-ink-70">
+                  <span className="block text-[14px] text-ink-70">
                     {club.roleName}
                     {club.status === "grace" ? " · access ending" : ""}
                   </span>
@@ -119,7 +119,7 @@ export function ClubSwitcher({
               <div className="mt-2 flex gap-2">
                 <button
                   type="button"
-                  className="btn btn-primary text-[13px]"
+                  className="btn btn-primary text-[14px]"
                   disabled={pending}
                   onClick={() =>
                     startTransition(async () => {
@@ -136,7 +136,7 @@ export function ClubSwitcher({
                 </button>
                 <button
                   type="button"
-                  className="btn btn-ghost text-[13px]"
+                  className="btn btn-ghost text-[14px]"
                   disabled={pending}
                   onClick={() =>
                     startTransition(async () => {
@@ -152,7 +152,7 @@ export function ClubSwitcher({
           ))}
 
           <div className="border-t-2 border-divider p-3">
-            <Link href="/admin/new" className="btn btn-secondary w-full justify-center text-[13px]" onClick={() => setOpen(false)}>
+            <Link href="/admin/new" className="btn btn-secondary w-full justify-center text-[14px]" onClick={() => setOpen(false)}>
               Start another club
             </Link>
           </div>

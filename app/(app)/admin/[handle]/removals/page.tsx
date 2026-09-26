@@ -57,7 +57,7 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={ctx.club.name} title="Removal requests" underline>
+      <PageTitle kicker={ctx.club.name} title="Removal requests">
         A member asked for a photo to come down. It is already hidden from everyone — you decide whether the original
         goes too.
       </PageTitle>
@@ -78,7 +78,7 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
                   {url ? (
                     <img src={url} alt={item?.original_filename ?? "The photo that was asked about"} className="block w-full object-cover" />
                   ) : (
-                    <span className="flex aspect-[4/3] items-center justify-center text-[13px] text-[color:var(--ink-70)]">
+                    <span className="flex aspect-[4/3] items-center justify-center text-[14px] text-[color:var(--ink-70)]">
                       No preview
                     </span>
                   )}
@@ -91,7 +91,7 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
                   </div>
                   <div>
                     <span className="soft-display block text-[19px]">{asker} asked for this down</span>
-                    <span className="block text-[13px] text-[color:var(--ink-70)]">
+                    <span className="block text-[14px] text-[color:var(--ink-70)]">
                       {formatDateTime(request.requested_at)} · no reason given, none needed
                     </span>
                   </div>
@@ -101,7 +101,7 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
                   </p>
                   <RemovalDecision requestId={request.id} />
                   {item?.album_id ? (
-                    <Link href={`/c/${handle}/a/${item.album_id}`} className="text-[13px] font-bold">
+                    <Link href={`/c/${handle}/a/${item.album_id}`} className="text-[14px] font-bold">
                       Open the album
                     </Link>
                   ) : null}

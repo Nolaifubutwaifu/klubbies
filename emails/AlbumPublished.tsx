@@ -23,7 +23,7 @@ export default function AlbumPublished({ name, clubName, albumTitle, albumMeta, 
       <Link href={albumUrl} style={emailStyles.button}>
         Open the album
       </Link>
-      <Text style={{ ...emailStyles.body, fontSize: 12, marginTop: 24 }}>
+      <Text style={{ ...emailStyles.body, fontSize: 14, marginTop: 24 }}>
         Don&apos;t want these? <Link href={unsubscribeUrl}>Turn off new album emails</Link>.
       </Text>
     </EmailLayout>

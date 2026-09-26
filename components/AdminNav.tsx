@@ -82,7 +82,10 @@ export function AdminNav({
   counts,
   plan,
   person,
+  host,
 }: {
+  /** The app's own host, e.g. klubbies.taigaprojects.space. */
+  host: string;
   handle: string;
   clubName: string;
   logoUrl: string | null;
@@ -118,7 +121,7 @@ export function AdminNav({
     <nav aria-label="Committee" className="lg:sticky lg:top-5 lg:self-start">
       <div className="soft-card flex flex-col gap-1 p-3 lg:w-[248px]">
         <div className="hidden items-center gap-2.5 px-1.5 pb-3 lg:flex">
-          <span className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-[12px] bg-accent text-[12px] font-extrabold text-white">
+          <span className="flex h-9 w-9 flex-none items-center justify-center overflow-hidden rounded-[12px] bg-accent text-[14px] font-extrabold text-white">
             {logoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
               <img src={logoUrl} alt="" className="h-full w-full object-cover" />
@@ -128,7 +131,7 @@ export function AdminNav({
           </span>
           <span className="min-w-0">
             <span className="soft-display block truncate text-[15px]">{clubName}</span>
-            <span className="block truncate text-[11px] text-[color:var(--ink-55)]">klubbies.app/c/{handle}</span>
+            <span className="block truncate text-[14px] text-[color:var(--ink-55)]">{host}/c/{handle}</span>
           </span>
         </div>
 
@@ -150,7 +153,7 @@ export function AdminNav({
                 <span className="whitespace-nowrap">{link.label}</span>
                 {link.badge > 0 ? (
                   <span
-                    className="ml-auto rounded-full px-2 py-0.5 text-[11px] font-extrabold"
+                    className="ml-auto rounded-full px-2 py-0.5 text-[14px] font-extrabold"
                     style={
                       "urgent" in link && link.urgent
                         ? { background: "var(--color-accent)", color: "#fff" }
@@ -170,11 +173,11 @@ export function AdminNav({
             href={`${base}/billing`}
             className="rounded-[var(--soft-r-sm)] bg-[color:var(--tone-support)] px-3.5 py-2.5 text-[color:var(--tone-support-ink)] no-underline"
           >
-            <span className="block text-[13px] font-bold">{plan.line}</span>
-            <span className="block text-[11px]">{plan.hint}</span>
+            <span className="block text-[14px] font-bold">{plan.line}</span>
+            <span className="block text-[14px]">{plan.hint}</span>
           </Link>
           <div className="flex items-center gap-2.5 px-1.5 pt-1">
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[color:var(--tone-support)] text-[11px] font-extrabold text-[color:var(--tone-support-ink)]">
+            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[color:var(--tone-support)] text-[14px] font-extrabold text-[color:var(--tone-support-ink)]">
               {person.name
                 .trim()
                 .split(/\s+/)
@@ -184,8 +187,8 @@ export function AdminNav({
                 .toUpperCase()}
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-[13px] font-bold">{person.name}</span>
-              <span className="block truncate text-[11px] text-[color:var(--ink-55)]">{person.role}</span>
+              <span className="block truncate text-[14px] font-bold">{person.name}</span>
+              <span className="block truncate text-[14px] text-[color:var(--ink-55)]">{person.role}</span>
             </span>
           </div>
         </div>

@@ -54,7 +54,7 @@ export default async function GuestLinksPage(props: PageProps<"/admin/[handle]/g
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={ctx.club.name} title="Guest links" underline>
+      <PageTitle kicker={ctx.club.name} title="Guest links">
         For the photographer you hired, or the one mate with the good camera. They can upload into one album and see
         nothing else.
       </PageTitle>
@@ -78,7 +78,7 @@ export default async function GuestLinksPage(props: PageProps<"/admin/[handle]/g
                     >
                       <span className="min-w-[200px] flex-1">
                         <span className="block text-[14px] font-bold">{link.label}</span>
-                        <span className="block text-[12px] text-[color:var(--ink-70)]">
+                        <span className="block text-[14px] text-[color:var(--ink-70)]">
                           {[
                             link.revoked_at
                               ? `Revoked ${formatDate(link.revoked_at)}`
@@ -111,11 +111,11 @@ export default async function GuestLinksPage(props: PageProps<"/admin/[handle]/g
               Everything they add shows as &ldquo;added by guest&rdquo; in your album.
             </p>
             <div className="mt-4 rounded-[var(--soft-r-sm)] bg-[color:var(--color-surface)] p-4 text-[color:var(--color-text)]">
-              <span className="block text-[12px] font-bold text-[color:var(--ink-70)]">Upload for {ctx.club.name}</span>
+              <span className="block text-[14px] font-bold text-[color:var(--ink-70)]">Upload for {ctx.club.name}</span>
               <span className="soft-display mt-1 block text-[18px]">
                 {albums?.[0]?.title ?? "Your album"}
               </span>
-              <span className="mt-3 flex h-[76px] items-center justify-center rounded-[var(--soft-r-sm)] border border-dashed border-[color-mix(in_srgb,var(--color-text)_18%,transparent)] text-[13px] text-[color:var(--ink-70)]">
+              <span className="mt-3 flex h-[76px] items-center justify-center rounded-[var(--soft-r-sm)] border border-dashed border-[color-mix(in_srgb,var(--color-text)_18%,transparent)] text-[14px] text-[color:var(--ink-70)]">
                 Drop photos and videos here
               </span>
             </div>

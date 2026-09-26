@@ -145,10 +145,10 @@ export function RosterImport({ clubId }: { clubId: string }) {
         onDrop={onDrop}
       >
         <span className="soft-display text-[16px]">{busy && !preview ? "Reading the file…" : "Drop members.csv"}</span>
-        <span className="text-[13px] text-[color:var(--ink-70)]">CSV or Excel. Any columns, any order.</span>
+        <span className="text-[14px] text-[color:var(--ink-70)]">CSV or Excel. Any columns, any order.</span>
         <button
           type="button"
-          className="btn btn-ghost text-[13px]"
+          className="btn btn-ghost text-[14px]"
           onClick={(e) => {
             e.stopPropagation();
             setPasteOpen(true);
@@ -158,7 +158,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
         </button>
         {error && !preview ? <span className="notice mt-2 text-left">{error}</span> : null}
         {done ? (
-          <span className="mt-2 text-[13px] font-semibold">
+          <span className="mt-2 text-[14px] font-semibold">
             Added {done.added + done.restored}. {done.alreadyPresent} were already on the list.
             {removedCount ? ` ${removedCount} removed.` : ""}
           </span>
@@ -178,7 +178,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
       <Dialog open={pasteOpen} onClose={() => setPasteOpen(false)} title="Paste members">
         <p className="text-[14px] text-[color:var(--ink-70)]">One person per line: name and email, in any format.</p>
         <textarea
-          className="input font-mono text-[13px]"
+          className="input font-mono text-[14px]"
           rows={10}
           value={pasted}
           onChange={(e) => setPasted(e.target.value)}
@@ -215,13 +215,13 @@ export function RosterImport({ clubId }: { clubId: string }) {
 
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <span className="text-[13px] font-semibold">Names are in</span>
+                <span className="text-[14px] font-semibold">Names are in</span>
                 <div className="flex soft-card">
                   {(["full", "split"] as const).map((mode) => (
                     <button
                       key={mode}
                       type="button"
-                      className="flex-1 px-3 py-2 text-left text-[13px] font-semibold"
+                      className="flex-1 px-3 py-2 text-left text-[14px] font-semibold"
                       style={{
                         background: nameMode === mode ? "var(--color-accent)" : "transparent",
                         color: nameMode === mode ? "#fff" : "var(--color-neutral-800)",
@@ -253,7 +253,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="table min-w-[520px] text-[13px]">
+              <table className="table min-w-[520px] text-[14px]">
                 <thead>
                   <tr>
                     {preview.columns.map((c, i) => (
@@ -315,7 +315,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
                       If this file is your full current membership, you can remove them. They keep access to earlier
                       albums for 30 days.
                     </span>
-                    <ul className="mt-2 max-h-28 overflow-auto text-[13px] text-[color:var(--ink-70)]">
+                    <ul className="mt-2 max-h-28 overflow-auto text-[14px] text-[color:var(--ink-70)]">
                       {summary.missing.slice(0, 50).map((m) => (
                         <li key={m.id}>
                           {m.name} · {m.email}
@@ -334,14 +334,14 @@ export function RosterImport({ clubId }: { clubId: string }) {
                 ) : null}
                 {summary.problemCount ? (
                   <>
-                    <ul className="max-h-40 overflow-auto text-[13px] text-[color:var(--ink-70)]">
+                    <ul className="max-h-40 overflow-auto text-[14px] text-[color:var(--ink-70)]">
                       {summary.problems.slice(0, 50).map((p) => (
                         <li key={`${p.row}-${p.email}`}>
                           Row {p.row}: {p.name || "(no name)"} {p.email ? `· ${p.email}` : ""} — {p.reason}
                         </li>
                       ))}
                     </ul>
-                    <button type="button" className="btn btn-ghost self-start text-[13px]" onClick={downloadProblems}>
+                    <button type="button" className="btn btn-ghost self-start text-[14px]" onClick={downloadProblems}>
                       Download problem rows
                     </button>
                   </>

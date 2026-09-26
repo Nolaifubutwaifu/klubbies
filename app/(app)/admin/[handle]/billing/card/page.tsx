@@ -14,7 +14,7 @@ export default async function CardPage(props: PageProps<"/admin/[handle]/billing
 
   return (
     <main className="flex max-w-[720px] flex-col gap-6 px-6 py-8">
-      <Link href={`/admin/${handle}/billing`} className="btn btn-ghost self-start pl-0 text-[13px]">
+      <Link href={`/admin/${handle}/billing`} className="btn btn-ghost self-start pl-0 text-[14px]">
         ← Billing
       </Link>
       <PageTitle kicker={ctx.club.name} title={card ? "Change payment card" : "Add a payment card"}>

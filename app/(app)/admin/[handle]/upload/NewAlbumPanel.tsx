@@ -68,7 +68,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
       </div>
 
       <fieldset className="m-0 flex flex-col gap-2.5 rounded-[var(--soft-r-sm)] bg-[color:var(--tone-support)] p-4 text-[color:var(--tone-support-ink)]">
-        <legend className="px-1 text-[13px] font-bold">When should it go live?</legend>
+        <legend className="px-1 text-[14px] font-bold">When should it go live?</legend>
         <label className="flex items-center gap-3 text-[14px]">
           <input
             type="radio"
@@ -87,7 +87,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
           />
           Schedule it for
           <input
-            className="input !min-h-[40px] !w-auto !py-1 !text-[13px]"
+            className="input !min-h-[40px] !w-auto !py-1 !text-[14px]"
             type="datetime-local"
             value={publishAt}
             onChange={(e) => {
@@ -98,7 +98,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
           />
         </label>
         <input type="hidden" name="publishAt" value={when === "later" ? publishAt : ""} />
-        <p className="m-0 text-[13px]">
+        <p className="m-0 text-[14px]">
           Nobody wants a notification at 3am. Albums go live on the first morning after the time you pick.
         </p>
       </fieldset>
@@ -107,7 +107,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
       <SubmitButton className="soft-btn soft-btn-primary self-start" pendingText="Making the album…">
         {when === "later" ? "Schedule and start uploading" : "Create and start uploading"}
       </SubmitButton>
-      <p className="m-0 text-[13px] text-[color:var(--ink-70)]">
+      <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
         The next screen is the drop zone. Uploads keep running while you move around Klubbies, and each file picks up
         where it left off if the connection drops.
       </p>
