@@ -31,7 +31,7 @@ test("member sees only their club", async ({ page, context, request }) => {
   expect(redirectTo).toBe(`/c/${world.clubA.handle}`);
 
   await page.goto(redirectTo);
-  await expect(page.getByRole("heading", { name: "Events" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: `E2E a ${world.runId}` })).toBeVisible();
   await expect(page.getByText("Album a")).toBeVisible();
 
   const other = await page.goto(`/c/${world.clubB.handle}`);

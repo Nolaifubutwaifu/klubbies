@@ -7,6 +7,7 @@ import { displayNameFor } from "@/lib/auth/display-name";
 import { listMyClubs, type ClubContext } from "@/lib/auth/session";
 import { canWrite } from "@/lib/billing/status";
 import { formatLongDate } from "@/lib/format";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 import { signLogoMarks } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,6 +28,7 @@ export async function AppHeader({
   ]);
   const { club, membership, perms } = ctx;
   const adminArea = (forceAdmin || area === "admin") && perms.manage_club;
+  const inApp = await isNativeAppRequest();
 
   // Every logo the header can show, in one call: the current club's, plus
   // each club in the switcher list. The dropdown used to fall back to
@@ -96,12 +98,18 @@ export async function AppHeader({
       )}
 
       {adminArea && !canWrite(club.billing_status) ? (
-        <div className="kb-info mx-4 mt-3 flex-wrap items-center justify-between sm:mx-6">
-          <span>This club isn&apos;t active yet. Adding members and uploading unlock after payment.</span>
-          <Link href={`/admin/${club.handle}/billing`} className="btn btn-primary btn-sm">
-            Activate club
-          </Link>
-        </div>
+        inApp ? (
+          <div className="kb-info mx-4 mt-3 sm:mx-6">
+            <span>This club isn&apos;t active yet, so adding members and uploading are switched off.</span>
+          </div>
+        ) : (
+          <div className="kb-info mx-4 mt-3 flex-wrap items-center justify-between sm:mx-6">
+            <span>This club isn&apos;t active yet. Adding members and uploading unlock after payment.</span>
+            <Link href={`/admin/${club.handle}/billing`} className="btn btn-primary btn-sm">
+              Activate club
+            </Link>
+          </div>
+        )
       ) : null}
 
       {membership?.status === "grace" && membership.grace_ends_at ? (

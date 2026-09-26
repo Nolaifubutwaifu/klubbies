@@ -675,3 +675,28 @@ differently, and why.
      300: `claim_face_jobs` reclaims a job after ten minutes on the
      assumption that no run lasts longer, and hourly passes make a longer
      budget unnecessary.
+
+## 2026-09-27 · iPhone app
+
+136. **The iPhone app is a native Swift shell around the live site**, in
+     `ios/`, not Capacitor. The site is server rendered, so either way the
+     app shows a web view of www.klubbies.app; plain Swift means no Node, no
+     `cap sync` and no plugins between editing and pressing Run. What the
+     shell adds is what a web view lacks: confirm dialogs, downloads, Save to
+     Photos written straight into the library, pull to refresh, an offline
+     screen, and outside links in an in-app Safari sheet.
+137. **No payment controls inside the app.** Apple requires in-app purchase
+     for digital subscriptions sold in an iPhone app and forbids pointing
+     people at another way to pay. The app adds `KlubbiesApp/<version>` to
+     its user agent (`lib/native-app-server.ts` reads it). In the app the
+     billing page shows the club's status and no buttons, the card page
+     redirects back to it, and the admin banner and the locked-feature cards
+     say what is switched off without an "Activate club" button. Clubs pay on
+     the web.
+138. **Save to Photos in the app skips the share sheet.** The page hands the
+     app signed URLs through `window.webkit.messageHandlers
+     .klubbiesSaveToPhotos`, and the app adds each file to Photos with
+     add-only access, so it can never read the library.
+139. **The album page reads in two rounds, not eight.** Its dozen queries were
+     awaited one after another; the independent ones now start together.
+     Warm render time on the demo album went from about 0.73s to 0.57s.

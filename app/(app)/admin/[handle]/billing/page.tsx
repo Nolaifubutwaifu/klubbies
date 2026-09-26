@@ -6,6 +6,7 @@ import { requireAdminContext } from "@/lib/auth/admin-context";
 import { BILLING_LABEL, canWrite, type BillingStatus } from "@/lib/billing/status";
 import { getDefaultCard, getPriceSummary, stripeConfigured, syncReturnedSession, type CardSummary, type PriceSummary } from "@/lib/billing/stripe";
 import { formatLongDate } from "@/lib/format";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 import { openBillingPortalAction, startCheckoutAction } from "../../billing-actions";
 
 export const metadata: Metadata = { title: "Billing" };
@@ -52,6 +53,10 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
 
   const onboarding = search.step === "2" || (status === "unpaid" && !justPaid);
   const writable = canWrite(status);
+  // Apple doesn't allow an iPhone app to sell a subscription except through
+  // in-app purchase, or to point people at another way to pay. So inside the
+  // app this page reports the club's status and offers no payment controls.
+  const inApp = await isNativeAppRequest();
 
   return (
     <main className="flex max-w-[920px] flex-col gap-6 px-6 py-8">
@@ -89,18 +94,21 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
                 ? "This club is on a complimentary plan."
                 : "Members, albums and uploads are unlocked."}
           </p>
+          {inApp ? (
+            <p className="max-w-[56ch] text-[14px] text-[color:var(--ink-70)]">Billing can&apos;t be changed in the iPhone app.</p>
+          ) : null}
           <div className="flex flex-wrap gap-3">
             {justPaid ? (
               <Link href={`/admin/${handle}/members?step=3`} className="btn btn-primary">
                 Continue to member list
               </Link>
             ) : null}
-            {configured ? (
+            {configured && !inApp ? (
               <Link href={`/admin/${handle}/billing/card`} className="btn btn-secondary">
                 {card ? "Change card" : "Add a card"}
               </Link>
             ) : null}
-            {ctx.club.stripe_customer_id && configured ? (
+            {ctx.club.stripe_customer_id && configured && !inApp ? (
               <form action={openBillingPortalAction.bind(null, ctx.club.id)}>
                 <SubmitButton className="btn btn-ghost" pendingText="Opening…">
                   Invoices and cancellation
@@ -108,6 +116,15 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
               </form>
             ) : null}
           </div>
+        </section>
+      ) : inApp ? (
+        <section className="flex flex-col gap-3 soft-card p-6">
+          <span className="tag tag-outline self-start">{BILLING_LABEL[status]}</span>
+          <h2 className="display text-[28px]">{ctx.club.name} isn&apos;t active yet.</h2>
+          <p className="max-w-[56ch] text-[15px] text-ink-70">
+            Clubs can&apos;t be activated in the iPhone app. Once the club is active, adding members and uploading unlock
+            here too. Members can still open existing albums.
+          </p>
         </section>
       ) : (
         <section className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>

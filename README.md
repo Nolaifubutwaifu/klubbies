@@ -60,6 +60,10 @@ All read `.env.local` and use the service role. Nothing destructive happens with
 | `pnpm dedupe-media --club <handle>` | Report photos uploaded twice into an album; `--confirm` deletes the extra copies |
 | `pnpm logo-marks` | Make the small badge version of club logos uploaded before those existed |
 
+## iPhone app
+
+`ios/` holds the native iPhone app. Open `ios/Klubbies.xcodeproj` in Xcode; `ios/README.md` covers running it on a phone and shipping it through TestFlight.
+
 ## Deploying
 
 Vercel deploys `main` to production. Set every variable from `.env.example`, and apply new migrations to Supabase before the code that needs them goes live.

@@ -5,12 +5,17 @@ import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, useTransition } from "react";
 import { setAlbumPublishedAction } from "@/app/(app)/admin/actions";
 import { MoreButton, MoreLink, MoreMenu, MoreSeparator } from "@/components/MoreMenu";
+import { nativeSaveToPhotos } from "@/lib/native-app";
 
 const SHARE_BATCH = 8;
 const subscribeNever = () => () => {};
 
-/** True only where the share sheet accepts files, which is how iOS saves to Photos. */
+/**
+ * True where photos can go straight into the Photos app: inside the iPhone
+ * app, or where the share sheet accepts files, which is how iOS Safari does it.
+ */
 function canShareSnapshot(): boolean {
+  if (nativeSaveToPhotos()) return true;
   try {
     const probe = new File([new Blob([new Uint8Array([1])])], "probe.jpg", { type: "image/jpeg" });
     return Boolean(navigator.canShare?.({ files: [probe] }));
@@ -29,7 +34,8 @@ function canShareSnapshot(): boolean {
  *
  * "Save to Photos" hands batches of files to the phone's share sheet, which
  * offers "Save N Images" straight into the Photos app. Laptops get the zip,
- * in parts for very large albums.
+ * in parts for very large albums. Inside the iPhone app there is no share
+ * sheet step: the app saves each batch into Photos itself.
  */
 export function AlbumActions({
   albumId,
@@ -69,6 +75,8 @@ export function AlbumActions({
   async function saveToPhotos() {
     setBusy(true);
     setError("");
+    const native = nativeSaveToPhotos();
+    let saved = 0;
     try {
       for (let i = 0; i < mediaIds.length; i += SHARE_BATCH) {
         const batch = mediaIds.slice(i, i + SHARE_BATCH);
@@ -79,6 +87,13 @@ export function AlbumActions({
           body: JSON.stringify({ mediaIds: batch, variant: "display" }),
         });
         const { urls }: { urls: Record<string, string> } = await res.json();
+        if (native) {
+          const batchUrls = batch.map((id) => urls[id]).filter((url): url is string => Boolean(url));
+          setProgress(`Saving ${Math.min(i + SHARE_BATCH, mediaIds.length)} of ${mediaIds.length}…`);
+          const result = (await native.postMessage({ urls: batchUrls })) as { saved?: number };
+          saved += result?.saved ?? 0;
+          continue;
+        }
         const files: File[] = [];
         for (const id of batch) {
           const url = urls[id];
@@ -91,10 +106,11 @@ export function AlbumActions({
         setProgress(`Saving ${files.length} photos…`);
         await navigator.share({ files, title: "Klubbies" });
       }
-      setProgress("Done");
+      setProgress(native ? `Saved ${saved} to Photos` : "Done");
     } catch (shareError) {
       const message = shareError instanceof Error ? shareError.message : String(shareError);
-      if (!/abort/i.test(message)) setError("Saving stopped. You can also use Download all.");
+      if (/photos access/i.test(message)) setError(message);
+      else if (!/abort/i.test(message)) setError("Saving stopped. You can also use Download all.");
       setProgress("");
     } finally {
       setBusy(false);

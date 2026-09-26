@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { CardForm } from "@/components/CardForm";
 import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { getDefaultCard, stripeConfigured } from "@/lib/billing/stripe";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 
 export const metadata: Metadata = { title: "Payment card" };
 
 export default async function CardPage(props: PageProps<"/admin/[handle]/billing/card">) {
   const { handle } = await props.params;
   const ctx = await requireAdminContext(handle);
+  // No payment controls inside the iPhone app; see the billing page.
+  if (await isNativeAppRequest()) redirect(`/admin/${handle}/billing`);
   const card = stripeConfigured() ? await getDefaultCard(ctx.club).catch(() => null) : null;
 
   return (

@@ -50,7 +50,9 @@ export default async function AlbumPage(props: Props) {
   const adding = canAdd && search.add === "1";
   const albumHref = `/c/${handle}/a/${album.id}`;
 
-  const [{ items, hasMore }, { data: counts }, { data: unfinished }, { data: readyIds }] = await Promise.all([
+  // The page needs about a dozen reads. Most don't depend on each other, so
+  // they start together and the page waits for two rounds rather than eight.
+  const firstPage = Promise.all([
     listAlbumMedia(supabase, album.id, 0, { includeProcessing: canManage }),
     supabase.from("album_media_counts").select("*").eq("album_id", album.id).maybeSingle(),
     canManage
@@ -73,48 +75,90 @@ export default async function AlbumPage(props: Props) {
 
   // "Added by Mahi and 1 guest" — who put the night together, which is the
   // line the design leads the album with.
-  const [{ data: uploaders }, { count: guestFiles }, { count: savedTotal }] = await Promise.all([
-    supabase.from("media").select("uploaded_by").eq("album_id", album.id).not("uploaded_by", "is", null).limit(400),
-    supabase
-      .from("media")
-      .select("id", { count: "exact", head: true })
-      .eq("album_id", album.id)
-      .not("guest_link_id", "is", null),
+  const uploadersQuery = supabase.from("media").select("uploaded_by").eq("album_id", album.id).not("uploaded_by", "is", null).limit(400);
+  const guestFilesQuery = supabase
+    .from("media")
+    .select("id", { count: "exact", head: true })
+    .eq("album_id", album.id)
+    .not("guest_link_id", "is", null);
+
+  // Members can't read an unfinished row, so the count comes from the service
+  // role — after the membership check above, never before it. It's a tally of
+  // files in an album they can already open, and no more than that.
+  const processing = (async () => {
+    let photos = 0;
+    let videos = 0;
+    if (!canManage && ctx.membership) {
+      const { data: pending } = await createAdminClient()
+        .from("media")
+        .select("kind")
+        .eq("album_id", album.id)
+        .eq("status", "processing")
+        .is("hidden_at", null)
+        .limit(200);
+      for (const row of pending ?? []) {
+        if (row.kind === "video") videos += 1;
+        else photos += 1;
+      }
+    }
+    return { photos, videos };
+  })();
+
+  // A cover the committee chose. Without one the first photo stands in, which
+  // needs the first page, so that fallback is applied further down.
+  const chosenCover = (async (): Promise<{ url: string | null; source: string } | null> => {
+    if (album.cover_path) {
+      const url = (await signPaths(supabase, [album.cover_path], SIGNED_URL_TTL.display)).get(album.cover_path) ?? null;
+      return { url, source: "Your own cover image." };
+    }
+    if (album.cover_media_id) {
+      const { data: cover } = await supabase
+        .from("media")
+        .select("display_path, thumb_path")
+        .eq("id", album.cover_media_id)
+        .maybeSingle();
+      const path = cover?.display_path ?? cover?.thumb_path;
+      const url = path ? ((await signPaths(supabase, [path], SIGNED_URL_TTL.display)).get(path) ?? null) : null;
+      return { url, source: "Chosen from this album." };
+    }
+    return null;
+  })();
+
+  // "You (6)" beside All, for a member who has enrolled and is in this album.
+  // Fetched as its own list rather than filtered from the loaded page, so it
+  // finds you on page three as well as page one.
+  const mine = (async () => {
+    const faceState = await faceStateFor(supabase, ctx.club.id, ctx.userId);
+    const mineIds = faceState.enabled && faceState.profile?.status === "ready" ? await photosOfYouInAlbum(supabase, album.id) : [];
+    return (await listAlbumMedia(supabase, album.id, 0, { onlyIds: mineIds.slice(0, 200) })).items;
+  })();
+
+  const [
+    [{ items, hasMore }, { data: counts }, { data: unfinished }, { data: readyIds }],
+    { data: uploaders },
+    { count: guestFiles },
+    { photos: processingPhotos, videos: processingVideos },
+    cover,
+    mineItems,
+  ] = await Promise.all([firstPage, uploadersQuery, guestFilesQuery, processing, chosenCover, mine]);
+
+  const uploaderIds = [...new Set((uploaders ?? []).map((m) => m.uploaded_by).filter((id): id is string => Boolean(id)))];
+  const [{ count: savedTotal }, savedIds, { data: uploaderNames }] = await Promise.all([
     supabase
       .from("favourites")
       .select("media_id", { count: "exact", head: true })
       .eq("club_id", ctx.club.id)
       .eq("user_id", ctx.userId)
       .in("media_id", (readyIds ?? []).map((m) => m.id)),
+    favouritedIds(supabase, ctx.userId, items.map((item) => item.id)),
+    uploaderIds.length
+      ? supabase
+          .from("memberships")
+          .select("user_id, roster_name, claimed_name, users!memberships_user_id_fkey(display_name)")
+          .eq("club_id", ctx.club.id)
+          .in("user_id", uploaderIds.slice(0, 10))
+      : Promise.resolve({ data: [] }),
   ]);
-
-  // Members can't read an unfinished row, so the count comes from the service
-  // role — after the membership check above, never before it. It's a tally of
-  // files in an album they can already open, and no more than that.
-  let processingPhotos = 0;
-  let processingVideos = 0;
-  if (!canManage && ctx.membership) {
-    const { data: pending } = await createAdminClient()
-      .from("media")
-      .select("kind")
-      .eq("album_id", album.id)
-      .eq("status", "processing")
-      .is("hidden_at", null)
-      .limit(200);
-    for (const row of pending ?? []) {
-      if (row.kind === "video") processingVideos += 1;
-      else processingPhotos += 1;
-    }
-  }
-
-  const uploaderIds = [...new Set((uploaders ?? []).map((m) => m.uploaded_by).filter((id): id is string => Boolean(id)))];
-  const { data: uploaderNames } = uploaderIds.length
-    ? await supabase
-        .from("memberships")
-        .select("user_id, roster_name, claimed_name, users!memberships_user_id_fkey(display_name)")
-        .eq("club_id", ctx.club.id)
-        .in("user_id", uploaderIds.slice(0, 10))
-    : { data: [] };
 
   const firstNames = (uploaderNames ?? [])
     .map((m) => personName({ displayName: m.users?.display_name, claimedName: m.claimed_name, rosterName: m.roster_name }).split(/\s+/)[0])
@@ -131,32 +175,8 @@ export default async function AlbumPage(props: Props) {
     .filter(Boolean)
     .join(" and ");
 
-  let coverUrl: string | null = null;
-  let coverSource = "The first photo in the album is used until you choose one.";
-  if (album.cover_path) {
-    coverUrl = (await signPaths(supabase, [album.cover_path], SIGNED_URL_TTL.display)).get(album.cover_path) ?? null;
-    coverSource = "Your own cover image.";
-  } else if (album.cover_media_id) {
-    const { data: cover } = await supabase
-      .from("media")
-      .select("display_path, thumb_path")
-      .eq("id", album.cover_media_id)
-      .maybeSingle();
-    const path = cover?.display_path ?? cover?.thumb_path;
-    if (path) coverUrl = (await signPaths(supabase, [path], SIGNED_URL_TTL.display)).get(path) ?? null;
-    coverSource = "Chosen from this album.";
-  } else if (items[0]?.thumbUrl) {
-    coverUrl = items[0].thumbUrl;
-  }
-
-  const savedIds = await favouritedIds(supabase, ctx.userId, items.map((item) => item.id));
-
-  // "You (6)" beside All, for a member who has enrolled and is in this album.
-  // Fetched as its own list rather than filtered from the loaded page, so it
-  // finds you on page three as well as page one.
-  const faceState = await faceStateFor(supabase, ctx.club.id, ctx.userId);
-  const mineIds = faceState.enabled && faceState.profile?.status === "ready" ? await photosOfYouInAlbum(supabase, album.id) : [];
-  const { items: mineItems } = await listAlbumMedia(supabase, album.id, 0, { onlyIds: mineIds.slice(0, 200) });
+  const coverUrl = cover ? cover.url : (items[0]?.thumbUrl ?? null);
+  const coverSource = cover?.source ?? "The first photo in the album is used until you choose one.";
 
   const photoCount = counts?.photo_count ?? 0;
   const videoCount = counts?.video_count ?? 0;
