@@ -496,7 +496,7 @@ export async function deleteMediaAction(mediaIds: string[]): Promise<ActionState
   if (error) return { error: "Could not delete" };
   // Deleting the photos cascaded their media_faces rows, whose trigger queued
   // each faceprint. Draining now keeps "the faceprint goes with the photo"
-  // true immediately rather than by tomorrow's cron.
+  // true immediately rather than by the next cron pass.
   await drainFacePurgeQueue().catch((purgeError) => console.error("face purge after delete", purgeError));
 
   for (const ctx of contexts) {
@@ -690,7 +690,7 @@ export async function setAlbumHiddenAction(albumId: string, hidden: boolean): Pr
 }
 
 /**
- * Queues a draft to publish itself. The daily cron does the publishing, so a
+ * Queues a draft to publish itself. The hourly cron does the publishing, so a
  * time in the past goes live on the next pass rather than immediately.
  */
 export async function scheduleAlbumAction(albumId: string, publishAt: string | null): Promise<ActionState> {
@@ -713,7 +713,7 @@ export async function scheduleAlbumAction(albumId: string, publishAt: string | n
   revalidatePath(`/admin/${ctx.club.handle}`, "layout");
   return {
     ok: true,
-    message: when ? "Scheduled. It goes live the first morning after that time." : "Schedule cleared",
+    message: when ? "Scheduled. It goes live on the hour after that time." : "Schedule cleared",
   };
 }
 

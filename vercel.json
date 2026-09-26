@@ -7,7 +7,7 @@
   "crons": [
     {
       "path": "/api/cron/grace",
-      "schedule": "0 23 * * *"
+      "schedule": "0 * * * *"
     }
   ]
 }

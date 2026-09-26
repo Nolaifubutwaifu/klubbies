@@ -5,16 +5,16 @@ import { FormMessage, SubmitButton } from "@/components/forms";
 import { createAlbumAction, type ActionState } from "@/app/(app)/admin/actions";
 import { EVENT_TYPES } from "@/lib/media/event-types";
 
-/** The publishing pass runs each morning, so that's the time worth offering. */
+/** Saturday morning: late enough that nobody is woken, early enough to matter. */
 function nextSaturdayMorning(): { value: string; label: string } {
   const when = new Date();
-  when.setHours(9, 0, 0, 0);
+  when.setHours(10, 0, 0, 0);
   const daysAhead = (6 - when.getDay() + 7) % 7 || 7;
   when.setDate(when.getDate() + daysAhead);
   const pad = (n: number) => String(n).padStart(2, "0");
   return {
-    value: `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T09:00`,
-    label: `${when.toLocaleDateString("en-AU", { weekday: "long" })} 9:00am`,
+    value: `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}T10:00`,
+    label: `${when.toLocaleDateString("en-AU", { weekday: "long" })} 10:00am`,
   };
 }
 
@@ -98,9 +98,7 @@ export function NewAlbumPanel({ clubId }: { clubId: string }) {
           />
         </label>
         <input type="hidden" name="publishAt" value={when === "later" ? publishAt : ""} />
-        <p className="m-0 text-[14px]">
-          Nobody wants a notification at 3am. Albums go live on the first morning after the time you pick.
-        </p>
+        <p className="m-0 text-[14px]">Nobody wants a notification at 3am. Nobody wants to wait till Tuesday either.</p>
       </fieldset>
 
       <FormMessage state={state} />

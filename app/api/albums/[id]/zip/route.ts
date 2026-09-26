@@ -7,7 +7,9 @@ import { logAccess } from "@/lib/media/access";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
-export const maxDuration = 300;
+// Pro's ceiling. A part of full quality photos and video is slow to stream on
+// a weak connection, and a zip cut off at 300s arrives corrupt.
+export const maxDuration = 800;
 
 // Albums are zipped in parts so one request stays inside the function limits.
 export const PART_SIZE = 150;

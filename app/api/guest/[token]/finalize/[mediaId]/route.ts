@@ -68,8 +68,8 @@ export async function POST(request: Request, ctx: RouteContext<"/api/guest/[toke
 
   // Face recognition, when the club has turned it on. Wrapped so it can never
   // fail the upload: a missing face job is a nuisance, a failed upload is not.
-  // The drain is kicked here rather than left to the daily cron, or "Photos of
-  // you" would lag by up to 24 hours on Hobby and read as broken.
+  // The drain is kicked here rather than left to the hourly cron, or "Photos of
+  // you" would lag by up to an hour and read as broken.
   try {
     if (await clubFacesEnabled(media.club_id)) {
       await enqueueMediaJob(media.club_id, mediaId);

@@ -33,5 +33,5 @@ export function resolveMimeType(filename: string, reported: string): string | nu
 
 /** An upload still unfinished after this long has stopped, not slowed. */
 export const STUCK_AFTER_MS = 60 * 60 * 1000;
-/** After this long nobody is coming back for it, and the daily cron clears it. */
+/** After this long nobody is coming back for it, and the cron clears it. */
 export const EXPIRE_AFTER_DAYS = 14;

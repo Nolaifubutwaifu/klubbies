@@ -14,14 +14,13 @@ import { drainFacePurgeQueue } from "./purge";
 export type DrainResult = { claimed: number; done: number; failed: number; purged: number; searches: number };
 
 /**
- * Vercel's Hobby plan refuses more than one cron run per day (see the
- * TODO(vercel-pro) in app/api/cron/grace/route.ts), and a second daily cron
- * is not on offer either. So the drain has to be callable from three places
- * and safe from all of them:
+ * The cron runs hourly, which is too slow for a member waiting to see their
+ * own photos. So the drain has to be callable from three places and safe from
+ * all of them:
  *
- *   1. the existing daily cron,
+ *   1. the hourly cron,
  *   2. after the response of an upload, so a new photo matches within
- *      seconds rather than by tomorrow,
+ *      seconds rather than at the next cron pass,
  *   3. an admin "Run now" button, for backfill and for when something sticks.
  *
  * claim_face_jobs uses `for update skip locked`, so two of these running at
@@ -42,8 +41,8 @@ export async function runFaceJobs(options: { budgetMs?: number; batchSize?: numb
 
   // Keep claiming until the queue is empty or the clock runs out. A single
   // batch used to be the whole pass, which meant a 110 photo library needed
-  // five separate triggers and — with one cron run a day on Hobby — five
-  // days. Nothing ever asked for the next batch.
+  // five separate triggers and, back when the cron ran once a day on Hobby,
+  // five days. Nothing ever asked for the next batch.
   while (Date.now() < deadline) {
     const { data: claimed, error } = await admin.rpc("claim_face_jobs", { batch_size: batchSize });
     if (error) throw error;

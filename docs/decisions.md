@@ -662,3 +662,16 @@ differently, and why.
      response is sent. It now runs inside `after()`. The "Looking now" card
      also polls and nudges the queue, so a throttled enrolment no longer
      waits for the daily cron.
+
+## 2026-09-27 · Vercel Pro
+
+134. **The cron is hourly again.** Pro takes `0 * * * *`, so decision 68 is
+     undone: a scheduled album goes live on the hour after its time, the new
+     album panel offers Saturday 10am again, and the face queue, revoked
+     faceprints and throttled jobs get picked up within the hour instead of
+     the next morning. Every job in the pass was already safe to repeat.
+135. **Album zips get 800 seconds**, Pro's ceiling, up from 300. A part that
+     runs out of time mid-stream arrives as a corrupt zip. The cron stays at
+     300: `claim_face_jobs` reclaims a job after ten minutes on the
+     assumption that no run lasts longer, and hourly passes make a longer
+     budget unnecessary.

@@ -2,7 +2,7 @@
 
 Private photo and video albums for university clubs. Only people on a club's member list, verified with an emailed code, can see anything. Members can find the photos they're in with face recognition, which is on for every club (a club admin can switch it off).
 
-Live at `APP_URL` on Vercel (project `klubbies`, region `syd1`). The database, auth and file storage are the Supabase project `klubbies` (Sydney). Face recognition uses AWS Rekognition.
+Live at https://www.klubbies.app (`APP_URL`) on Vercel (project `klubbies`, region `syd1`). The database, auth and file storage are the Supabase project `klubbies` (Sydney). Face recognition uses AWS Rekognition.
 
 ## Where things are
 
@@ -14,7 +14,7 @@ Live at `APP_URL` on Vercel (project `klubbies`, region `syd1`). The database, a
 | `app/(app)/admin/[handle]` | The committee side: dashboard, albums, upload, members, guest links, removals, handover, billing and settings |
 | `app/(app)/account`, `clubs` | Your profile, and the list of your clubs |
 | `app/g/[token]` | Guest photographer upload page (the only signed-out page with content) |
-| `app/api` | Route handlers: uploads, downloads, zips, face crops, roster import, Stripe, the daily cron |
+| `app/api` | Route handlers: uploads, downloads, zips, face crops, roster import, Stripe, the hourly cron |
 | `components` | Shared UI. `components/soft` is the theme's building blocks and the landing page |
 | `lib` | Everything that isn't UI: `auth`, `billing`, `faces`, `media`, `storage`, `roster`, `email`, `supabase` clients |
 | `emails` | React Email templates |
@@ -64,14 +64,9 @@ All read `.env.local` and use the service role. Nothing destructive happens with
 
 Vercel deploys `main` to production. Set every variable from `.env.example`, and apply new migrations to Supabase before the code that needs them goes live.
 
-`CRON_SECRET` enables the daily job at `/api/cron/grace`: it publishes scheduled albums, sweeps unanswered removal requests, expires grace memberships, clears uploads that never finished, and works through the face recognition queue.
+`CRON_SECRET` enables the hourly job at `/api/cron/grace`: it publishes scheduled albums, sweeps unanswered removal requests, expires grace memberships, clears uploads that never finished, and works through the face recognition queue.
 
-> **On the Pro plan, put the cron back to hourly.** It is `0 23 * * *` (9am
-> Melbourne) only because Hobby refuses more than one cron run per day. Until
-> then a committee that schedules an album for Saturday 10am gets it on Sunday
-> morning, and the UI says so. On Pro, change the schedule in `vercel.json` to
-> `0 * * * *` and restore the wording in `AlbumManager`, `NewAlbumPanel` and
-> `scheduleAlbumAction`.
+The project is on Vercel Pro, which the hourly cron (`0 * * * *` in `vercel.json`) needs: Hobby refuses more than one cron run a day and fails the deploy. Dropping back to Hobby means going back to `0 23 * * *` and the "first morning after" wording in `AlbumManager`, `NewAlbumPanel` and `scheduleAlbumAction` (see decision 68).
 
 ## Billing
 

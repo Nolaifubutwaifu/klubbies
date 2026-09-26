@@ -102,7 +102,7 @@ export async function confirmRemovalAction(requestId: string): Promise<ActionSta
       ),
     ).catch(() => undefined);
     // The media_faces rows cascaded away and their trigger queued the
-    // faceprints. Draining here rather than waiting for the daily cron means
+    // faceprints. Draining here rather than waiting for the hourly cron means
     // "the faceprint goes when the photo goes" is true in the same request.
     await drainFacePurgeQueue().catch((purgeError) => console.error("face purge after removal", purgeError));
   }

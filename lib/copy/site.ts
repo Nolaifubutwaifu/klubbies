@@ -17,7 +17,7 @@
 //
 // Not claimed anywhere, because it is not true: a free period before the
 // first album, double-tap to favourite, or exact scheduled publishing times
-// (the daily cron makes those approximate).
+// (the hourly cron makes those approximate).
 
 export const PRICE = {
   amount: "A$20",

@@ -460,7 +460,7 @@ function Privacy() {
           </Link>
         </div>
         <div className="hidden rounded-[var(--kb-r-panel)] bg-white p-6 text-[color:var(--kb-ink)] sm:block sm:p-8">
-          <span className="block text-[14px] text-[color:var(--kb-ink-3)]">klubbies.taigaprojects.space/c/umfc</span>
+          <span className="block text-[14px] text-[color:var(--kb-ink-3)]">klubbies.app/c/umfc</span>
           <span className="mt-6 flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--kb-sand)]">
             <LockIcon size={22} />
           </span>

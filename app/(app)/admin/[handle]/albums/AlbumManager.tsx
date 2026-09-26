@@ -335,7 +335,7 @@ export function AlbumManager({
                     </button>
                   ) : null}
                   <span className="text-[14px] text-[color:var(--ink-55)]">
-                    Publishing runs once a day, about 9am, so it goes live the first morning after this time.
+                    Publishing runs hourly, so it goes live on the hour after this time.
                   </span>
                 </span>
               ) : null}

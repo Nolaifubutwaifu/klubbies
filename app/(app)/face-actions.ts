@@ -171,7 +171,7 @@ export async function runFaceJobsAction(clubId: string): Promise<ActionState> {
 
   // Shorter than the cron's budget: this is a button, and nobody wants a
   // four minute spinner. The panel polls, so a big library just takes a few
-  // presses — or tomorrow's cron, which has the long budget.
+  // presses, or the next hourly cron, which has the long budget.
   const result = await runFaceJobs({ budgetMs: 60_000 });
   const progress = await backfillProgress(clubId);
   revalidatePath(`/admin/${ctx.club.handle}/settings`);
@@ -290,8 +290,8 @@ export async function enrolFaceAction(clubId: string, selfie: File, consented: b
 
 /**
  * Withdrawing consent. The purge queue is drained inline rather than left to
- * the daily cron, because on Hobby a queue-only purge lands exactly on the
- * 24 hours the consent copy promises, and that is not a promise to test.
+ * the hourly cron, so the faceprint is gone before the member has left the
+ * page, not merely inside the 24 hours the consent copy promises.
  */
 export async function withdrawFaceConsentAction(clubId: string): Promise<ActionState> {
   if (!z.uuid().safeParse(clubId).success) return { error: "Not found" };
@@ -363,8 +363,8 @@ export async function decideFaceMatchAction(matchId: string, decision: "confirm"
  * What the "Looking now" card polls while a member's enrolment is pending.
  *
  * It also nudges the queue. The enrol job is kicked when the selfie arrives,
- * but a throttled or timed-out job goes back with a delay and, on a daily
- * Hobby cron, nothing else would pick it up until tomorrow. The member is the
+ * but a throttled or timed-out job goes back with a delay and nothing else
+ * would pick it up until the next hourly cron. The member is the
  * one person actually waiting, so their open page does the asking: a short
  * drain, enrol jobs first (see claim_face_jobs), and never longer than a
  * request can bear.
