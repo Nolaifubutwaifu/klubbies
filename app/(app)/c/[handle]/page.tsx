@@ -9,6 +9,7 @@ import { displayNameFor } from "@/lib/auth/display-name";
 import { countPhotosOfYouByAlbum, faceStateFor } from "@/lib/faces/queries";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
+import { PushPrompt } from "@/components/PushPrompt";
 
 export async function generateMetadata(props: PageProps<"/c/[handle]">): Promise<Metadata> {
   const { handle } = await props.params;
@@ -50,7 +51,10 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
         <FaceNotice clubId={ctx.club.id} meHref={`/c/${handle}/me`} />
       ) : faceState.enabled && !faceState.profile ? (
         <FacePrompt clubId={ctx.club.id} href={`/c/${handle}/me`} count={0} />
-      ) : null}
+      ) : (
+        // One ask at a time: the notification card waits behind the face ones.
+        <PushPrompt clubName={ctx.club.name} />
+      )}
       <SoftEvents
         albums={albums}
         hrefBase={`/c/${handle}/a`}

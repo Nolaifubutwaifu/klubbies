@@ -9,15 +9,16 @@ export default function TermsPage() {
     <LegalPage
       doc="terms"
       title="Terms of service"
-      updated="16 September 2026"
-      minutes={3}
+      updated="27 September 2026"
+      minutes={4}
       sections={[
         {
           title: "Who we are",
           body: (
             <p>
-              Klubbies is a private photo and video sharing service for clubs, operated from Queensland, Australia. By
-              creating a club, signing in, or paying for Klubbies you agree to these terms. To contact us, <ContactLine />.
+              Klubbies is a private photo and video sharing service for clubs, operated from Queensland, Australia, on the
+              web and as an iPhone app. By creating a club, signing in, or paying for Klubbies you agree to these terms. To
+              contact us, <ContactLine />.
             </p>
           ),
         },
@@ -55,10 +56,37 @@ export default function TermsPage() {
         {
           title: "Acceptable use",
           body: (
+            <>
+              <p>
+                Don&apos;t upload or post anything unlawful, sexually explicit, hateful, or intended to harass or
+                embarrass someone, and don&apos;t use Klubbies to share content with people outside your club, to probe
+                other clubs&apos; data, or to overload the service.
+              </p>
+              <p>
+                There is no tolerance for objectionable content or abusive people. We may remove content, remove a person
+                or suspend a club that breaks these rules, without notice.
+              </p>
+            </>
+          ),
+        },
+        {
+          title: "Reporting content",
+          body: (
             <p>
-              Don&apos;t upload anything unlawful, sexually explicit, or intended to harass, and don&apos;t use Klubbies to
-              share content with people outside your club, to probe other clubs&apos; data, or to overload the service. We
-              may suspend a club that breaks these rules.
+              Anyone in a photo can open it and choose Take it down: it is hidden from everyone straight away while the
+              committee decides. A committee can remove any photo or post, and anyone from its member list. For
+              anything the committee won&apos;t handle, or that is serious, <ContactLine />. We act on reports of
+              objectionable content within 24 hours, by removing the content and, where it is warranted, the person who
+              posted it. More on the <Link href="/support">support page</Link>.
+            </p>
+          ),
+        },
+        {
+          title: "Your account",
+          body: (
+            <p>
+              You can delete your account at any time from your profile, in the app or on the website. The{" "}
+              <Link href="/privacy">privacy policy</Link> explains what that deletes and what stays with your club.
             </p>
           ),
         },
@@ -101,6 +129,17 @@ export default function TermsPage() {
             <p>
               A club can cancel at any time. If a club is cancelled or suspended, we&apos;ll give the admin at least 30
               days&apos; notice by email before deleting its media, so they can download what they want to keep.
+            </p>
+          ),
+        },
+        {
+          title: "The iPhone app",
+          body: (
+            <p>
+              If you use the Klubbies iPhone app, Apple&apos;s standard Licensed Application End User License Agreement
+              applies alongside these terms. These terms are between you and us, not Apple: Apple has no responsibility
+              for the app, its content, its maintenance or support, or any claim about it. The app doesn&apos;t sell
+              anything.
             </p>
           ),
         },

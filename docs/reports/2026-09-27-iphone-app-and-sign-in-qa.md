@@ -101,3 +101,26 @@ TestFlight doesn't need these. The App Store does.
 2. **"Mostly a website" risk (guideline 4.2).** Save to Photos, downloads and the offline screen help. Push notifications for new albums would make the strongest case.
 3. **App Privacy answers** in App Store Connect: email, name, photos and videos, and biometric data (faceprints).
 4. **Store listing:** 6.9 inch screenshots, description, support URL, privacy policy URL.
+
+## Second batch: App Store readiness
+
+Tested the same day, after adding account deletion, notifications and the legal pages.
+
+| Check | Result |
+|---|---|
+| Delete account as a member (web, automated) | Pass. Sign-in, favourites and push devices gone; member list row reset |
+| Only admin of a club with members | Pass. Asked to hand over first, no delete button |
+| Only admin of a club nobody joined | Pass. Club closes with the account |
+| Delete account inside the iPhone app | Pass. Lands on "Your account is deleted", database confirms |
+| Notifications switch in the app's profile | Pass. iOS prompt, then "On", real Apple device token saved |
+| Notification arrives with the app closed | Pass. Klubbies icon, club name and album |
+| Tapping a notification opens the album | Pass |
+| APNs token signing (unit test) | Pass |
+| All automated tests | 78 unit, 7 end-to-end, all pass |
+
+Found and fixed while testing:
+
+- **Dates broke every page on iPhones.** Node writes "23 Sept 2026" and Safari "23 Sep 2026", so React discarded the server-rendered page and rebuilt it on the phone. Now identical everywhere.
+- **The site footer said "[SUPPORT EMAIL]"** and the privacy page "Last updated [DATE]". Both are fixed.
+
+Not testable here: an actual send through Apple, which needs the APNs key only the account holder can create (steps in `ios/README.md`).

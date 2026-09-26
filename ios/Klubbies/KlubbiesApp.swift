@@ -2,6 +2,8 @@ import SwiftUI
 
 @main
 struct KlubbiesApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     var body: some Scene {
         WindowGroup {
             WebContainer()

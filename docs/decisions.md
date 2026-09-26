@@ -700,3 +700,36 @@ differently, and why.
 139. **The album page reads in two rounds, not eight.** Its dozen queries were
      awaited one after another; the independent ones now start together.
      Warm render time on the demo album went from about 0.73s to 0.57s.
+
+## 2026-09-27 · App Store readiness
+
+140. **Anyone can delete their own account**, from the profile, in the app
+     and on the web (`lib/account/delete.ts`). It goes straight away: sign-in,
+     profile and photo, favourites, face data (deleted from AWS before the
+     request returns), feed posts, push devices. What belongs to the club
+     stays: photos they added (the uploader is forgotten), their line on the
+     member list (reset to not signed in), and the access log.
+141. **A club is never left without an admin.** The only admin of a club
+     other people have joined must hand it over first. The only admin of a
+     club nobody else joined closes it with their account: the Stripe
+     subscription is cancelled, the face collection deleted, files and rows
+     removed.
+142. **iPhone notifications follow the email switches.** A new album or feed
+     post sends a push to the same people who get the email (`lib/push`),
+     straight to Apple over HTTP/2 with a token key, no SDK. Tokens live in
+     `push_devices`, one per phone, taken over by whoever signs in on it;
+     tokens Apple calls dead are dropped. Without the APNS_* variables nothing
+     is sent and nothing breaks.
+143. **The app asks about notifications once, with a card first.** iOS lets
+     an app show its prompt only once, so a card on the club home asks, and
+     the system prompt follows a yes. The profile has the same switch.
+144. **Legal pages cover the app.** Privacy: the app, account deletion,
+     rights and contact. Terms: zero tolerance for objectionable content, a
+     24 hour promise on reports, Apple's standard EULA. A support page for
+     the App Store listing. SUPPORT_EMAIL is support@klubbies.app; the footer
+     showed a literal "[SUPPORT EMAIL]" and the privacy page "[DATE]" until
+     now.
+145. **Short dates are spelled out by us.** Node formats September as "Sept"
+     for en-AU and Safari as "Sep", so every page with a date failed to
+     hydrate on iPhones and React redrew it on the phone. `lib/format.ts` now
+     builds "23 Sep 2026" itself, and client components use it too.

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { supportEmail } from "@/lib/support";
 
 const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
@@ -16,12 +17,11 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
       { href: "/refunds", label: "Refunds" },
+      { href: "/support", label: "Support" },
     ],
   },
 ];
 
-/** Placeholder until a support inbox exists. */
-export const SUPPORT_EMAIL = "[SUPPORT EMAIL]";
 
 /** One footer for every public page and the app. */
 export function SiteFooter() {
@@ -49,7 +49,18 @@ export function SiteFooter() {
         <div>
           <h2 className="font-[family-name:var(--kb-font-body)] text-[14px] font-bold tracking-normal text-[color:var(--kb-ink)]">Contact</h2>
           <ul className="m-0 mt-2 flex list-none flex-col p-0 text-[15px] text-[color:var(--kb-ink-2)]">
-            <li className="flex min-h-[44px] items-center">{SUPPORT_EMAIL}</li>
+            {supportEmail() ? (
+              <li className="flex min-h-[44px] items-center">
+                <a href={`mailto:${supportEmail()}`} className="text-inherit">
+                  {supportEmail()}
+                </a>
+              </li>
+            ) : null}
+            <li className="flex min-h-[44px] items-center">
+              <Link href="/support" className="text-inherit no-underline hover:underline">
+                Help and support
+              </Link>
+            </li>
             <li>Club data stored in Sydney, Australia</li>
           </ul>
         </div>

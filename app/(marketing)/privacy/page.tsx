@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { LegalPage } from "@/components/LegalPage";
+import type { ReactNode } from "react";
+import Link from "next/link";
+import { ContactLine, LegalPage } from "@/components/LegalPage";
 
 export const metadata: Metadata = { title: "Privacy" };
 
-const SECTIONS: [string, string][] = [
+const SECTIONS: [string, ReactNode][] = [
   [
     "What we store",
     "Your club gives us your name and email as part of its member list. When you sign in we store the name you typed, when you first signed in, and a session so you stay signed in for up to 30 days. Clubs upload photos and videos, which we keep exactly as uploaded, plus smaller preview copies.",
@@ -52,15 +54,39 @@ const SECTIONS: [string, string][] = [
     "Face recognition: who else sees it",
     "Amazon Web Services processes faceprints on our behalf, in the ap-southeast-2 (Sydney) region. We do not sell face data and we do not share it with anyone else.",
   ],
+  [
+    "The iPhone app",
+    "The app shows the same Klubbies as the website and stores the same things. It uses the camera only when you take a photo or a selfie to upload, and it asks for permission to add to your photo library only when you tap Save to Photos, so it can never read your library. If you turn on notifications, we store a device token from Apple against your account so we can tell your phone about new albums and feed posts; it is deleted when you delete your account, and when you remove the app we delete it the next time Apple tells us it no longer works. The app has no advertising, no tracking and no analytics tools.",
+  ],
+  [
+    "Deleting your account",
+    <>
+      Open your profile and choose Delete my account, in the app or on the website. That deletes your sign-in, your
+      profile and photo, your saved photos, your face recognition selfie and faceprints, your club feed posts, and
+      your notification device tokens, straight away. Photos and videos you added to a club&apos;s albums
+      belong to the club and stay; ask the committee to take any of them down. Your club keeps its member list, and the
+      access log keeps its entries, because both are the club&apos;s records.
+    </>,
+  ],
+  [
+    "Your rights and contacting us",
+    <>
+      Under the Australian Privacy Principles you can ask for a copy of the personal information we hold about you and
+      ask us to correct it. To do that, to complain, or with any other question, <ContactLine />. If you are not happy
+      with our answer you can contact the Office of the Australian Information Commissioner at oaic.gov.au. There is
+      more on the <Link href="/support">support page</Link>.
+    </>,
+  ],
 ];
 
 export default function PrivacyPage() {
-  const words = SECTIONS.reduce((sum, [title, body]) => sum + `${title} ${body}`.split(/\s+/).length, 0);
+  // Sections written as JSX count as about 80 words each.
+  const words = SECTIONS.reduce((sum, [title, body]) => sum + (typeof body === "string" ? `${title} ${body}`.split(/\s+/).length : 80), 0);
   return (
     <LegalPage
       doc="privacy"
       title="Privacy at Klubbies"
-      updated="[DATE]"
+      updated="27 September 2026"
       minutes={Math.max(1, Math.round(words / 220))}
       sections={SECTIONS.map(([title, body]) => ({ title, body: <p>{body}</p> }))}
     />

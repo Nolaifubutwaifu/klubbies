@@ -25,6 +25,7 @@ final class WebViewController: UIViewController {
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
         config.userContentController.addScriptMessageHandler(photoSaver, contentWorld: .page, name: "klubbiesSaveToPhotos")
+        config.userContentController.addScriptMessageHandler(PushManager.shared, contentWorld: .page, name: "klubbiesPush")
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
@@ -74,7 +75,41 @@ final class WebViewController: UIViewController {
             self.progressBar.isHidden = progress >= 1
         }
 
-        webView.load(URLRequest(url: AppConfig.startURL))
+        NotificationCenter.default.addObserver(self, selector: #selector(openFromNotification(_:)), name: .klubbiesOpenURL, object: nil)
+        // Opened by tapping a notification: go straight to what it was about.
+        let first = PushManager.shared.pendingURL ?? AppConfig.startURL
+        PushManager.shared.pendingURL = nil
+        webView.load(URLRequest(url: first))
+    }
+
+    @objc private func openFromNotification(_ note: Notification) {
+        guard let url = note.object as? URL, isViewLoaded else { return }
+        PushManager.shared.pendingURL = nil
+        offlineView.isHidden = true
+        webView.load(URLRequest(url: url))
+    }
+
+    /// The site keeps each phone's notification token against the person
+    /// signed in on it. Hand it over after pages load until the site has it
+    /// for this launch; a signed-out page just answers 401 and we try again.
+    private var tokenSentForLaunch = false
+
+    private func sendPushTokenIfNeeded() {
+        guard !tokenSentForLaunch, let token = PushManager.shared.token,
+              let url = webView.url, AppConfig.isAppURL(url) else { return }
+        let script = """
+        const response = await fetch('/api/push/register', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ token, environment })
+        });
+        return response.status;
+        """
+        webView.callAsyncJavaScript(script, arguments: ["token": token, "environment": PushManager.environment], in: nil, in: .defaultClient) { [weak self] result in
+            if case .success(let status) = result, (status as? Int) == 200 || (status as? NSNumber)?.intValue == 200 {
+                self?.tokenSentForLaunch = true
+            }
+        }
     }
 
     @objc private func pullToRefresh(_ control: UIRefreshControl) {
@@ -143,6 +178,7 @@ extension WebViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         offlineView.isHidden = true
+        sendPushTokenIfNeeded()
     }
 
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {

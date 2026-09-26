@@ -9,6 +9,8 @@ What the app adds on top of the website:
 - Pull down to refresh, and swipe from the left edge to go back.
 - Real iOS pop-ups for confirmations such as "Delete this album?".
 - An offline screen with Try again, for venues with no signal.
+- **Notifications** for new albums and feed posts. Tapping one opens the album or the feed.
+- **Delete my account** on the profile, as Apple requires.
 - Links to other websites open in an in-app Safari sheet.
 - Sign-in is remembered between launches.
 - Inside the app, the billing page shows the club's status but no payment buttons. Apple rejects apps that sell subscriptions outside in-app purchase, so clubs pay on the website.
@@ -45,7 +47,23 @@ If Xcode says the bundle ID is taken, change it to something like `app.klubbies.
 3. In Xcode's top bar, pick your iPhone as the run destination.
 4. Press **⌘R** (or the play button). The app installs and opens.
 
-## 5. TestFlight
+## 5. Turn on notifications (once)
+
+The app and the website are ready. Apple needs a key so the website is allowed to send notifications:
+
+1. Go to https://developer.apple.com/account → **Certificates, Identifiers & Profiles** → **Keys** → **+**.
+2. Name it `Klubbies push`, tick **Apple Push Notifications service (APNs)**, then **Continue** → **Register**.
+3. **Download** the `.p8` file (you can only download it once) and note the **Key ID** shown on that page.
+4. Your **Team ID** is at the top right of the developer site, or under Membership details.
+5. In Vercel → klubbies → Settings → Environment Variables, add for Production:
+   - `APNS_KEY_ID`: the Key ID
+   - `APNS_TEAM_ID`: the Team ID
+   - `APNS_PRIVATE_KEY`: open the .p8 file in TextEdit and paste the whole contents, including the BEGIN and END lines
+6. Redeploy (Deployments → the latest one → Redeploy).
+
+Until those are set, everything works except that nothing is sent. Xcode adds the Push Notifications capability to the app ID by itself when you pick your team, because the project already asks for it.
+
+## 6. TestFlight
 
 ### Create the app in App Store Connect (once)
 
@@ -76,12 +94,23 @@ Each upload needs a higher build number. The automatic option in step 3 handles 
 
 ## Before the App Store (not needed for TestFlight)
 
-These block a public App Store release. TestFlight works without them.
+Done in the app and on the site:
 
-1. **Account deletion inside the app.** Apple requires any app with sign-in to let people delete their account from within the app. The account page currently says to ask a club admin, which won't pass review.
-2. **"Just a website" rejections (guideline 4.2).** Apple sometimes rejects apps that mostly show a website. Save to Photos, downloads and the offline screen help, but push notifications for new albums would make the strongest case.
-3. **App Privacy answers** in App Store Connect. Declare: email address, name, photos and videos, and **biometric data** under Sensitive Info (the face recognition faceprints). All of these are linked to the user, used for app functionality, and not used for tracking.
-4. **Store listing:** screenshots for the 6.9 inch iPhone (1320 × 2868), a description, support URL, and privacy policy URL `https://www.klubbies.app/privacy`.
+- Account deletion inside the app (profile → Delete my account).
+- Notifications, plus Save to Photos, downloads and the offline screen: native features beyond the website, which is what guideline 4.2 asks for.
+- Privacy policy, terms (with the content rules Apple asks apps with uploads to include), and a support page at https://www.klubbies.app/support.
+- No payment buttons inside the app.
+
+Still for you, in App Store Connect:
+
+1. **App Privacy.** Data linked to the user, used for app functionality, not for tracking: Contact Info (email address, name), User Content (photos or videos), Sensitive Info (biometric data: the face recognition faceprints), Identifiers (user ID). No tracking, no third-party advertising.
+2. **Age rating.** Answer the questionnaire; say yes to user-generated content. Expect 13+ or similar.
+3. **URLs.** Support URL `https://www.klubbies.app/support`, privacy policy URL `https://www.klubbies.app/privacy`.
+4. **App Review notes.** Give a demo account that signs in with **Use a password instead**, in a club that has photos. Explain that Klubbies is for private clubs, that members are added by their committee, and that clubs subscribe outside the app.
+5. **Screenshots** for the 6.9 inch iPhone (1320 × 2868) and a description.
+6. **support@klubbies.app has to receive email**, since it's on every legal page. See the steps in the chat, or ask Claude again.
+
+One risk to know about: Apple sometimes also expects a way to **block** another user in apps with user content. Klubbies has reporting (Take it down), committee removal and a 24 hour promise, which suits a private club app, but a reviewer could still ask for blocking. If they do, it's a contained addition.
 
 ## What's in here
 
@@ -90,6 +119,8 @@ These block a public App Store release. TestFlight works without them.
 | `Klubbies/AppConfig.swift` | Start URL, which domains stay in the app, the colours |
 | `Klubbies/WebViewController.swift` | The web view, links, downloads, pop-ups, pull to refresh |
 | `Klubbies/PhotoSaver.swift` | Save to Photos (the site calls it through `lib/native-app.ts`) |
+| `Klubbies/PushManager.swift` | Notifications: permission, device token, opening the right page on a tap |
+| `Klubbies.entitlements` | Lets the app receive notifications |
 | `Klubbies/OfflineView.swift` | The "Can't reach Klubbies" screen |
 | `Klubbies/Assets.xcassets` | App icon and colours |
 | `Klubbies/PrivacyInfo.xcprivacy` | Apple's privacy manifest |

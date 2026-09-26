@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import { Dialog } from "@/components/Dialog";
 import { FormMessage } from "@/components/forms";
+import { formatDate, formatDayMonth } from "@/lib/format";
 import {
   endGraceAction,
   removeMembersAction,
@@ -39,7 +40,7 @@ const FILTERS = [
 
 function statusTag(member: MemberRow) {
   if (member.status === "grace") {
-    const ends = member.graceEndsAt ? new Date(member.graceEndsAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" }) : "";
+    const ends = member.graceEndsAt ? formatDayMonth(member.graceEndsAt) : "";
     return <span className="tag tag-accent-2">Leaving{ends ? ` · ${ends}` : ""}</span>;
   }
   if (member.status === "revoked") return <span className="tag tag-neutral">Removed</span>;
@@ -48,7 +49,7 @@ function statusTag(member: MemberRow) {
 }
 
 function shortDate(value: string): string {
-  return new Date(value).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
+  return formatDate(value);
 }
 
 export function MemberTable({

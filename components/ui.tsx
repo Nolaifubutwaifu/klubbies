@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { formatDayMonth } from "@/lib/format";
 
 export function Brand({ href = "/", size = 20 }: { href?: string; size?: number }) {
   return (
@@ -59,7 +60,7 @@ export function EmptyState({
 
 export function StatusTag({ status, role, graceEndsAt }: { status: string; role?: string; graceEndsAt?: string | null }) {
   if (status === "grace") {
-    const ends = graceEndsAt ? new Date(graceEndsAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" }) : "";
+    const ends = graceEndsAt ? formatDayMonth(graceEndsAt) : "";
     return <span className="soft-chip">Leaving{ends ? ` · ${ends}` : ""}</span>;
   }
   if (status === "revoked") return <span className="soft-chip soft-chip-muted">Removed</span>;

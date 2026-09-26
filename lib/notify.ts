@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { sendBatch } from "@/lib/email/send";
 import { appUrl, serverEnv } from "@/lib/env";
+import { pushToUsers } from "@/lib/push/devices";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export type NotifyKind = "notify_new_album" | "notify_feed_post" | "notify_access_ending";
@@ -50,6 +51,21 @@ export async function notifyNewAlbum(clubId: string, albumId: string, actorUserI
   const people = await recipients(clubId, "notify_new_album", actorUserId);
   if (people.length === 0) return 0;
 
+  const albumUrl = `${appUrl()}/c/${club.handle}/a/${album.id}`;
+  const albumMeta = [
+    counts?.photo_count ? `${counts.photo_count} photos` : null,
+    counts?.video_count ? `${counts.video_count} videos` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  // The same people get an iPhone notification if they use the app. The
+  // email preference covers both, so one switch stops both.
+  const push = pushToUsers(
+    people.map((person) => person.userId),
+    { title: club.name, body: albumMeta ? `${album.title} is up: ${albumMeta}` : `${album.title} is up`, url: albumUrl, threadId: `club-${clubId}` },
+  );
+
   await sendBatch(
     people.map((person) => ({
       to: person.email,
@@ -60,18 +76,14 @@ export async function notifyNewAlbum(clubId: string, albumId: string, actorUserI
           name: person.name,
           clubName: club.name,
           albumTitle: album.title,
-          albumMeta: [
-            counts?.photo_count ? `${counts.photo_count} photos` : null,
-            counts?.video_count ? `${counts.video_count} videos` : null,
-          ]
-            .filter(Boolean)
-            .join(" · "),
-          albumUrl: `${appUrl()}/c/${club.handle}/a/${album.id}`,
+          albumMeta,
+          albumUrl,
           unsubscribeUrl: unsubscribeUrl(person.userId, "notify_new_album"),
         },
       },
     })),
   );
+  await push;
   return people.length;
 }
 
@@ -93,6 +105,11 @@ export async function notifyFeedPost(clubId: string, postId: string, actorUserId
   if (people.length === 0) return 0;
 
   const author = post.memberships?.claimed_name ?? post.memberships?.roster_name ?? "The committee";
+  const feedUrl = `${appUrl()}/c/${club.handle}/feed`;
+  const push = pushToUsers(
+    people.map((person) => person.userId),
+    { title: `${club.name}: ${author}`, body: post.body.slice(0, 180), url: feedUrl, threadId: `club-${clubId}` },
+  );
 
   await sendBatch(
     people.map((person) => ({
@@ -105,11 +122,12 @@ export async function notifyFeedPost(clubId: string, postId: string, actorUserId
           clubName: club.name,
           author,
           body: post.body.slice(0, 600),
-          feedUrl: `${appUrl()}/c/${club.handle}/feed`,
+          feedUrl,
           unsubscribeUrl: unsubscribeUrl(person.userId, "notify_feed_post"),
         },
       },
     })),
   );
+  await push;
   return people.length;
 }
