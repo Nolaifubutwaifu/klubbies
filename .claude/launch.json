@@ -47,6 +47,18 @@
         "3200"
       ],
       "port": 3200
+    },
+    {
+      "name": "events-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--dir",
+        "../klubbies-events",
+        "dev",
+        "--port",
+        "3300"
+      ],
+      "port": 3300
     }
   ]
 }
