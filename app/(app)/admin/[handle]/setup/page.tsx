@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element -- short-lived signed URLs */
 import type { Metadata } from "next";
-import { appUrl } from "@/lib/env";
 import Link from "next/link";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { canWrite } from "@/lib/billing/status";
+import { clubAddress } from "@/lib/env";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
@@ -72,7 +72,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
     {
       key: "handle",
       title: "Pick a handle",
-      hint: `${appUrl().replace(/^https?:\/\//, "")}/c/${ctx.club.handle}`,
+      hint: clubAddress(ctx.club.handle),
       done: true,
       href: `/admin/${handle}/settings`,
       cta: "Open settings",

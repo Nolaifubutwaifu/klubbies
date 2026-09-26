@@ -7,6 +7,9 @@ const dateTimeFmt = new Intl.DateTimeFormat("en-AU", {
   minute: "2-digit",
   timeZone: "Australia/Brisbane",
 });
+// Every formatter names its zone. The server renders in UTC on Vercel, so a
+// bare toLocaleTimeString() there turned a 6pm photo into "8:01 am".
+const timeFmt = new Intl.DateTimeFormat("en-AU", { hour: "numeric", minute: "2-digit", timeZone: "Australia/Brisbane" });
 
 function toDate(value: string | Date): Date {
   if (value instanceof Date) return value;
@@ -24,6 +27,10 @@ export function formatLongDate(value: string | Date | null | undefined): string 
 
 export function formatDateTime(value: string | Date | null | undefined): string {
   return value ? dateTimeFmt.format(toDate(value)) : "";
+}
+
+export function formatTime(value: string | Date | null | undefined): string {
+  return value ? timeFmt.format(toDate(value)) : "";
 }
 
 export function formatBytes(bytes: number | null | undefined): string {

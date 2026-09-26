@@ -93,6 +93,7 @@ export function SavedTabs({
                   <Link
                     key={item.id}
                     href={`/c/${handle}/a/${group.albumId}/${item.id}`}
+                    aria-label={`${item.kind === "video" ? "Video" : "Photo"} from ${group.albumTitle}`}
                     className="soft-tile relative block aspect-square !rounded-[11px]"
                     scroll={false}
                   >
@@ -132,6 +133,7 @@ export function SavedTabs({
                   <Link
                     key={`${item.id}-${item.at}`}
                     href={item.albumId ? `/c/${handle}/a/${item.albumId}/${item.id}` : `/c/${handle}`}
+                    aria-label={`Downloaded from ${item.albumTitle}, ${formatDate(item.at)}`}
                     className="soft-tile relative block aspect-square !rounded-[11px]"
                     scroll={false}
                   >

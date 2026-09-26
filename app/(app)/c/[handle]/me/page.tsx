@@ -32,7 +32,38 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
 
   const supabase = await createClient();
   const state = await faceStateFor(supabase, ctx.club.id, ctx.userId);
-  if (!state.enabled) notFound();
+  // Off for this club is a state, not a missing page. The not-found screen
+  // told a member following a shared link that they weren't in the club.
+  if (!state.enabled) {
+    return (
+      <main className="flex flex-1 flex-col">
+        <div className="flex w-full flex-col gap-5 px-4 pb-16 pt-6 sm:px-6">
+          <div>
+            <span className="soft-chip">{ctx.club.name}</span>
+            <h1 className="mt-3 text-[clamp(30px,4.5vw,44px)]">Photos of you</h1>
+          </div>
+          <div className="soft-card flex max-w-[56ch] flex-col items-start gap-3 p-6">
+            <span className="soft-display text-[19px]">Face recognition is off for {ctx.club.name}</span>
+            <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+              {ctx.isAdmin
+                ? "Turn it on in Billing & settings and every member can find the photos they're in. Nobody is enrolled until they choose to be."
+                : "This club hasn't turned it on, so there's nothing to search. Every album is still in the club's events."}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {ctx.isAdmin ? (
+                <Link href={`/admin/${handle}/settings`} className="soft-btn soft-btn-primary no-underline">
+                  Open settings
+                </Link>
+              ) : null}
+              <Link href={`/c/${handle}`} className="soft-btn soft-btn-tonal no-underline">
+                All events
+              </Link>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const enrolled = state.profile?.status === "ready";
   const [{ groups, total, hasMore }, suggestions, progress] = await Promise.all([
@@ -134,8 +165,8 @@ export default async function PhotosOfYouPage(props: PageProps<"/c/[handle]/me">
                           <Link
                             key={item.matchId}
                             href={`/c/${handle}/a/${group.albumId}/${item.mediaId}`}
-                            className="block aspect-square overflow-hidden rounded-[14px] no-underline"
-                            title={group.albumTitle}
+                            className="soft-tile block aspect-square !rounded-[14px] no-underline"
+                            aria-label={`Photo of you from ${group.albumTitle}`}
                           >
                             {item.thumbUrl ? (
                               <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />

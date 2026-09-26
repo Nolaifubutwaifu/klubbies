@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { deleteMediaAction } from "@/app/(app)/admin/actions";
 import { formatDateTime } from "@/lib/format";
+import { EXPIRE_AFTER_DAYS } from "@/lib/media/constants";
 
 /**
  * Names the files that never finished uploading, so nobody has to guess which
@@ -26,7 +27,8 @@ export function UnfinishedUploads({
         <strong>
           {items.length} {items.length === 1 ? "file" : "files"} didn&apos;t finish uploading.
         </strong>{" "}
-        They aren&apos;t visible to members. Upload them again, or remove them from the album.
+        They aren&apos;t visible to members. Upload them again, or remove them from the album. Anything still
+        unfinished {EXPIRE_AFTER_DAYS} days after it started is cleared out automatically.
       </span>
       <ul className="flex flex-col gap-1 text-[14px] text-accent-800">
         {items.map((item) => (

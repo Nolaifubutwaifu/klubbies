@@ -4,6 +4,7 @@ import { PageTitle } from "@/components/ui";
 import { requireAdminContext } from "@/lib/auth/admin-context";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { personName } from "@/lib/auth/display-name";
 
 export const metadata: Metadata = { title: "Activity" };
 
@@ -20,7 +21,7 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
 
   let query = supabase
     .from("access_events")
-    .select("id, action, occurred_at, user_agent, memberships(roster_name, roster_email), media(id, album_id, original_filename)")
+    .select("id, action, occurred_at, user_agent, memberships(roster_name, roster_email, claimed_name, users!memberships_user_id_fkey(display_name)), media(id, album_id, original_filename)")
     .eq("club_id", ctx.club.id)
     .order("occurred_at", { ascending: false })
     .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -82,7 +83,15 @@ export default async function ActivityPage(props: PageProps<"/admin/[handle]/act
                 <tr key={e.id}>
                   <td className="whitespace-nowrap text-[color:var(--ink-70)]">{formatDateTime(e.occurred_at)}</td>
                   <td>
-                    <span className="font-semibold">{e.memberships?.roster_name ?? "Admin"}</span>
+                    <span className="font-semibold">
+                      {e.memberships
+                        ? personName({
+                            displayName: e.memberships.users?.display_name,
+                            claimedName: e.memberships.claimed_name,
+                            rosterName: e.memberships.roster_name,
+                          })
+                        : "Admin"}
+                    </span>
                     {e.memberships ? <div className="text-[14px] text-[color:var(--ink-55)]">{e.memberships.roster_email}</div> : null}
                   </td>
                   <td>

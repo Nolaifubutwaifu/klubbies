@@ -2,7 +2,13 @@ import "server-only";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import type { UserClient } from "@/lib/supabase/server";
 
-const TILES_PER_CLUB = 4;
+const TILES_PER_CLUB = 3;
+
+/** n items spread evenly through a list, not the first n in a row. */
+function spread<T>(items: T[], n: number): T[] {
+  if (items.length <= n) return items;
+  return Array.from({ length: n }, (_, i) => items[Math.floor((i * items.length) / n)]);
+}
 
 export type ClubCard = {
   tiles: string[];
@@ -27,39 +33,79 @@ export async function listClubCards(
   const cards = new Map<string, ClubCard>();
   if (!clubIds.length) return cards;
 
-  const [{ data: visits }, { data: albums }, { data: media }] = await Promise.all([
+  const [{ data: visits }, { data: albums }] = await Promise.all([
     supabase.from("memberships").select("club_id, last_seen_at").eq("user_id", userId).in("club_id", clubIds),
     supabase
       .from("albums")
-      .select("id, club_id, title, event_date, published_at")
+      .select("id, club_id, title, event_date, published_at, cover_media_id, cover_path")
       .in("club_id", clubIds)
       .eq("status", "published")
       .order("event_date", { ascending: false, nullsFirst: false }),
-    supabase
-      .from("media")
-      .select("club_id, thumb_path, poster_path, sort_at")
-      .in("club_id", clubIds)
-      .eq("status", "ready")
-      .order("sort_at", { ascending: false })
-      .limit(clubIds.length * TILES_PER_CLUB * 3),
   ]);
 
   const albumIds = (albums ?? []).map((a) => a.id);
   const { data: counts } = albumIds.length
-    ? await supabase.from("album_media_counts").select("album_id, photo_count, video_count").in("album_id", albumIds)
+    ? await supabase
+        .from("album_media_counts")
+        .select("album_id, photo_count, video_count, first_media_id")
+        .in("album_id", albumIds)
     : { data: [] };
-  const countByAlbum = new Map((counts ?? []).map((c) => [c.album_id, (c.photo_count ?? 0) + (c.video_count ?? 0)]));
+  const countRow = new Map((counts ?? []).map((c) => [c.album_id, c]));
+  const countByAlbum = new Map(
+    (counts ?? []).map((c) => [c.album_id, (c.photo_count ?? 0) + (c.video_count ?? 0)]),
+  );
 
   const seenAt = new Map((visits ?? []).map((v) => [v.club_id, v.last_seen_at]));
 
-  // Up to four thumbnails per club, newest first.
+  // The collage is made of album covers: they exist, the committee picked
+  // them, and one per album means three different nights rather than three
+  // frames of the same burst. It used to be the club's newest thumbnails
+  // across one shared query, so a club with a big fresh album took every
+  // slot and the others said "Previews still processing" for good.
+  type Pick = { albumId: string; path?: string; mediaId?: string };
+  const picks = new Map<string, Pick[]>();
+  for (const album of albums ?? []) {
+    const list = picks.get(album.club_id) ?? [];
+    picks.set(album.club_id, list);
+    if (list.length >= TILES_PER_CLUB || !countByAlbum.get(album.id)) continue;
+    const mediaId = album.cover_media_id ?? countRow.get(album.id)?.first_media_id ?? undefined;
+    if (album.cover_path) list.push({ albumId: album.id, path: album.cover_path });
+    else if (mediaId) list.push({ albumId: album.id, mediaId });
+  }
+
+  // A club with fewer albums than tiles fills in from its newest album,
+  // spread through it so the extra frames aren't near-duplicates either.
+  const fillAlbums = [...picks.entries()]
+    .filter(([, list]) => list.length > 0 && list.length < TILES_PER_CLUB)
+    .map(([, list]) => list[0].albumId);
+  const { data: fillMedia } = fillAlbums.length
+    ? await supabase
+        .from("media")
+        .select("id, album_id, sort_at")
+        .in("album_id", fillAlbums)
+        .eq("status", "ready")
+        .order("sort_at", { ascending: true })
+        .limit(fillAlbums.length * 400)
+    : { data: [] };
+  for (const list of picks.values()) {
+    if (list.length === 0 || list.length >= TILES_PER_CLUB) continue;
+    const taken = new Set(list.map((p) => p.mediaId));
+    const pool = (fillMedia ?? []).filter((m) => m.album_id === list[0].albumId && !taken.has(m.id));
+    for (const m of spread(pool, TILES_PER_CLUB - list.length)) list.push({ albumId: list[0].albumId, mediaId: m.id });
+  }
+
+  const mediaIds = [...picks.values()].flat().flatMap((p) => (p.mediaId ? [p.mediaId] : []));
+  const { data: thumbs } = mediaIds.length
+    ? await supabase.from("media").select("id, thumb_path, poster_path").in("id", mediaIds)
+    : { data: [] };
+  const thumbById = new Map((thumbs ?? []).map((m) => [m.id, m.thumb_path ?? m.poster_path]));
+
   const pathsByClub = new Map<string, string[]>();
-  for (const row of media ?? []) {
-    const path = row.thumb_path ?? row.poster_path;
-    if (!path) continue;
-    const list = pathsByClub.get(row.club_id) ?? [];
-    if (list.length < TILES_PER_CLUB) list.push(path);
-    pathsByClub.set(row.club_id, list);
+  for (const [clubId, list] of picks) {
+    pathsByClub.set(
+      clubId,
+      list.map((p) => p.path ?? (p.mediaId ? thumbById.get(p.mediaId) : null)).filter((p): p is string => Boolean(p)),
+    );
   }
   const urls = await signPaths(supabase, [...pathsByClub.values()].flat(), SIGNED_URL_TTL.thumb);
 

@@ -12,7 +12,8 @@
 //   - the new album email is sent when an album is published
 //   - "Save to Photos" uses the phone's share sheet; laptops get a zip
 //   - roster import reads CSV, TSV, XLSX and XLS
-//   - face recognition is opt-in per club, then per member
+//   - face recognition is on for every club by default (the committee can
+//     turn it off); each member still chooses whether to add a selfie
 //
 // Not claimed anywhere, because it is not true: a free period before the
 // first album, double-tap to favourite, or exact scheduled publishing times
@@ -27,7 +28,7 @@ export const PRICE = {
   includes: [
     "Unlimited members and albums",
     "Full quality photos and video",
-    "Photos of you, if your club turns on face recognition",
+    "Photos of you, with face recognition",
     "Member list import from CSV or Excel, every semester",
     "Cancel any time, keep what's there",
   ],
@@ -39,7 +40,7 @@ export const FACE = {
   points: [
     {
       title: "Your choice",
-      body: "The committee turns it on for the club, then each member decides. Nobody is named unless they add their own selfie.",
+      body: "Every member is told it's on, then decides for themselves. Nobody is named unless they add their own selfie.",
     },
     {
       title: "Only you see your matches",
@@ -122,7 +123,7 @@ export const FAQS = [
   },
   {
     q: "How does Photos of you work?",
-    a: "Your committee turns face recognition on for the club. Then each member decides: add a selfie and we show you the photos you appear in. Only you see your matches, and you can turn it off whenever you like.",
+    a: "Face recognition is on for every club unless the committee switches it off, and every member is told. Then each member decides: add a selfie and we show you the photos you appear in. Only you see your matches, and you can turn it off whenever you like.",
   },
   {
     q: "What happens when someone leaves the club?",

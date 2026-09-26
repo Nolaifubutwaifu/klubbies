@@ -1,5 +1,7 @@
 # Design notes
 
+> **Historical.** This describes the v1 Modernist system (tag `design-v1-modernist`). The product now uses the soft theme in `app/globals.css`; the choices behind it are decisions 46 to 79 in `docs/decisions.md`. Kept for the token history.
+
 Source: Claude Design project `Klubbies.dc.html` (Modernist design system). The raw file could not be exported in the build session. Drop it here as `design/Klubbies.dc.html` via Claude Design → download, or `/design-login` + DesignSync. Everything below was extracted from it and is implemented in `tailwind.config.ts` and `app/globals.css`.
 
 ## Tokens

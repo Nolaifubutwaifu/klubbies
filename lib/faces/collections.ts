@@ -55,8 +55,12 @@ export async function clubFaceState(clubId: string): Promise<ClubFaceState | nul
   };
 }
 
-/** Cheap guard for the upload hot path: is this club indexing faces at all? */
+/**
+ * Cheap guard for the upload hot path: is this club indexing faces at all?
+ * Enabled is enough. A club turned on by the rollout has no collection until
+ * the drain's first pass makes one, and its uploads should queue meanwhile.
+ */
 export async function clubFacesEnabled(clubId: string): Promise<boolean> {
   const state = await clubFaceState(clubId);
-  return Boolean(state?.enabled && state.collectionId);
+  return Boolean(state?.enabled);
 }

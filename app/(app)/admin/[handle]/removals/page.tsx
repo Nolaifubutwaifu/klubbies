@@ -8,6 +8,7 @@ import { formatDateTime } from "@/lib/format";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { RemovalDecision } from "./RemovalDecision";
+import { personName } from "@/lib/auth/display-name";
 
 export const metadata: Metadata = { title: "Removal requests" };
 
@@ -40,12 +41,17 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
       ? supabase.from("media").select("id, album_id, display_path, thumb_path, original_filename").in("id", mediaIds)
       : Promise.resolve({ data: [] }),
     askerIds.length
-      ? supabase.from("memberships").select("user_id, roster_name, claimed_name").eq("club_id", ctx.club.id).in("user_id", askerIds)
+      ? supabase.from("memberships").select("user_id, roster_name, claimed_name, users!memberships_user_id_fkey(display_name)").eq("club_id", ctx.club.id).in("user_id", askerIds)
       : Promise.resolve({ data: [] }),
   ]);
 
   const byMedia = new Map((media ?? []).map((m) => [m.id, m]));
-  const nameByUser = new Map((askers ?? []).map((m) => [m.user_id, m.claimed_name ?? m.roster_name]));
+  const nameByUser = new Map(
+    (askers ?? []).map((m) => [
+      m.user_id,
+      personName({ displayName: m.users?.display_name, claimedName: m.claimed_name, rosterName: m.roster_name }),
+    ]),
+  );
   const urls = await signPaths(
     supabase,
     (media ?? []).map((m) => m.display_path ?? m.thumb_path ?? "").filter(Boolean),

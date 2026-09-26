@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { decideFaceMatchAction } from "@/app/(app)/face-actions";
 import { requestRemovalAction } from "@/app/(app)/removal-actions";
 import { toggleFavouriteAction } from "@/app/(app)/c/[handle]/actions";
@@ -19,6 +19,22 @@ type Current = {
   duration: string;
   takenAt: string;
 };
+
+const SWIPED_KEY = "kb-swiped";
+const subscribeNever = () => () => {};
+/** Whether this browser has swiped in the viewer before, so the hint can stop. */
+function hasSwiped(): boolean {
+  try {
+    return localStorage.getItem(SWIPED_KEY) === "1";
+  } catch {
+    return true; // storage blocked: better no hint than one that never leaves
+  }
+}
+
+/** Sheets rise from the bottom on a phone; on a wide screen a full-width
+    sheet read as a phone layout stretched, so they become a centred card. */
+const SHEET =
+  "absolute inset-x-0 bottom-0 z-10 rounded-t-[26px] bg-[color:var(--kb-cream)] shadow-[0_-18px_40px_rgba(0,0,0,0.45)] sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[480px] sm:max-w-[calc(100%-48px)] sm:-translate-x-1/2 sm:rounded-[26px]";
 
 /** A bottom-bar action: favourite, download, and More for everything else. */
 function Action({
@@ -108,6 +124,8 @@ export function Viewer({
   const touchX = useRef<number | null>(null);
   const [saved, setSaved] = useState(favourited);
   const [sheet, setSheet] = useState<"none" | "removal" | "more">("none");
+  const swiped = useSyncExternalStore(subscribeNever, hasSwiped, () => true);
+  const stripRef = useRef<HTMLDivElement>(null);
   const [asked, setAsked] = useState(alreadyAsked);
   const [matched, setMatched] = useState(faceMatchId);
   const [message, setMessage] = useState("");
@@ -120,6 +138,13 @@ export function Viewer({
     if (prevHref) router.prefetch(prevHref);
     if (nextHref) router.prefetch(nextHref);
   }, [router, prevHref, nextHref]);
+
+  // Keep the current thumbnail in view as you move through the night.
+  useEffect(() => {
+    stripRef.current
+      ?.querySelector<HTMLElement>('[aria-current="true"]')
+      ?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [current.id]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -138,6 +163,11 @@ export function Viewer({
     const dx = x - touchX.current;
     touchX.current = null;
     if (Math.abs(dx) < 50) return;
+    try {
+      localStorage.setItem(SWIPED_KEY, "1");
+    } catch {
+      // Private mode: the hint just fades on its own.
+    }
     if (dx > 0 && prevHref) router.replace(prevHref, { scroll: false });
     if (dx < 0 && nextHref) router.replace(nextHref, { scroll: false });
   };
@@ -190,7 +220,7 @@ export function Viewer({
           <img
             key={current.id}
             src={current.displayUrl}
-            alt={current.filename}
+            alt={`${current.kind === "video" ? "Video" : "Photo"} ${position} of ${total} in ${albumTitle}`}
             className="max-h-full w-auto max-w-full object-contain"
             width={current.width ?? undefined}
             height={current.height ?? undefined}
@@ -212,30 +242,35 @@ export function Viewer({
             </svg>
           </Link>
         ) : null}
-        {nextHref ? (
-          <span className="pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 text-[14px] text-white/70 sm:hidden">
+        {nextHref && !swiped ? (
+          // Until the first swipe, and it fades after a few seconds anyway:
+          // a caption sitting on every photo was in the way of the photo.
+          <span className="soft-hint-fade pointer-events-none absolute bottom-3.5 left-1/2 -translate-x-1/2 rounded-full bg-[rgba(20,16,15,0.55)] px-3 py-1 text-[14px] text-white/80 sm:hidden">
             Swipe for the next one
           </span>
         ) : null}
       </div>
 
       {/* Filmstrip: where you are in the night, without leaving the photo. */}
-      <div className="flex flex-none gap-1 overflow-x-auto px-3 pt-2.5">
-        {strip.map((item) => {
+      {/* Centred under the photo, scrolling only when the night is long. */}
+      <div ref={stripRef} className="mx-auto flex max-w-full flex-none gap-1 overflow-x-auto px-3 pt-2.5">
+        {strip.map((item, i) => {
           const here = item.id === current.id;
+          const at = position + i - strip.findIndex((s) => s.id === current.id);
           return (
             <Link
               key={item.id}
               href={`${itemHrefBase}/${item.id}`}
               replace
               scroll={false}
-              aria-current={here}
+              aria-current={here ? "true" : undefined}
+              aria-label={`${item.kind === "video" ? "Video" : "Photo"} ${at} of ${total}`}
               className="block h-[46px] w-[46px] flex-none overflow-hidden rounded-[9px] bg-white/10"
               style={here ? { border: "2px solid var(--kb-ember-on-dark)" } : { opacity: 0.5 }}
             >
               {item.thumbUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-                <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                <img src={item.thumbUrl} alt="" className="h-full w-full object-cover" />
               ) : null}
             </Link>
           );
@@ -278,12 +313,26 @@ export function Viewer({
       ) : null}
 
       {sheet === "more" ? (
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--kb-cream)] p-5 pb-6 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
-          <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color:var(--kb-line-strong)]" />
+        <div className={`${SHEET} p-5 pb-6`}>
+          <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color:var(--kb-line-strong)] sm:hidden" />
           {/* Getting a face match wrong has to be one tap to correct,
               wherever you are when you notice. */}
-          {matched || canAskRemoval ? (
-            <div className="mb-4 flex flex-col">
+          <div className="mb-4 flex flex-col">
+            <button
+              type="button"
+              className="kb-menu-item !min-h-[52px] !text-[16px]"
+              onClick={async () => {
+                setSheet("none");
+                try {
+                  await navigator.clipboard.writeText(window.location.href);
+                  setMessage("Link copied. Only club members can open it.");
+                } catch {
+                  setMessage("Couldn't copy the link.");
+                }
+              }}
+            >
+              Copy link
+            </button>
               {matched ? (
                 <button
                   type="button"
@@ -306,8 +355,7 @@ export function Viewer({
                   {asked ? "Removal requested" : "Ask for it to come down"}
                 </button>
               ) : null}
-            </div>
-          ) : null}
+          </div>
           <h2 className="soft-display text-[19px]">About this one</h2>
           <dl className="m-0 mt-3 grid gap-x-5 gap-y-2.5" style={{ gridTemplateColumns: "auto 1fr" }}>
             {details.map((d) => (
@@ -327,7 +375,7 @@ export function Viewer({
       ) : null}
 
       {sheet === "removal" ? (
-        <div className="absolute inset-x-0 bottom-0 rounded-t-[26px] bg-[color:var(--kb-cream)] px-5 pb-6 pt-4.5 shadow-[0_-18px_40px_rgba(0,0,0,0.45)]">
+        <div className={`${SHEET} px-5 pb-6 pt-4.5`}>
           <span className="mx-auto mb-3.5 block h-1 w-[42px] rounded-full bg-[color-mix(in_srgb,var(--color-text)_18%,transparent)]" />
           <h2 className="soft-display text-[21px]">{asked ? "Already on its way down." : "Take this one down?"}</h2>
           <p className="mt-1.5 text-[15px] text-[color:var(--kb-ink-2)]">

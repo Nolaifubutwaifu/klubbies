@@ -35,7 +35,7 @@ const FAQS = [
   },
   {
     q: "Is face recognition on by default?",
-    a: "No. A committee member turns it on for the club after reading what it does, and every member is told. Only members who add their own selfie are ever matched.",
+    a: "Yes, for the club, and the committee can switch it off in Settings. Every member is told it's on. Only members who add their own selfie are ever matched, and each of them sees only their own photos.",
   },
   { q: "Can members add their own photos?", a: "Yes, per album. Set who can add photos to Any member, or leave it on Committee only." },
   { q: "Where is our data stored?", a: "In Sydney, Australia." },

@@ -5,7 +5,7 @@ import { MemberTabBar } from "@/components/MemberTabBar";
 import { getClubContext, getProfile, listMyClubs } from "@/lib/auth/session";
 import { displayNameFor } from "@/lib/auth/display-name";
 import { countPhotosOfYou, faceStateFor } from "@/lib/faces/queries";
-import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
+import { SIGNED_URL_TTL, signLogoMarks, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { clubToneStyle } from "@/lib/theme";
 
@@ -39,9 +39,9 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
       ? await countPhotosOfYou(supabase, ctx.club.id)
       : null;
 
-  // One signing call for every club logo in the rail, not one per club.
-  const logoPaths = clubs.map((club) => club.logoPath).filter((p): p is string => Boolean(p));
-  const signedLogos = logoPaths.length ? await signPaths(supabase, logoPaths, SIGNED_URL_TTL.display) : new Map();
+  // One signing call for every club logo in the rail, not one per club, and
+  // the 96px mark rather than the original upload.
+  const signedLogos = await signLogoMarks(supabase, clubs.map((club) => club.logoPath));
   const logoUrls: Record<string, string> = {};
   for (const club of clubs) {
     const url = club.logoPath ? signedLogos.get(club.logoPath) : null;
@@ -57,7 +57,7 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
       {/* Wide screens get the rail instead of a top bar — the design puts every
           club you're in down the left and nothing above the photos. */}
       <div className="lg:hidden">
-        <AppHeader ctx={ctx} />
+        <AppHeader ctx={ctx} photosOfYou={facesCount !== null} />
       </div>
       <div className="flex flex-1 flex-col lg:flex-row lg:items-start lg:gap-6 lg:px-6 lg:pt-5">
         <MemberSidebar
@@ -66,13 +66,16 @@ export default async function ClubLayout(props: LayoutProps<"/c/[handle]">) {
           savedCount={saved.count ?? 0}
           newCount={fresh.count ?? 0}
           facesCount={facesCount}
-          canManage={ctx.perms.manage_albums || ctx.perms.manage_club || ctx.perms.manage_members}
+          // Every /admin page asks for manage_club (requireAdminContext), so
+          // that is the permission that earns the link. Anything wider led a
+          // media officer to a 404.
+          canManage={ctx.isAdmin}
           logoUrls={logoUrls}
           person={{ name: displayName, role: ctx.role?.name ?? "Member", avatarUrl }}
         />
         <div className="min-w-0 flex-1">{props.children}</div>
       </div>
-      <MemberTabBar handle={handle} />
+      <MemberTabBar handle={handle} photosOfYou={facesCount !== null} />
     </div>
   );
 }

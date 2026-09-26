@@ -1075,3 +1075,42 @@
 .soft-on-dark .soft-faint {
   color: rgb(255 255 255 / 0.84);
 }
+
+/* The page behind the page, so a phone rubber-banding past the end shows
+   cream rather than a grey band under the footer. */
+html:has(.theme-soft),
+html:has(.theme-soft) body {
+  background: var(--kb-cream);
+}
+
+/* Below sm the member tab bar is fixed to the bottom of the window, so the
+   footer's links need room to clear it, and more again on pages where the
+   floating "+ Album" button sits above the bar. */
+@media (max-width: 639.98px) {
+  .theme-soft:has([data-tabbar]) .app-footer {
+    padding-bottom: calc(76px + max(16px, env(safe-area-inset-bottom)));
+  }
+  .theme-soft:has([data-tabbar]):has([data-fab]) .app-footer {
+    padding-bottom: calc(140px + max(16px, env(safe-area-inset-bottom)));
+  }
+}
+
+/* The viewer's swipe hint: there when you arrive, gone before it gets in the
+   way of the photo. */
+@keyframes soft-hint-fade {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.soft-hint-fade {
+  animation: soft-hint-fade 4s ease-out forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .soft-hint-fade {
+    animation: none;
+  }
+}

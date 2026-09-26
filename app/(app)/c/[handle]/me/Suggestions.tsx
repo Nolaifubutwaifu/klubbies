@@ -6,34 +6,22 @@ import { decideFaceMatchAction } from "@/app/(app)/face-actions";
 import type { Suggestion } from "@/lib/faces/queries";
 
 /**
- * The crop is done here, from the already-signed display image, using the
- * stored bounding box. We deliberately do not generate and store face crops:
- * that is a second pile of biometric-adjacent files to secure and delete.
+ * The face, cropped on the server to a 240px square (see
+ * /api/faces/[matchId]/crop). Every card is the same size whatever the
+ * photo's shape, and it downloads a few kilobytes rather than the whole
+ * 2000px display copy.
  */
 function FaceCrop({ suggestion }: { suggestion: Suggestion }) {
-  const box = suggestion.box;
-  if (!suggestion.displayUrl || !box) {
-    return <span className="block h-[104px] w-[104px] rounded-[16px] bg-[color:var(--color-neutral-300)]" />;
-  }
-  // Widen the box a little: Rekognition's is tight to the face, and a crop
-  // with no hair or chin in it is oddly hard to recognise yourself in.
-  const pad = 0.6;
-  const width = Math.min(1, box.Width * (1 + pad));
-  const height = Math.min(1, box.Height * (1 + pad));
-  const scale = 1 / Math.max(width, height);
-
   return (
-    <span className="relative block h-[104px] w-[104px] overflow-hidden rounded-[16px] bg-[color:var(--color-neutral-200)]">
-      {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
+    <span className="block aspect-square w-full overflow-hidden rounded-[16px] bg-[color:var(--tone-support)]">
+      {/* eslint-disable-next-line @next/next/no-img-element -- private, per-member crop */}
       <img
-        src={suggestion.displayUrl}
-        alt=""
-        className="absolute max-w-none origin-top-left"
-        style={{
-          width: `${scale * 100}%`,
-          left: `${-(box.Left - (width - box.Width) / 2) * scale * 100}%`,
-          top: `${-(box.Top - (height - box.Height) / 2) * scale * 100}%`,
-        }}
+        src={`/api/faces/${suggestion.matchId}/crop`}
+        alt={`A face in a photo from ${suggestion.albumTitle}`}
+        width={240}
+        height={240}
+        loading="lazy"
+        className="h-full w-full object-cover"
       />
     </span>
   );
@@ -70,13 +58,11 @@ export function Suggestions({
         {remaining.map((suggestion) => (
           <div key={suggestion.matchId} className="soft-card flex w-[188px] flex-none flex-col gap-2 p-3">
             {suggestion.albumId ? (
-              <Link href={`/c/${handle}/a/${suggestion.albumId}/${suggestion.mediaId}`} className="self-center">
+              <Link href={`/c/${handle}/a/${suggestion.albumId}/${suggestion.mediaId}`} className="block">
                 <FaceCrop suggestion={suggestion} />
               </Link>
             ) : (
-              <span className="self-center">
-                <FaceCrop suggestion={suggestion} />
-              </span>
+              <FaceCrop suggestion={suggestion} />
             )}
             <span className="truncate text-[14px] text-[color:var(--ink-55)]">{suggestion.albumTitle}</span>
             <div className="flex gap-1.5">
@@ -86,7 +72,7 @@ export function Suggestions({
                 onClick={() =>
                   startTransition(async () => {
                     decide(suggestion.matchId);
-                    await decideFaceMatchAction(suggestion.matchId, "confirm");
+                    for (const id of suggestion.matchIds) await decideFaceMatchAction(id, "confirm");
                   })
                 }
               >
@@ -98,7 +84,7 @@ export function Suggestions({
                 onClick={() =>
                   startTransition(async () => {
                     decide(suggestion.matchId);
-                    await decideFaceMatchAction(suggestion.matchId, "reject");
+                    for (const id of suggestion.matchIds) await decideFaceMatchAction(id, "reject");
                   })
                 }
               >

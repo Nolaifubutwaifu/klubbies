@@ -12,7 +12,8 @@ import { drainFacePurgeQueue } from "@/lib/faces/purge";
 import { notifyNewAlbum } from "@/lib/notify";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { generateHandleBase } from "@/lib/roster/handle";
-import { removeObjects } from "@/lib/storage";
+import sharp from "sharp";
+import { BUCKET, LOGO_MARK_SIZE, logoMarkPath, removeObjects } from "@/lib/storage";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -116,13 +117,44 @@ export async function setClubPrivacyAction(
   return { ok: true, message: "Saved" };
 }
 
+/**
+ * Makes the 96px badge rendition beside an uploaded logo. Done here rather than
+ * in the browser so SVG logos get one too. Best effort: without it the badge
+ * falls back to the original, which is how every logo worked before.
+ */
+async function makeLogoMark(supabase: Awaited<ReturnType<typeof createClient>>, path: string) {
+  try {
+    const { data: file } = await supabase.storage.from(BUCKET).download(path);
+    if (!file) return;
+    const mark = await sharp(Buffer.from(await file.arrayBuffer()), { density: 300 })
+      .resize(LOGO_MARK_SIZE, LOGO_MARK_SIZE, { fit: "cover" })
+      .webp({ quality: 88 })
+      .toBuffer();
+    await supabase.storage
+      .from(BUCKET)
+      .upload(logoMarkPath(path), new Uint8Array(mark), { upsert: true, contentType: "image/webp" });
+  } catch (markError) {
+    console.error("could not make logo mark", path, markError);
+  }
+}
+
 export async function setClubLogoAction(clubId: string, path: string | null): Promise<ActionState> {
   const ctx = await adminContext(clubId);
   if (path !== null && !path.startsWith(`clubs/${clubId}/logo/`)) return { error: "Invalid logo path" };
   const supabase = await createClient();
+  if (path) await makeLogoMark(supabase, path);
   const { error } = await supabase.from("clubs").update({ logo_path: path }).eq("id", clubId);
   if (error) return { error: "Could not save the logo" };
+  // Each upload has its own name, so a replaced logo can't be served from a
+  // cached URL. Clear the one it replaced, and its mark.
+  const previous = ctx.club.logo_path;
+  if (previous && previous !== path) {
+    await removeObjects([previous, logoMarkPath(previous)]).catch((removeError) =>
+      console.error("could not remove old logo", previous, removeError),
+    );
+  }
   revalidatePath(`/admin/${ctx.club.handle}`, "layout");
+  revalidatePath(`/c/${ctx.club.handle}`, "layout");
   return { ok: true };
 }
 
@@ -431,8 +463,16 @@ export async function setAlbumCoverImageAction(albumId: string, path: string | n
   const ctx = await permContext(album.club_id, "manage_albums");
   if (path !== null && !path.startsWith(`clubs/${album.club_id}/covers/`)) return { error: "Invalid cover path" };
 
+  const { data: before } = await supabase.from("albums").select("cover_path").eq("id", albumId).maybeSingle();
   const { error } = await supabase.from("albums").update({ cover_path: path, cover_media_id: null }).eq("id", albumId);
   if (error) return { error: "Could not save the cover" };
+  // Covers are uploaded under a new name each time (so a cached URL can't
+  // show the old one); clear the file this replaced.
+  if (before?.cover_path && before.cover_path !== path) {
+    await removeObjects([before.cover_path]).catch((removeError) =>
+      console.error("could not remove old cover", before.cover_path, removeError),
+    );
+  }
   revalidatePath(`/c/${ctx.club.handle}`, "layout");
   return { ok: true, message: path ? "Cover updated" : "Cover cleared" };
 }

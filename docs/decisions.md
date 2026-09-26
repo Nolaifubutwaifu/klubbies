@@ -1,6 +1,6 @@
 # Decisions
 
-Choices made during the v1 build that `klubbies_masterfile.md` did not settle. Newest at the bottom.
+Choices made during the v1 build that `docs/masterfile.md` did not settle. Newest at the bottom.
 
 ## 2026-09-15 · v1 build
 
@@ -400,7 +400,7 @@ which is harder — so read these as a ceiling on quality, not a floor. Re-run
 the survey against a real club's library before trusting the numbers there.
 
 The tuning photos and their Rekognition collection were deleted immediately
-after the run; `tuning-photos/` keeps only its README.
+after the run. The method is in `docs/face-tuning.md`; the `tuning-photos/` folder it uses is gitignored.
 
 ## 2026-09-23 · Face matching, from per-face to per-batch
 
@@ -535,42 +535,129 @@ says about the rest.
      "Photos of you" page that silently stopped at 60. All three now say what
      is actually true.
 
+## 2026-09-25 · QA audit fixes (KB-01 to KB-25)
+
+A read-only pass over the live site found 25 problems. The ones that needed a
+choice, rather than just a fix:
+
+110. **Photos of you reaches phones, and so does the admin area.** The rail was
+     the only way to either, and the rail doesn't exist below `lg`. The tab bar
+     grows a fifth tab where the feature is on and the member has enrolled;
+     the club switcher gets an "In this club" section (Photos of you, Admin
+     view); the profile page, which is the "You" tab, links each club's admin
+     area. The rail's admin link now asks for `manage_club`, the permission
+     every `/admin` page checks, instead of sending a media officer to a 404.
+111. **Face recognition off is a state, not a 404.** `/c/[handle]/me` says so,
+     with a way into Settings for admins.
+112. **"Is this you?" crops on the server, per request, and stores nothing.**
+     `/api/faces/[matchId]/crop` cuts a 240px square from the display copy
+     with sharp and returns it `private`. The old CSS crop compared a fraction
+     of the width with a fraction of the height, so a landscape photo came out
+     shrunk into a grey square, and each 105px tile downloaded the full 2000px
+     image. Decision 84 still holds: no crop is ever written to storage.
+113. **One photo, one row per album, enforced by a content hash.** The browser
+     hashes each file before asking for a ticket (SHA-256; over 96 MB, the size
+     plus first and last 8 MB, prefixed `s:`), and the ticket route answers
+     "already here" for a finished copy or resumes a stuck one rather than
+     adding a second row. `media.content_hash` has a partial unique index per
+     album. Rows from before the column are covered by
+     `scripts/dedupe-media.ts`, and until that runs the face pages collapse
+     duplicates by filename and byte size.
+114. **Unfinished uploads are surfaced after an hour and cleared after 14
+     days.** The dashboard's Needs you lists them; the daily cron deletes rows
+     and objects still unfinished a fortnight on.
+115. **One counting rule: published albums, finished files.** Drafts get their
+     own label for the committee instead of inflating the number members see.
+116. **EXIF time is wall-clock time.** `DateTimeOriginal` is read as a raw
+     string and pinned to `OffsetTimeOriginal` when the camera wrote one, else
+     to Brisbane, the zone every date in the app is shown in. Separately, the
+     viewer formatted times on the server without a zone, which on Vercel is
+     UTC: that was the "8:01 am" on a night photo.
+117. **The profile name wins everywhere.** `personName()` in
+     `lib/auth/display-name.ts` is the rule: profile display name, then the
+     name signed in under, then the roster name. The profile page already
+     promised this.
+118. **Signed URLs are reused, not lengthened.** Every page load used to sign
+     afresh, so the browser could never reuse an image. `signPaths` now hands
+     back an already-issued URL to the same session (keyed by a hash of the
+     access token, never the user id) while it has at least 40% of its life
+     left. Lifetimes are unchanged from masterfile §8. Because a URL can now
+     be reused, avatars, album covers and logos are uploaded under a new name
+     each time and the replaced file is deleted, so nobody sees a stale image.
+119. **Logos get a 96px mark.** `setClubLogoAction` makes `mark-*.webp` beside
+     the upload, and every badge signs the mark, falling back to the original
+     for logos that predate it (`scripts/logo-marks.ts` backfills them).
+     `ClubMark` is the one badge component, so a club no longer shows red in
+     one place and as a black square in another.
+120. **Thumbnails are sized by their short edge.** `thumb.webp` is now at least
+     400px on its short side (capped at 900 on the long side), up from 400 on
+     the long side, which left 3:2 photos soft under a 186px square tile.
+     Existing thumbnails keep their old size.
+
+## 2026-09-25 · Face recognition for every club
+
+121. **On by default, everywhere.** Max's call, replacing the per-club opt-in
+     from decision 80. `20260925000021_faces_for_every_club.sql` switches on
+     every club that had never decided and queues its library; a trigger on
+     `clubs` does the same for every new club. A club an admin turned off
+     stays off, and the switch in Billing & settings still works both ways.
+     The rollout is recorded as `notice_version = 'klubbies-rollout-2026-09-25'`
+     with no `notice_accepted_by`, so the record says honestly that Klubbies
+     turned it on rather than a committee.
+122. **What did not change:** every member still sees the face notice and must
+     acknowledge it before anything else (decision 100), and enrolment stays
+     each member's own choice. The open question in decision 100, consent for
+     guests and plus-ones who never see a Klubbies screen, now applies to every
+     club rather than two.
+123. **The drain makes the collection.** The migration can't call AWS or read
+     the Rekognition prefix, so `runFaceJobs` creates a club's collection the
+     first time it works on that club and records its id. For the same reason
+     uploads now queue as soon as a club is enabled, without waiting for a
+     collection id.
+
+## 2026-09-25 · Repository tidy
+
+124. **Docs live in `docs/`.** The masterfile, this file, the design notes and
+     the face tuning method moved there from the repo root, `design/` and
+     `tuning-photos/`. `README.md` is the map. `FavouriteButton` was unused
+     and is gone. `main` is the only branch.
+
 ## 2026-09-26 · The design audit, built
 
 Built from the "Klubbies Design Audit" canvas and its handoff. What was
 followed as written is in the code; these are the places this build chose
 differently, and why.
 
-110. **One accent.** Ember `#CF2E12` is the only brand colour; ink carries
+125. **One accent.** Ember `#CF2E12` is the only brand colour; ink carries
      everything secondary. Purple, lilac and salmon are gone, and every old
      token name in `globals.css` now points at the new values, so no call
      site can reach a retired colour. The club's own colour survives only in
      the quiet layer (avatars, muted chips), mixed into sand and ink.
-111. **Two buttons, and a More menu.** Primary (ember) and secondary (white,
+126. **Two buttons, and a More menu.** Primary (ember) and secondary (white,
      ink border); the old tier names all resolve to one of the two. Each
      screen shows its one or two main actions and puts the rest behind
      `MoreMenu`. Destructive confirms use `btn-danger`, never the primary.
-112. **Nothing under 14px, no text set with opacity.** The ink ramp is three
+127. **Nothing under 14px, no text set with opacity.** The ink ramp is three
      solid colours. Input edges use `#968990` rather than the canvas's
      `#CDBDB6`, because form fields need 3:1 against white (WCAG 1.4.11) and
      `#CDBDB6` is 1.8:1.
-113. **Face recognition gets its own Home section**, straight after the
+128. **Face recognition gets its own Home section**, straight after the
      problem it solves. The canvas's decorative photo band made way for it,
      keeping Home at nine sections.
-114. **No "That email isn't on the list" error.** The code request is
+129. **No "That email isn't on the list" error.** The code request is
      deliberately neutral so nobody can test whether an address is on a
      club's roster; the handoff's error would leak exactly that.
-115. **No club photo on the public login page.** The canvas showed the club's
+130. **No club photo on the public login page.** The canvas showed the club's
      cover; the product promises that nothing about a club's photos shows to
      anyone off the list. The club is named and shown by its logo.
-116. **Start asks for you, then the club.** The club is created after the
+131. **Start asks for you, then the club.** The club is created after the
      email is confirmed, so the club name stays on step 2 rather than being
      carried through verification.
-117. **"Nothing is charged until you publish your first album" was never
+132. **"Nothing is charged until you publish your first album" was never
      true** (payment unlocks adding members and uploading). Every page now
      says so from one copy source, `lib/copy/site.ts`, which also lists what
      was checked against the code and what is deliberately not claimed.
-118. **Face jobs survive the response.** The drain that rides on an upload or
+133. **Face jobs survive the response.** The drain that rides on an upload or
      an enrolment was a bare promise, which Vercel may freeze once the
      response is sent. It now runs inside `after()`. The "Looking now" card
      also polls and nudges the queue, so a throttled enrolment no longer

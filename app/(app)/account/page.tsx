@@ -2,12 +2,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AccountMenu } from "@/components/AccountMenu";
+import { ClubMark } from "@/components/ClubMark";
 import { Brand } from "@/components/ui";
 import { InviteCard } from "@/components/InviteCard";
 import { MemberTabBar } from "@/components/MemberTabBar";
 import { getProfile, getSessionUser, listMyClubs, requireUser } from "@/lib/auth/session";
 import { formatLongDate } from "@/lib/format";
-import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
+import { SIGNED_URL_TTL, signLogoMarks, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { AvatarUploader, NotificationToggles, PasswordForm, ProfileForm } from "./AccountForms";
 import { FaceRow } from "./FaceRow";
@@ -30,9 +31,11 @@ export default async function AccountPage() {
   if (!profile || !user) return null;
 
   const supabase = await createClient();
-  const avatarUrl = profile.avatar_url
-    ? ((await signPaths(supabase, [profile.avatar_url], SIGNED_URL_TTL.display)).get(profile.avatar_url) ?? null)
-    : null;
+  const [avatar, signed] = await Promise.all([
+    profile.avatar_url ? signPaths(supabase, [profile.avatar_url], SIGNED_URL_TTL.display) : new Map<string, string>(),
+    signLogoMarks(supabase, clubs.map((club) => club.logoPath)),
+  ]);
+  const avatarUrl = profile.avatar_url ? (avatar.get(profile.avatar_url) ?? null) : null;
   // Set when the member saves a password from this page.
   const hasPassword = user.user_metadata?.has_password === true;
   const name = profile.display_name ?? profile.email;
@@ -85,34 +88,42 @@ export default async function AccountPage() {
             {clubs.length ? (
               <div className="flex flex-col gap-2.5">
                 {clubs.map((club) => (
-                  <Link
-                    key={club.membershipId}
-                    href={`/c/${club.handle}`}
-                    className="soft-card flex items-center gap-3 p-3.5 text-ink no-underline"
-                  >
-                    <span
-                      className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[12px] text-[14px] font-extrabold text-white"
-                      style={{ background: club.accentColour ?? "var(--color-accent)" }}
-                    >
-                      {initials(club.name)}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-bold">{club.name}</span>
-                      <span className="block text-[14px] text-[color:var(--ink-70)]">
-                        {club.roleName} · joined {formatLongDate(club.since)}
+                  <div key={club.membershipId} className="soft-card flex flex-col gap-2.5 p-3.5">
+                    <Link href={`/c/${club.handle}`} className="flex items-center gap-3 text-ink no-underline">
+                      <ClubMark
+                        name={club.name}
+                        logoUrl={club.logoPath ? signed.get(club.logoPath) : null}
+                        accentColour={club.accentColour}
+                        size={38}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[15px] font-bold">{club.name}</span>
+                        <span className="block text-[14px] text-[color:var(--ink-70)]">
+                          {club.roleName} · joined {formatLongDate(club.since)}
+                        </span>
                       </span>
-                    </span>
-                    {club.status === "grace" && club.graceEndsAt ? (
-                      <span className="soft-chip flex-none">{daysLeft(club.graceEndsAt)} days left</span>
-                    ) : (
-                      <span
-                        className="flex-none rounded-full px-2.5 py-1 text-[14px] font-bold"
-                        style={{ background: "#eaf5ea", color: "#2f6b36" }}
+                      {club.status === "grace" && club.graceEndsAt ? (
+                        <span className="soft-chip flex-none">{daysLeft(club.graceEndsAt)} days left</span>
+                      ) : (
+                        <span
+                          className="flex-none rounded-full px-2.5 py-1 text-[14px] font-bold"
+                          style={{ background: "#eaf5ea", color: "#2f6b36" }}
+                        >
+                          Active
+                        </span>
+                      )}
+                    </Link>
+                    {/* On a phone this page is the "You" tab and the tab bar
+                        has no committee entry, so admins get their way in here. */}
+                    {club.isAdmin ? (
+                      <Link
+                        href={`/admin/${club.handle}`}
+                        className="soft-btn soft-btn-tonal !min-h-[40px] self-start !px-4 !text-[14px] no-underline"
                       >
-                        Active
-                      </span>
-                    )}
-                  </Link>
+                        Admin view
+                      </Link>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             ) : (

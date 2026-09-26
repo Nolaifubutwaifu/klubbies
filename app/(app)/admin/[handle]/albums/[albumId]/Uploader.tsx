@@ -119,7 +119,9 @@ export function Uploader({ albumId }: { albumId: string }) {
                     style={{ color: job.status === "failed" ? "var(--color-accent)" : "var(--color-neutral-700)" }}
                   >
                     {job.status === "done"
-                      ? "READY"
+                      ? job.note
+                        ? job.note.toUpperCase()
+                        : "READY"
                       : job.status === "failed"
                         ? "FAILED"
                         : job.status === "uploading"

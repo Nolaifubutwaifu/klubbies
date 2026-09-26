@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef, useTransition } from "react";
 import { FormMessage, SubmitButton } from "@/components/forms";
 import type { FeedPost } from "@/lib/feed/queries";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, plural } from "@/lib/format";
 import { createPostAction, deletePostAction, togglePinAction, toggleReactionAction, type FeedResult } from "./actions";
 
 export function Composer({
@@ -40,7 +40,7 @@ export function Composer({
           </select>
         </label>
         <SubmitButton className="btn btn-primary ml-auto text-[14px]" pendingText="Posting…">
-          Post to {memberCount.toLocaleString("en-AU")} members
+          Post to {plural(memberCount, "member")}
         </SubmitButton>
       </div>
       <FormMessage state={state} />

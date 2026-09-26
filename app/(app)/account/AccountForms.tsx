@@ -67,7 +67,7 @@ export function AvatarUploader({ userId, avatarUrl }: { userId: string; avatarUr
     setBusy(true);
     setError("");
     const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-    const path = `avatars/${userId}/avatar.${ext}`;
+    const path = `avatars/${userId}/avatar-${Date.now()}.${ext}`;
     const { error: uploadError } = await createClient()
       .storage.from("club_media")
       .upload(path, file, { upsert: true, contentType: file.type });

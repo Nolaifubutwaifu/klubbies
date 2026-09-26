@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, type DragEvent } from "react";
 import { Dialog } from "@/components/Dialog";
 import { removeMembersAction } from "../../actions";
+import { plural } from "@/lib/format";
 import { problemsToCsv } from "@/lib/roster/normalise";
 import type { CommitResponse, PreviewResponse } from "@/lib/roster/schemas";
 
@@ -357,7 +358,7 @@ export function RosterImport({ clubId }: { clubId: string }) {
               </button>
               {summary ? (
                 <button type="button" className="btn btn-primary" disabled={busy || summary.added + summary.restored === 0} onClick={() => commit(false)}>
-                  {busy ? "Importing…" : `Add ${(summary.added + summary.restored).toLocaleString("en-AU")} members`}
+                  {busy ? "Importing…" : `Add ${plural(summary.added + summary.restored, "member")}`}
                 </button>
               ) : (
                 <button type="button" className="btn btn-primary" disabled={busy || !mappingComplete} onClick={() => commit(true)}>

@@ -60,7 +60,6 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
         firstName={displayName.trim().split(/\s+/)[0] ?? ""}
         notifiesOnNewAlbums={profile?.notify_new_album ?? false}
         photosOfYou={photosOfYou}
-        photosOfYouHref={`/c/${handle}/me`}
       />
       {/* Stamps the visit after render, so this page still shows what was new. */}
       <MarkVisited clubId={ctx.club.id} />

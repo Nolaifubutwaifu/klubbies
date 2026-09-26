@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/session";
+import { removeObjects } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 
 export type AccountResult = { error?: string; ok?: boolean; message?: string };
@@ -35,8 +36,13 @@ export async function setAvatarAction(path: string | null): Promise<AccountResul
   const user = await requireUser();
   if (path !== null && !path.startsWith(`avatars/${user.id}/`)) return { error: "Invalid photo path" };
   const supabase = await createClient();
+  const { data: before } = await supabase.from("users").select("avatar_url").eq("id", user.id).maybeSingle();
   const { error } = await supabase.from("users").update({ avatar_url: path }).eq("id", user.id);
   if (error) return { error: "Could not save your photo" };
+  // New name per upload, so nobody is shown the old photo from a cached URL.
+  if (before?.avatar_url && before.avatar_url !== path && before.avatar_url.startsWith(`avatars/${user.id}/`)) {
+    await removeObjects([before.avatar_url]).catch((removeError) => console.error("could not remove old avatar", removeError));
+  }
   revalidatePath("/account");
   return { ok: true };
 }

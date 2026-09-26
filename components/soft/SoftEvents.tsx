@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { CalendarIcon, CameraIcon, ChevronLeftIcon, ChevronRightIcon, PlayIcon, PlusIcon, SearchIcon, XIcon } from "@/components/soft/icons";
 import { ConfettiArt, PhotoStackArt } from "@/components/soft/illustrations";
 import { EmptyClub } from "@/components/soft/EmptyClub";
-import { formatDate, formatLongDate } from "@/lib/format";
+import { formatDate, formatLongDate, plural } from "@/lib/format";
 import { findAnniversary } from "@/lib/media/anniversary";
 import { eventTypeLabel } from "@/lib/media/event-types";
 import type { StackedAlbum } from "@/lib/media/album-list";
@@ -41,12 +41,17 @@ function countLabel(album: StackedAlbum): string {
   return parts.join(" · ") || "Nothing in here yet";
 }
 
-/** "Morning" until noon, "Afternoon" until six, "Evening" after that. */
+const brisbaneHour = new Intl.DateTimeFormat("en-AU", { hour: "numeric", hourCycle: "h23", timeZone: "Australia/Brisbane" });
+
+/**
+ * In the zone every other date in the app uses, so the server render and the
+ * browser agree on which half of the day it is.
+ */
 function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Morning";
-  if (hour < 18) return "Afternoon";
-  return "Evening";
+  const hour = Number(brisbaneHour.format(new Date()));
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 export function SoftEvents({
@@ -58,7 +63,6 @@ export function SoftEvents({
   firstName,
   notifiesOnNewAlbums = false,
   photosOfYou,
-  photosOfYouHref,
 }: {
   albums: StackedAlbum[];
   hrefBase: string;
@@ -71,7 +75,6 @@ export function SoftEvents({
   notifiesOnNewAlbums?: boolean;
   /** Confirmed face matches per album id. Empty when the member has not enrolled. */
   photosOfYou?: Map<string, number>;
-  photosOfYouHref?: string;
 }) {
   const [query, setQuery] = useState("");
   const [day, setDay] = useState<string | null>(null);
@@ -94,7 +97,12 @@ export function SoftEvents({
      one — an empty draft shouldn't cost the page its hero. */
   const hero = filtersOn ? null : (filtered.find((a) => a.coverUrl && a.photoCount + a.videoCount > 0) ?? null);
   const rows = hero ? filtered.filter((a) => a.id !== hero.id) : filtered;
-  const totals = albums.reduce((sum, a) => sum + a.photoCount + a.videoCount, 0);
+  // One rule for every count in the app: published albums, finished files.
+  // Drafts are real but only the committee sees them, so they get their own
+  // label rather than quietly inflating the number members also see.
+  const published = albums.filter((a) => a.status === "published");
+  const drafts = albums.length - published.length;
+  const totals = published.reduce((sum, a) => sum + a.photoCount + a.videoCount, 0);
   const newCount = albums.filter((a) => a.isNew).length;
   const memory = filtersOn ? null : findAnniversary(albums);
 
@@ -104,19 +112,26 @@ export function SoftEvents({
         <div className="min-w-[260px]">
           {/* The club is the identity; the greeting is a nicety. A member in
               four clubs needs to know which one this is at a glance. */}
+          {firstName ? (
+            <p className="mb-1 text-[14px] font-semibold text-ink-55" suppressHydrationWarning>
+              {greeting()}, {firstName}
+            </p>
+          ) : null}
           <h1 className="text-[clamp(30px,4.5vw,44px)]">{clubName}</h1>
           <p className="mt-2 text-[15px] text-ink-55">
             {newCount
-              ? `${newCount} album${newCount === 1 ? "" : "s"} landed since you were last here.`
-              : albums.length
-                ? `${albums.length} album${albums.length === 1 ? "" : "s"} · ${totals.toLocaleString("en-AU")} photos and videos`
+              ? `${plural(newCount, "album")} landed since you were last here.`
+              : published.length
+                ? `${plural(published.length, "album")} · ${plural(totals, "photo or video", "photos and videos")}`
                 : "Everything the committee shares lands here."}
-            {firstName ? ` · ${greeting().toLowerCase()}, ${firstName}` : ""}
+            {canManage && drafts > 0 ? ` · ${plural(drafts, "draft")} only the committee can see` : ""}
           </p>
         </div>
-        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:min-w-[300px]">
+        {/* Search and New album share one row on a wide screen; the button
+            used to hang underneath the field on a line of its own. */}
+        <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
           {albums.length === 0 ? null : (
-          <div className="relative">
+          <div className="relative sm:w-[320px]">
             <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-55">
               <SearchIcon />
             </span>
@@ -311,7 +326,13 @@ export function SoftEvents({
             <Link href={`${hrefBase}/${hero.id}`} className="soft-card group mt-6 block overflow-hidden !p-0 no-underline">
               <div className="relative aspect-[16/10] w-full sm:aspect-[21/9]">
                 {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
-                <img src={hero.coverUrl ?? ""} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={hero.heroUrl ?? hero.coverUrl ?? ""}
+                  srcSet={hero.heroUrl && hero.coverUrl ? `${hero.coverUrl} 400w, ${hero.heroUrl} 2000w` : undefined}
+                  sizes="(min-width: 1024px) 1000px, 100vw"
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-[rgba(25,18,22,0.82)] via-[rgba(25,18,22,0.15)] to-transparent" />
                 <span className="soft-chip absolute right-4 top-4 sm:right-6 sm:top-6">
                   {hero.isNew ? "New since you were here" : "Latest album"}
@@ -395,23 +416,20 @@ export function SoftEvents({
                     <div className="soft-display line-clamp-2 text-[16px] text-ink sm:text-[20px]">{album.title}</div>
                     {/* The detail that makes the feature feel alive. Counted
                         once for every album on screen, never per card. */}
+                    {/* Text, not a link: the whole card is already one, and an
+                        <a> inside an <a> is broken HTML. The album's own "You"
+                        filter is where these photos are, one tap on. */}
                     {photosOfYou?.get(album.id) ? (
-                      <Link
-                        href={photosOfYouHref ?? "#"}
-                        className="mt-1 inline-block text-[14px] font-bold text-accent-700 no-underline"
-                      >
-                        {photosOfYou.get(album.id)!.toLocaleString("en-AU")} photo
-                        {photosOfYou.get(album.id) === 1 ? "" : "s"} of you
-                      </Link>
+                      <span className="mt-1 inline-block text-[14px] font-bold text-accent-700">
+                        {plural(photosOfYou.get(album.id)!, "photo")} of you
+                      </span>
                     ) : null}
                     <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
                       {eventTypeLabel(album.eventType) ? (
                         <span className="soft-chip soft-chip-muted">{eventTypeLabel(album.eventType)}</span>
                       ) : null}
-                      <span className="text-[14px] text-ink-55 sm:text-[14px]">
-                        {formatDate(album.date)}
-                        {total > 0 ? ` · ${total.toLocaleString("en-AU")}` : ""}
-                      </span>
+                      {/* The count is already on the cover's badge. */}
+                      <span className="text-[14px] text-ink-55 sm:text-[14px]">{formatDate(album.date)}</span>
                       {album.openToMembers ? (
                         <span className="text-[14px] text-ink-55 sm:text-[14px]">· members can add</span>
                       ) : null}
@@ -434,6 +452,7 @@ export function SoftEvents({
         <Link
           href={newAlbumHref}
           aria-label="New album"
+          data-fab
           className="soft-btn soft-btn-primary fixed right-4 z-30 no-underline shadow-lg sm:hidden"
           style={{ bottom: "calc(84px + env(safe-area-inset-bottom, 0px))" }}
         >
