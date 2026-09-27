@@ -169,7 +169,7 @@ export function AlbumManager({
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="soft-display text-[19px]">Manage albums</h2>
         <span className="text-[14px] text-[color:var(--ink-70)]">
-          Drag to reorder — the top one is what members see first. Hiding keeps the files.
+          Drag to reorder: the top one is what members see first. Hiding keeps the files.
         </span>
         {message ? <span className="soft-chip ml-auto">{message}</span> : null}
       </div>

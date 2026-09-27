@@ -130,7 +130,7 @@ export default async function BillingPage(props: PageProps<"/admin/[handle]/bill
         <section className="grid gap-6" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
           <div className="flex flex-col gap-4 border-2 border-ink p-6">
             <span className="kicker">{status === "canceled" ? "Reactivate" : "Klubbies for clubs"}</span>
-            <div className="display text-[44px]">{price?.label ?? "—"}</div>
+            <div className="display text-[44px]">{price?.label ?? "Price not set"}</div>
             <ul className="flex flex-col gap-2 text-[15px]">
               {INCLUDED.map((item) => (
                 <li key={item} className="border-t border-divider pt-2">

@@ -14,12 +14,14 @@ import { FaceRecognition } from "./FaceRecognition";
 import { LogoUploader } from "./LogoUploader";
 import { PrivacySwitches } from "./PrivacySwitches";
 import { SettingsForm } from "./SettingsForm";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 
 export const metadata: Metadata = { title: "Billing & settings" };
 
 export default async function SettingsPage(props: PageProps<"/admin/[handle]/settings">) {
   const { handle } = await props.params;
   const ctx = await requireAdminContext(handle);
+  const inApp = await isNativeAppRequest();
   const { club } = ctx;
   const supabase = await createClient();
   const logoUrl = club.logo_path ? ((await signPaths(supabase, [club.logo_path], SIGNED_URL_TTL.display)).get(club.logo_path) ?? null) : null;
@@ -35,8 +37,8 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
 
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
-      <PageTitle kicker={club.name} title="Billing &amp; settings">
-        One plan, one card, and the handful of switches that matter.
+      <PageTitle kicker={club.name} title={inApp ? "Settings" : "Billing & settings"}>
+        {inApp ? "Your club's details and the handful of switches that matter." : "One plan, one card, and the handful of switches that matter."}
       </PageTitle>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
@@ -115,26 +117,39 @@ export default async function SettingsPage(props: PageProps<"/admin/[handle]/set
             <span className={active ? "soft-chip self-start" : "soft-chip soft-chip-muted self-start"}>
               {BILLING_LABEL[status]}
             </span>
-            <span className="flex items-baseline gap-1.5">
-              <span className="soft-display text-[36px] leading-none">A$20</span>
-              <span className="text-[14px] text-[color:var(--ink-70)]">/ month</span>
-            </span>
-            <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
-              {active
-                ? `${club.paid_at ? `Paid ${formatLongDate(club.paid_at)}. ` : ""}Unlimited members, albums and storage.`
-                : "Nothing is charged until you activate. Activating unlocks adding members and uploading."}
-            </p>
-            <Link href={`/admin/${handle}/billing`} className={`btn self-start ${active ? "btn-secondary" : "btn-primary"}`}>
-              {active ? "Card and receipts" : "Activate the club"}
-            </Link>
+            {inApp ? (
+              // Apple allows no price or payment steps inside the app (decision 137).
+              <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                {active
+                  ? `${club.paid_at ? `Paid ${formatLongDate(club.paid_at)}. ` : ""}Unlimited members, albums and storage.`
+                  : "Clubs can't be activated in the iPhone app."}
+              </p>
+            ) : (
+              <>
+                <span className="flex items-baseline gap-1.5">
+                  <span className="soft-display text-[36px] leading-none">A$20</span>
+                  <span className="text-[14px] text-[color:var(--ink-70)]">/ month</span>
+                </span>
+                <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
+                  {active
+                    ? `${club.paid_at ? `Paid ${formatLongDate(club.paid_at)}. ` : ""}Unlimited members, albums and storage.`
+                    : "Nothing is charged until you activate. Activating unlocks adding members and uploading."}
+                </p>
+                <Link href={`/admin/${handle}/billing`} className={`btn self-start ${active ? "btn-secondary" : "btn-primary"}`}>
+                  {active ? "Card and receipts" : "Activate the club"}
+                </Link>
+              </>
+            )}
           </section>
 
-          <section className="rounded-[var(--soft-r)] bg-[color:var(--kb-sand)] p-5">
-            <span className="block text-[14px] font-bold">Splitting it with the committee?</span>
-            <p className="m-0 mt-1 text-[14px]">
-              A$20 across four people is A$5 each, once a month. We send one receipt you can forward.
-            </p>
-          </section>
+          {inApp ? null : (
+            <section className="rounded-[var(--soft-r)] bg-[color:var(--kb-sand)] p-5">
+              <span className="block text-[14px] font-bold">Splitting it with the committee?</span>
+              <p className="m-0 mt-1 text-[14px]">
+                A$20 across four people is A$5 each, once a month. We send one receipt you can forward.
+              </p>
+            </section>
+          )}
 
           <section className="soft-card flex flex-col gap-2 p-5">
             <span className="text-[14px] font-bold">If you cancel</span>

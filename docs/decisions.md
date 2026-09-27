@@ -733,3 +733,61 @@ differently, and why.
      for en-AU and Safari as "Sep", so every page with a date failed to
      hydrate on iPhones and React redrew it on the phone. `lib/format.ts` now
      builds "23 Sep 2026" itself, and client components use it too.
+
+## 2026-09-27 · Handoff batch: push, sign-in, copy, App Store pack
+
+146. **A push token sent to the wrong Apple environment gets one retry.**
+     The app says whether its token is sandbox (Xcode debug) or production
+     (TestFlight, App Store), but a build signed differently from how it was
+     compiled labels it wrong, and Apple answers `BadDeviceToken`. That answer
+     now triggers one send to the other environment; if it lands, the stored
+     environment is corrected, and only if both fail is the token dropped.
+147. **One landing rule for every sign-in** (`lib/auth/landing.ts`). Code
+     and password sign-ins disagreed: the password route counted only
+     accepted clubs, so a one-club member who had never pressed Accept landed
+     on "Your clubs". Both now use the same rule: the club whose link they
+     came through, else their only club, else "Your clubs". Invitations
+     answered "Not me" don't count.
+148. **A club you haven't accepted shows its invitation, not its albums.**
+     Landing someone straight on their only club used to skip decision 29's
+     Accept step, and an unaccepted member gets no album emails or
+     notifications (`lib/notify.ts` only sends to accepted members). The club
+     home now shows just the invitation until they accept, face notice
+     included; "Not me" goes to "Your clubs".
+149. **No em dashes in anything a person reads.** Copy uses colons, commas
+     or full stops; an empty value says "None" or "Price not set". Guest
+     links are labelled with a name only, and the greeting cuts old
+     "Name — album" labels at the first separator (`guestName`).
+150. **Apple's reviewer is a plain member of the demo club.**
+     `appreview@klubbies.app` in UniMelb FC, created by
+     `scripts/app-review-account.ts`, password in `.env.local`
+     (`APP_REVIEW_PASSWORD`), never in the repo. A member, not an admin, so a
+     reviewer can't delete the demo albums. The listing text, privacy and age
+     rating answers are in `docs/app-store/listing.md`.
+
+## 2026-09-27 · Design audit in the iPhone app
+
+151. **No sales pages inside the app.** Home, How it works and Refunds show
+     the price and how to pay; in the app they redirect to "Your clubs"
+     (`proxy.ts`). The legal pages drop the site's menu and footer and the
+     Refunds tab, the member pages lose the website footer (the tab bar is
+     the navigation), and the profile keeps Privacy, Terms and Support.
+     Prices and "Activate the club" are gone from the admin sidebar,
+     settings, setup and Start pages in the app, as they already were from
+     billing (decision 137).
+152. **Save to Photos in the app saves the original.** It used to hand the
+     app the 2000px display copy, and for a video only its poster frame,
+     while every page promised full quality. `/api/media/originals` signs the
+     originals with the same rules as a single download (download setting,
+     access log), and the viewer's Download becomes Save in the app, straight
+     into Photos. Browsers keep the display copies through the share sheet.
+153. **The app's edges follow the page colour.** The web view sits inside
+     the safe area, so the strips above and below it were always cream, even
+     around the near-black photo viewer. The app now paints them from the
+     page's `theme-color` and hides the status bar over a dark page.
+154. **Single downloads were broken since v1.** `media` and `albums` are
+     joined twice (`media.album_id` and `albums.cover_media_id`), so
+     `albums(...)` from `media` is ambiguous and PostgREST refuses it. The
+     viewer's Download answered "Not found" and Saved's "Downloaded" list was
+     always empty. Every such join now names `albums!media_album_id_fkey`,
+     as the admin dashboard already did.

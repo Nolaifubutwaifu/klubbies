@@ -41,7 +41,7 @@ export function FacePrompt({ clubId, href, count }: { clubId: string; href: stri
       <span className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-white text-[color:var(--kb-ember-deep)]" aria-hidden>
         <FaceIcon size={20} />
       </span>
-      <span className="min-w-0 flex-1">
+      <span className="min-w-0 flex-1 basis-[220px]">
         <strong className="block font-bold">Find yourself in this club&rsquo;s photos</strong>
         <span className="text-[15px] text-[color:var(--kb-ink-2)]">
           {count > 0
@@ -49,23 +49,27 @@ export function FacePrompt({ clubId, href, count }: { clubId: string; href: stri
             : "Add a selfie and we’ll show you the ones you’re in. Only you can see them."}
         </span>
       </span>
-      <Link href={href} className="btn btn-primary btn-sm">
-        {count > 0 ? "Show me" : "Set it up"}
-      </Link>
-      <button
-        type="button"
-        className="kb-link kb-link-quiet !no-underline"
-        onClick={() => {
-          setDismissed(true);
-          try {
-            window.localStorage.setItem(key, "dismissed");
-          } catch {
-            // Private browsing: the banner comes back next time, which is fine.
-          }
-        }}
-      >
-        Not now
-      </button>
+      {/* On a phone the buttons drop under the text, lined up with it, instead
+          of squeezing the sentence into a narrow column. */}
+      <span className="flex items-center gap-3 max-sm:w-full max-sm:pl-[52px]">
+        <Link href={href} className="btn btn-primary btn-sm">
+          {count > 0 ? "Show me" : "Set it up"}
+        </Link>
+        <button
+          type="button"
+          className="kb-link kb-link-quiet !no-underline"
+          onClick={() => {
+            setDismissed(true);
+            try {
+              window.localStorage.setItem(key, "dismissed");
+            } catch {
+              // Private browsing: the banner comes back next time, which is fine.
+            }
+          }}
+        >
+          Not now
+        </button>
+      </span>
     </div>
   );
 }

@@ -65,6 +65,8 @@ export function InviteCard({ invite }: { invite: MyClub }) {
           onClick={() =>
             startTransition(async () => {
               await declineInviteAction(invite.membershipId);
+              // Declining from the club's own page leaves nothing to show there.
+              router.replace("/clubs");
               router.refresh();
             })
           }

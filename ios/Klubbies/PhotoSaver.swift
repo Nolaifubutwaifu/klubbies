@@ -47,7 +47,17 @@ final class PhotoSaver: NSObject, WKScriptMessageHandlerWithReply {
         let (downloaded, response) = try await URLSession.shared.download(from: url)
         let mime = response.mimeType ?? "image/jpeg"
         let isVideo = mime.hasPrefix("video/")
-        let ext = isVideo ? (mime.contains("quicktime") ? "mov" : "mp4") : (mime.contains("png") ? "png" : mime.contains("webp") ? "webp" : "jpg")
+        // Originals arrive as whatever the camera wrote, often HEIC or MOV.
+        let ext: String
+        switch mime {
+        case let m where m.contains("quicktime"): ext = "mov"
+        case let m where m.hasPrefix("video/"): ext = "mp4"
+        case let m where m.contains("heic"): ext = "heic"
+        case let m where m.contains("heif"): ext = "heif"
+        case let m where m.contains("png"): ext = "png"
+        case let m where m.contains("webp"): ext = "webp"
+        default: ext = "jpg"
+        }
 
         // Photos works out the file type from the extension.
         let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString).appendingPathExtension(ext)

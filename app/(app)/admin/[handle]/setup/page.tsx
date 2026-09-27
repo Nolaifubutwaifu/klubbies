@@ -7,6 +7,7 @@ import { clubAddress } from "@/lib/env";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { SIGNED_URL_TTL, signPaths } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 
 export const metadata: Metadata = { title: "Set up your club" };
 
@@ -80,7 +81,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
     {
       key: "look",
       title: "Logo and colour",
-      hint: logoUrl ? "Set — every highlight follows your colour" : "A square mark and one colour, and the app is yours",
+      hint: logoUrl ? "Set. Every highlight follows your colour" : "A square mark and one colour, and the app is yours",
       done: Boolean(logoUrl && ctx.club.accent_colour),
       href: `/admin/${handle}/settings`,
       cta: logoUrl ? "Change it" : "Add a logo",
@@ -153,7 +154,7 @@ export default async function SetupPage(props: PageProps<"/admin/[handle]/setup"
           ))}
         </ol>
 
-        {canWrite(ctx.club.billing_status) ? null : (
+        {canWrite(ctx.club.billing_status) || (await isNativeAppRequest()) ? null : (
           <div className="rounded-[var(--soft-r-sm)] bg-[color:var(--tone-support)] p-4 text-[color:var(--tone-support-ink)]">
             <span className="block text-[14px] font-bold">Nothing is charged yet</span>
             <p className="m-0 mt-1 text-[14px]">A$20 a month starts when you activate the club, which unlocks adding members and uploading.</p>

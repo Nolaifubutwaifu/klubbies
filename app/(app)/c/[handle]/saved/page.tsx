@@ -42,7 +42,7 @@ export default async function SavedPage(props: PageProps<"/c/[handle]/saved">) {
   const { data: downloadedMedia } = downloadedIds.length
     ? await supabase
         .from("media")
-        .select("id, album_id, thumb_path, poster_path, albums(title)")
+        .select("id, album_id, thumb_path, poster_path, albums!media_album_id_fkey(title)")
         .in("id", downloadedIds)
         .eq("status", "ready")
     : { data: [] };

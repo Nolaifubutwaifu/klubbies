@@ -36,7 +36,7 @@ export function Handover({
         <h2 className="soft-display text-[19px]">Hand over the club</h2>
         <p className="mt-1 max-w-[62ch] text-[14px] text-[color:var(--ink-70)]">
           Your club&rsquo;s history doesn&rsquo;t graduate with your media officer. Give next year&rsquo;s committee the
-          admin role and {clubName} stays exactly where it is &mdash; every album, every member, nothing moved.
+          admin role and {clubName} stays exactly where it is: every album, every member, nothing moved.
         </p>
       </div>
 
@@ -66,7 +66,7 @@ export function Handover({
               {candidates.map((c) => (
                 <option key={c.membershipId} value={c.membershipId}>
                   {c.name}
-                  {c.isAdmin ? " — already an admin" : ""}
+                  {c.isAdmin ? " (already an admin)" : ""}
                 </option>
               ))}
             </select>
@@ -76,7 +76,7 @@ export function Handover({
             <div className="soft-bordered flex flex-col gap-3 p-4">
               <p className="m-0 text-[14px]">
                 <strong className="font-bold">{selected.name}</strong> gets the admin role and becomes the club&rsquo;s
-                owner on record. You keep your own role, so you can still upload &mdash; change or remove it afterwards if
+                owner on record. You keep your own role, so you can still upload. Change or remove it afterwards if
                 you&rsquo;re stepping down.
               </p>
               <div className="flex flex-wrap gap-2">

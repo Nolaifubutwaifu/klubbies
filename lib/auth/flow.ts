@@ -4,6 +4,7 @@ import { sendSignInCode } from "@/lib/email/send";
 import { isValidEmail, normaliseEmail } from "@/lib/roster/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { landingPath } from "./landing";
 import { namesLooselyMatch } from "./names";
 import { LIMITS, hitRateLimit } from "./rate-limit";
 
@@ -38,7 +39,7 @@ async function findEligibleMemberships(email: string) {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("memberships")
-    .select("id, club_id, roster_name, claimed_name, status, first_seen_at, grace_ends_at, clubs!inner(name, handle, status)")
+    .select("id, club_id, roster_name, claimed_name, status, first_seen_at, grace_ends_at, declined_at, clubs!inner(name, handle, status)")
     .eq("roster_email", email)
     .in("status", ["pending", "active", "grace"])
     .eq("clubs.status", "active");
@@ -137,11 +138,6 @@ export async function verifyCode(rawEmail: string, code: string, clubHandle?: st
   }
 
   if (pending.flow === "create") return { ok: true, redirectTo: "/admin/new" };
-  // A member who came in through a club's own link goes back to that club,
-  // but only if they are actually on its list.
-  const wanted = clubHandle?.toLowerCase();
-  if (wanted && memberships.some((m) => m.clubs.handle === wanted)) return { ok: true, redirectTo: `/c/${wanted}` };
-  if (pending.flow === "signup") return { ok: true, redirectTo: memberships.length === 1 ? `/c/${memberships[0].clubs.handle}` : "/clubs" };
-  if (memberships.length === 1) return { ok: true, redirectTo: `/c/${memberships[0].clubs.handle}` };
-  return { ok: true, redirectTo: "/clubs" };
+  const landing = memberships.map((m) => ({ handle: m.clubs.handle, declined: m.declined_at !== null }));
+  return { ok: true, redirectTo: landingPath(landing, clubHandle) };
 }

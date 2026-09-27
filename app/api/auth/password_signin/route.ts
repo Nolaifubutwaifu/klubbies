@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { landingPath } from "@/lib/auth/landing";
 import { LIMITS, hitRateLimit } from "@/lib/auth/rate-limit";
 import { clientFingerprint } from "@/lib/auth/request";
 import { normaliseEmail } from "@/lib/roster/email";
@@ -26,21 +27,19 @@ export async function POST(request: Request) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password: parsed.data.password });
   if (error || !data.user) return NextResponse.json({ error: GENERIC }, { status: 400 });
 
-  // Where to land: a single club goes straight in, otherwise the club list.
+  // Where to land: the same rule as a code sign-in (lib/auth/landing.ts).
   const { data: memberships } = await createAdminClient()
     .from("memberships")
-    .select("accepted_at, clubs!inner(handle, status)")
+    .select("status, grace_ends_at, declined_at, clubs!inner(handle, status)")
     .eq("user_id", data.user.id)
     .in("status", ["active", "grace"])
     .eq("clubs.status", "active");
 
-  const accepted = (memberships ?? []).filter((m) => m.accepted_at !== null);
-  const wanted = parsed.data.club?.toLowerCase();
-  const redirectTo =
-    wanted && accepted.some((m) => m.clubs.handle === wanted)
-      ? `/c/${wanted}`
-      : accepted.length === 1
-        ? `/c/${accepted[0].clubs.handle}`
-        : "/clubs";
+  const now = new Date().toISOString();
+  const live = (memberships ?? []).filter((m) => m.status !== "grace" || (m.grace_ends_at !== null && m.grace_ends_at > now));
+  const redirectTo = landingPath(
+    live.map((m) => ({ handle: m.clubs.handle, declined: m.declined_at !== null })),
+    parsed.data.club,
+  );
   return NextResponse.json({ ok: true, redirectTo });
 }

@@ -1,6 +1,6 @@
 import { generateKeyPairSync, verify } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { isDeadToken, providerToken } from "@/lib/push/apns";
+import { isDeadToken, isWrongEnvironment, providerToken } from "@/lib/push/apns";
 
 describe("APNs provider token", () => {
   const { privateKey, publicKey } = generateKeyPairSync("ec", { namedCurve: "P-256" });
@@ -25,5 +25,11 @@ describe("APNs provider token", () => {
     expect(isDeadToken({ token: "a", ok: false, status: 400, reason: "BadDeviceToken" })).toBe(true);
     expect(isDeadToken({ token: "a", ok: false, status: 429, reason: "TooManyRequests" })).toBe(false);
     expect(isDeadToken({ token: "a", ok: false, status: 0, reason: "timeout" })).toBe(false);
+  });
+
+  it("gives a BadDeviceToken one try in the other environment first", () => {
+    expect(isWrongEnvironment({ token: "a", ok: false, status: 400, reason: "BadDeviceToken" })).toBe(true);
+    expect(isWrongEnvironment({ token: "a", ok: false, status: 410, reason: "Unregistered" })).toBe(false);
+    expect(isWrongEnvironment({ token: "a", ok: false, status: 400, reason: "DeviceTokenNotForTopic" })).toBe(false);
   });
 });

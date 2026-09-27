@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { ClubMark } from "@/components/ClubMark";
 
 export type AdminNavCounts = {
@@ -85,6 +85,7 @@ export function AdminNav({
   counts,
   plan,
   person,
+  inApp = false,
 }: {
   handle: string;
   clubName: string;
@@ -96,9 +97,15 @@ export function AdminNav({
   counts: AdminNavCounts;
   plan: { line: string; hint: string };
   person: { name: string; role: string };
+  /** Inside the iPhone app there is no billing to manage (decision 137). */
+  inApp?: boolean;
 }) {
   const pathname = usePathname();
   const base = `/admin/${handle}`;
+  const strip = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    strip.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [pathname]);
 
   const links = [
     { href: base, label: "Dashboard", icon: "dashboard", exact: true, badge: 0 },
@@ -110,7 +117,7 @@ export function AdminNav({
       ? [{ href: `${base}/removals`, label: "Removals", icon: "removals", badge: counts.removals, urgent: true }]
       : []),
     { href: `${base}/roles`, label: "Handover", icon: "handover", badge: 0 },
-    { href: `${base}/settings`, label: "Billing & settings", icon: "billing", badge: 0 },
+    { href: `${base}/settings`, label: inApp ? "Settings" : "Billing & settings", icon: "billing", badge: 0 },
   ];
 
   return (
@@ -124,7 +131,13 @@ export function AdminNav({
           </span>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+        {/* Below lg the links scroll sideways. The fade says there is more to
+            the right, and the current page is scrolled into view, so Members
+            or Settings is never an unseen item past the edge. */}
+        <div
+          ref={strip}
+          className="flex gap-1 overflow-x-auto [mask-image:linear-gradient(to_right,black_82%,transparent)] [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:[mask-image:none]"
+        >
           {links.map((link) => {
             const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
             return (

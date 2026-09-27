@@ -117,6 +117,14 @@ export async function sendPush(environment: ApnsEnvironment, tokens: string[], m
   }
 }
 
+/**
+ * Apple's answer to a token sent to the wrong environment (a sandbox token
+ * sent to production, or the reverse). Worth one try against the other.
+ */
+export function isWrongEnvironment(result: PushResult): boolean {
+  return result.status === 400 && result.reason === "BadDeviceToken";
+}
+
 /** Apple's answers that mean the token will never work again. */
 export function isDeadToken(result: PushResult): boolean {
   return result.status === 410 || result.reason === "BadDeviceToken" || result.reason === "Unregistered" || result.reason === "DeviceTokenNotForTopic";

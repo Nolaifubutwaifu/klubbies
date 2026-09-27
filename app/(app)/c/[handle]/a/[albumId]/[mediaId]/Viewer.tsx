@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, useTransition } from
 import { decideFaceMatchAction } from "@/app/(app)/face-actions";
 import { requestRemovalAction } from "@/app/(app)/removal-actions";
 import { toggleFavouriteAction } from "@/app/(app)/c/[handle]/actions";
+import { nativeSaveToPhotos } from "@/lib/native-app";
 
 type Current = {
   id: string;
@@ -129,6 +130,38 @@ export function Viewer({
   const [asked, setAsked] = useState(alreadyAsked);
   const [matched, setMatched] = useState(faceMatchId);
   const [message, setMessage] = useState("");
+  // Inside the iPhone app, Download becomes Save: the original goes straight
+  // into Photos instead of through the share sheet. Read after hydration.
+  const inApp = useSyncExternalStore(
+    () => () => {},
+    () => nativeSaveToPhotos() !== null,
+    () => false,
+  );
+  const [savingToPhotos, setSavingToPhotos] = useState(false);
+
+  async function saveCurrentToPhotos() {
+    const native = nativeSaveToPhotos();
+    if (!native || savingToPhotos) return;
+    setSavingToPhotos(true);
+    setMessage("Saving to Photos…");
+    try {
+      const res = await fetch("/api/media/originals", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ mediaIds: [current.id] }),
+      });
+      const { urls }: { urls?: Record<string, string> } = await res.json();
+      const url = urls?.[current.id];
+      if (!url) throw new Error("Couldn't save this one.");
+      const result = (await native.postMessage({ urls: [url] })) as { saved?: number };
+      setMessage(result?.saved ? "Saved to Photos" : "Couldn't save this one.");
+    } catch (error) {
+      const text = error instanceof Error ? error.message : String(error);
+      setMessage(/photos access/i.test(text) ? text : "Couldn't save this one.");
+    } finally {
+      setSavingToPhotos(false);
+    }
+  }
   const [pending, startTransition] = useTransition();
 
   const prevHref = prevId ? `${itemHrefBase}/${prevId}` : null;
@@ -290,7 +323,12 @@ export function Viewer({
         >
           <path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
         </Action>
-        {canDownload ? (
+        {canDownload && inApp ? (
+          <Action label={savingToPhotos ? "Saving…" : "Save"} onClick={saveCurrentToPhotos}>
+            <path d="M12 4v11M7 11l5 5 5-5" />
+            <path d="M5 20h14" />
+          </Action>
+        ) : canDownload ? (
           <Action label="Download" href={`/api/media/${current.id}/download`}>
             <path d="M12 4v11M7 11l5 5 5-5" />
             <path d="M5 20h14" />
@@ -381,7 +419,7 @@ export function Viewer({
           <p className="mt-1.5 text-[15px] text-[color:var(--kb-ink-2)]">
             {asked
               ? "It's hidden from the album. Your media officer confirms it within seven days, and if they don't, it deletes itself."
-              : "It hides from the album straight away. Your media officer gets a note and confirms it — no reason needed."}
+              : "It hides from the album straight away. Your media officer gets a note and confirms it. No reason needed."}
           </p>
           <div className="mt-4 flex gap-2.5">
             <button type="button" className="btn btn-secondary flex-1" onClick={() => setSheet("none")}>

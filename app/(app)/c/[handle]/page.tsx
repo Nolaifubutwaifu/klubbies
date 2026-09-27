@@ -4,12 +4,13 @@ import { FaceNotice } from "@/components/FaceNotice";
 import { FacePrompt } from "@/components/FacePrompt";
 import { MarkVisited } from "@/components/MarkVisited";
 import { SoftEvents } from "@/components/soft/SoftEvents";
-import { getClubContext, getProfile } from "@/lib/auth/session";
+import { getClubContext, getProfile, listMyClubs } from "@/lib/auth/session";
 import { displayNameFor } from "@/lib/auth/display-name";
 import { countPhotosOfYouByAlbum, faceStateFor } from "@/lib/faces/queries";
 import { listStackedAlbums } from "@/lib/media/album-list";
 import { createClient } from "@/lib/supabase/server";
 import { PushPrompt } from "@/components/PushPrompt";
+import { InviteCard } from "@/components/InviteCard";
 
 export async function generateMetadata(props: PageProps<"/c/[handle]">): Promise<Metadata> {
   const { handle } = await props.params;
@@ -21,6 +22,22 @@ export default async function ClubFeedPage(props: PageProps<"/c/[handle]">) {
   const { handle } = await props.params;
   const ctx = await getClubContext(handle);
   if (!ctx) notFound();
+
+  // Not accepted yet (decision 29): the invitation is the whole page, so the
+  // first thing a new member does here is say yes. Signing in lands them
+  // here directly when it's their only club (lib/auth/landing.ts).
+  if (ctx.membership && ctx.membership.accepted_at === null) {
+    const { invites } = await listMyClubs();
+    const invite = invites.find((i) => i.clubId === ctx.club.id);
+    if (invite) {
+      return (
+        <main className="flex flex-1 flex-col px-4 py-8 sm:px-6">
+          <h1 className="soft-display m-0 text-[clamp(26px,5vw,34px)]">Join {ctx.club.name}</h1>
+          <InviteCard invite={invite} />
+        </main>
+      );
+    }
+  }
 
   const supabase = await createClient();
   const [albums, displayName, profile, faceState] = await Promise.all([

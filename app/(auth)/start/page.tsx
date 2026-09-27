@@ -7,6 +7,7 @@ import { CheckIcon, LockIcon } from "@/components/soft/icons";
 import { getSessionUser } from "@/lib/auth/session";
 import { PRICE } from "@/lib/copy/site";
 import { SignInForm } from "../signin/SignInForm";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 
 export const metadata: Metadata = { title: "Start your club" };
 
@@ -80,9 +81,11 @@ export default async function StartPage() {
         <SignInForm flow="create" />
       </div>
 
-      <p className="kb-caption mt-5 text-center">
-        {PRICE.line}. {PRICE.note}
-      </p>
+      {(await isNativeAppRequest()) ? null : (
+        <p className="kb-caption mt-5 text-center">
+          {PRICE.line}. {PRICE.note}
+        </p>
+      )}
     </AuthShell>
   );
 }

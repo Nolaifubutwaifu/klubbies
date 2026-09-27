@@ -22,7 +22,7 @@ export default async function UploadPage(props: PageProps<"/admin/[handle]/uploa
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       <PageTitle kicker={ctx.club.name} title="New album">
-        Drop the whole night in. Name it, say when it goes live, then upload — it keeps going in the background.
+        Drop the whole night in. Name it, say when it goes live, then upload. It keeps going in the background.
       </PageTitle>
 
       {writable ? null : <BillingGate handle={handle} action="upload photos" />}

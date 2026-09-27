@@ -37,13 +37,13 @@ export function GuestLinkForm({
 
         {albums.length === 0 ? (
           <p className="m-0 text-[14px] text-[color:var(--ink-70)]">
-            Make an album first — a guest link always points at exactly one.
+            Make an album first. A guest link always points at exactly one.
           </p>
         ) : (
           <>
             <label className="field">
               Who is it for?
-              <input className="input" name="label" placeholder="Ruth Alvarez — End of Season Awards" required maxLength={120} />
+              <input className="input" name="label" placeholder="Ruth Alvarez" required maxLength={120} />
             </label>
             <label className="field">
               Uploads land in
@@ -86,7 +86,7 @@ export function GuestLinkForm({
       {state.url ? (
         <div className="soft-card flex flex-col gap-3 border-2 border-accent p-5">
           <span className="text-[14px] font-bold text-accent-800">
-            Your new link — copy it once, it&apos;s not shown again
+            Your new link. Copy it now, it&apos;s not shown again
           </span>
           <div className="flex flex-wrap items-center gap-2">
             <code className="min-w-0 flex-1 overflow-x-auto rounded-full bg-[color:var(--color-bg)] px-4 py-2.5 text-[14px]">

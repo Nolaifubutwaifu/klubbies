@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { formatLongDate } from "@/lib/format";
-import { resolveGuestLink, type GuestLinkState } from "@/lib/guest/links";
+import { guestName, resolveGuestLink, type GuestLinkState } from "@/lib/guest/links";
 import { clubToneStyle } from "@/lib/theme";
 import { GuestUploader } from "./GuestUploader";
 
@@ -57,7 +57,7 @@ export default async function GuestUploadPage(props: PageProps<"/g/[token]">) {
           <h1 className="mt-3 text-[clamp(28px,5.5vw,40px)]">{session.albumTitle}</h1>
           <p className="mt-2 text-[15px] text-[color:var(--ink-70)]">
             {session.albumDate ? `${formatLongDate(session.albumDate)} · ` : ""}
-            Hi {session.label.split("—")[0].trim()}. Drop the night in and close the tab.
+            Hi {guestName(session.label)}. Drop the night in and close the tab.
           </p>
         </div>
 

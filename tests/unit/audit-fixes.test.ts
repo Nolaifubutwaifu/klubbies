@@ -73,3 +73,14 @@ describe("person name", () => {
     expect(personName({})).toBe("");
   });
 });
+
+describe("guest link greeting", () => {
+  it("takes the name before the first separator, old labels included", async () => {
+    const { guestName } = await import("@/lib/guest/links");
+    expect(guestName("Ruth Alvarez")).toBe("Ruth Alvarez");
+    expect(guestName("Ruth Alvarez — End of Season Awards")).toBe("Ruth Alvarez");
+    expect(guestName("Ruth Alvarez, End of Season Awards")).toBe("Ruth Alvarez");
+    expect(guestName("Jean-Luc Picard - Gala")).toBe("Jean-Luc Picard");
+    expect(guestName("  ")).toBe("");
+  });
+});

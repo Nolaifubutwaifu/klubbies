@@ -64,7 +64,7 @@ export default async function RemovalsPage(props: PageProps<"/admin/[handle]/rem
   return (
     <main className="flex flex-col gap-7 px-4 py-8 sm:px-6">
       <PageTitle kicker={ctx.club.name} title="Removal requests">
-        A member asked for a photo to come down. It is already hidden from everyone — you decide whether the original
+        A member asked for a photo to come down. It is already hidden from everyone. You decide whether the original
         goes too.
       </PageTitle>
 

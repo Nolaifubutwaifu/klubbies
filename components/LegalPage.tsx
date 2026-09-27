@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { LegalContents } from "@/components/LegalContents";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteNav } from "@/components/site/SiteNav";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 import { supportEmail } from "@/lib/support";
 
 export { supportEmail };
@@ -38,7 +39,7 @@ export function slug(title: string): string {
  * Privacy, Terms and Refunds: the site's nav and footer, a sticky contents
  * list beside a 720px article, and a date under every title.
  */
-export function LegalPage({
+export async function LegalPage({
   doc,
   title,
   updated,
@@ -52,15 +53,28 @@ export function LegalPage({
   sections: LegalSection[];
 }) {
   const items = sections.map((section) => ({ id: slug(section.title), title: section.title }));
+  // In the iPhone app these pages are read, not browsed: no website menu or
+  // footer (both lead to pricing), no Refunds tab, and one way back.
+  const inApp = await isNativeAppRequest();
+  const docs = inApp ? DOCS.filter((d) => d.key !== "refunds") : DOCS;
 
   return (
     <div className="flex flex-1 flex-col">
-      <SiteNav current="privacy" />
+      {inApp ? (
+        <div className="kb-wrap flex items-center justify-between pt-4">
+          <span className="soft-wordmark text-[22px]">klubbies</span>
+          <Link href="/clubs" className="font-bold">
+            Back to your clubs
+          </Link>
+        </div>
+      ) : (
+        <SiteNav current="privacy" />
+      )}
       <main className="kb-wrap flex-1 py-12 sm:py-16">
         <div className="grid items-start gap-10 lg:grid-cols-[280px_minmax(0,720px)] lg:gap-16">
           <aside className="lg:sticky lg:top-6">
             <nav aria-label="Legal documents" className="flex rounded-full bg-[color:var(--kb-sand)] p-1">
-              {DOCS.map((d) => (
+              {docs.map((d) => (
                 <Link
                   key={d.key}
                   href={d.href}
@@ -95,7 +109,7 @@ export function LegalPage({
           </article>
         </div>
       </main>
-      <SiteFooter />
+      {inApp ? null : <SiteFooter />}
     </div>
   );
 }

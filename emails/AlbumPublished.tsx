@@ -17,7 +17,7 @@ export default function AlbumPublished({ name, clubName, albumTitle, albumMeta, 
       <Text style={emailStyles.kicker}>{clubName}</Text>
       <Text style={emailStyles.heading}>{albumTitle}</Text>
       <Text style={emailStyles.body}>
-        Hi {firstName}, the committee has shared a new album{albumMeta ? ` — ${albumMeta}` : ""}. Only people on the
+        Hi {firstName}, the committee has shared a new album{albumMeta ? ` (${albumMeta})` : ""}. Only people on the
         member list can see it.
       </Text>
       <Link href={albumUrl} style={emailStyles.button}>

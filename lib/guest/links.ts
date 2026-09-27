@@ -5,6 +5,16 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // credential, so it is long, single-purpose, and stored only as a hash: a
 // leaked backup can't be turned back into a working upload link.
 
+/**
+ * Who to greet on the guest page. The label is free text the committee typed,
+ * often "Name, what for" or, on links made before 27 Sep 2026, "Name — what
+ * for", so it is cut at the first separator.
+ */
+export function guestName(label: string): string {
+  const name = label.split(/\s*[—–:,|·(]\s*|\s+-\s+/)[0].trim();
+  return name || label.trim();
+}
+
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
 
 /** Three dash-separated groups, e.g. 7hK2-wRq9-mB4t — readable down a phone line. */

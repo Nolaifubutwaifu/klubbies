@@ -75,7 +75,7 @@ export async function enableClubFacesAction(clubId: string, accepted: boolean): 
   return {
     ok: true,
     message: queued
-      ? `On. ${queued.toLocaleString("en-AU")} photos queued — members can enrol now.`
+      ? `On. ${queued.toLocaleString("en-AU")} photos queued. Members can enrol now.`
       : "On. Members can enrol now.",
   };
 }

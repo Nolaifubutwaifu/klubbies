@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/format";
 import { signLogoMarks } from "@/lib/storage";
 import { createClient } from "@/lib/supabase/server";
 import { clubToneStyle } from "@/lib/theme";
+import { isNativeAppRequest } from "@/lib/native-app-server";
 
 export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">) {
   const { handle } = await props.params;
@@ -35,9 +36,13 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
     : null;
 
   const status = ctx.club.billing_status as BillingStatus;
+  // No price and no "Activate" inside the iPhone app (decision 137).
+  const inApp = await isNativeAppRequest();
   const plan = canWrite(status)
-    ? { line: "A$20 / month", hint: ctx.club.paid_at ? `Paid ${formatDate(ctx.club.paid_at)}` : BILLING_LABEL[status] }
-    : { line: BILLING_LABEL[status], hint: "Activate to upload" };
+    ? inApp
+      ? { line: BILLING_LABEL[status], hint: ctx.club.paid_at ? `Paid ${formatDate(ctx.club.paid_at)}` : "" }
+      : { line: "A$20 / month", hint: ctx.club.paid_at ? `Paid ${formatDate(ctx.club.paid_at)}` : BILLING_LABEL[status] }
+    : { line: BILLING_LABEL[status], hint: inApp ? "Not active yet" : "Activate to upload" };
 
   return (
     <div className="flex flex-1 flex-col" style={clubToneStyle(ctx.club.accent_colour)}>
@@ -52,6 +57,7 @@ export default async function AdminLayout(props: LayoutProps<"/admin/[handle]">)
           counts={{ albums: albums.count ?? 0, members: members.count ?? 0, removals: removals.count ?? 0 }}
           plan={plan}
           person={{ name: displayName, role: ctx.role?.name ?? "Admin" }}
+          inApp={inApp}
         />
         <div className="min-w-0 flex-1">{props.children}</div>
       </div>

@@ -81,11 +81,19 @@ export function AlbumActions({
       for (let i = 0; i < mediaIds.length; i += SHARE_BATCH) {
         const batch = mediaIds.slice(i, i + SHARE_BATCH);
         setProgress(`Preparing ${i + 1} to ${Math.min(i + SHARE_BATCH, mediaIds.length)} of ${mediaIds.length}`);
-        const res = await fetch("/api/media/sign", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ mediaIds: batch, variant: "display" }),
-        });
+        // The app saves the originals itself (full quality, videos as videos);
+        // the share sheet in a browser gets the lighter display copies.
+        const res = native
+          ? await fetch("/api/media/originals", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ mediaIds: batch }),
+            })
+          : await fetch("/api/media/sign", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ mediaIds: batch, variant: "display" }),
+            });
         const { urls }: { urls: Record<string, string> } = await res.json();
         if (native) {
           const batchUrls = batch.map((id) => urls[id]).filter((url): url is string => Boolean(url));

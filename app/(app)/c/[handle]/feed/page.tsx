@@ -8,6 +8,7 @@ import { listAlbums } from "@/lib/media/queries";
 import { createClient } from "@/lib/supabase/server";
 import { Composer, PostList } from "./Feed";
 import { personName } from "@/lib/auth/display-name";
+import { plural } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Club feed" };
 
@@ -86,7 +87,9 @@ export default async function FeedPage(props: PageProps<"/c/[handle]/feed">) {
               )}
               <span className="mt-2 block font-heading text-[16px] font-bold">{latest.title}</span>
               <span className="block text-[14px] text-ink-70">
-                {latest.photoCount} photos · {latest.videoCount} videos
+                {[latest.photoCount ? plural(latest.photoCount, "photo") : null, latest.videoCount ? plural(latest.videoCount, "video") : null]
+                  .filter(Boolean)
+                  .join(" · ") || "Nothing in it yet"}
               </span>
             </Link>
           </div>

@@ -4,10 +4,34 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 /** Closes off the page so content doesn't fade into empty background. */
-export function AppFooter() {
+export function AppFooter({ inApp = false }: { inApp?: boolean }) {
+  const pathname = usePathname();
   // The lightbox covers the window; a footer underneath it only catches
   // clicks meant for the photo's own buttons.
-  if (/^\/c\/[^/]+\/a\/[^/]+\/[^/]+/.test(usePathname())) return null;
+  if (/^\/c\/[^/]+\/a\/[^/]+\/[^/]+/.test(pathname)) return null;
+
+  // In the iPhone app the tab bar is the navigation, and a website footer on
+  // every screen reads as a web page. The legal links stay on the profile,
+  // where App Review looks for them, without Refunds: it is about paying,
+  // and the app keeps payment out of sight (decision 137).
+  if (inApp) {
+    if (pathname !== "/account") return null;
+    return (
+      <footer className="app-footer relative z-10 mt-auto">
+        <div className="mx-auto flex w-full max-w-[1320px] flex-wrap items-center gap-x-4 gap-y-2 px-4 pb-28 pt-6 text-[14px] sm:px-6">
+          {[
+            ["/privacy", "Privacy"],
+            ["/terms", "Terms"],
+            ["/support", "Support"],
+          ].map(([href, label]) => (
+            <Link key={href} href={href} className="text-[color:var(--ink-55)] no-underline hover:text-accent">
+              {label}
+            </Link>
+          ))}
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="app-footer relative z-10 mt-auto">

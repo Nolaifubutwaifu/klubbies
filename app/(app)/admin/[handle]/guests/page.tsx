@@ -107,7 +107,7 @@ export default async function GuestLinksPage(props: PageProps<"/admin/[handle]/g
           <section className="rounded-[var(--soft-r)] bg-[color:var(--tone-support)] p-5 text-[color:var(--tone-support-ink)]">
             <span className="block text-[14px] font-bold">This is all your photographer sees</span>
             <p className="m-0 mt-1 text-[14px]">
-              No login, no roster, no other albums — one drop zone and the album name. They drop files and close the tab.
+              No login, no roster, no other albums: one drop zone and the album name. They drop files and close the tab.
               Everything they add shows as &ldquo;added by guest&rdquo; in your album.
             </p>
             <div className="mt-4 rounded-[var(--soft-r-sm)] bg-[color:var(--color-surface)] p-4 text-[color:var(--color-text)]">

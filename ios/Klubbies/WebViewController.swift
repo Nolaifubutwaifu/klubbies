@@ -11,6 +11,11 @@ final class WebViewController: UIViewController {
     private let progressBar = UIProgressView(progressViewStyle: .bar)
     private let offlineView = OfflineView()
     private var progressObservation: NSKeyValueObservation?
+    private var themeObservation: NSKeyValueObservation?
+    /// Told when the page turns dark (the photo viewer) or light again. The
+    /// SwiftUI host hides the status bar over a dark page, as Photos does.
+    var onPageDarkChange: ((Bool) -> Void)?
+    private var pageIsDark = false
     private let photoSaver = PhotoSaver()
     /// Where each download in flight is being written.
     fileprivate var downloads: [ObjectIdentifier: URL] = [:]
@@ -73,6 +78,22 @@ final class WebViewController: UIViewController {
             let progress = Float(webView.estimatedProgress)
             self.progressBar.setProgress(progress, animated: progress > self.progressBar.progress)
             self.progressBar.isHidden = progress >= 1
+        }
+
+        // The web view sits inside the safe area, so the strips above and below
+        // it are this view's background. They follow the page's theme-color
+        // (cream everywhere, near-black in the photo viewer) so a dark page
+        // doesn't sit between two cream bars.
+        themeObservation = webView.observe(\.themeColor, options: [.initial, .new]) { [weak self] webView, _ in
+            guard let self else { return }
+            let colour = webView.themeColor ?? AppConfig.background
+            var white: CGFloat = 1
+            colour.getWhite(&white, alpha: nil)
+            UIView.animate(withDuration: 0.2) { self.view.backgroundColor = colour }
+            if self.pageIsDark != (white < 0.5) {
+                self.pageIsDark = white < 0.5
+                self.onPageDarkChange?(self.pageIsDark)
+            }
         }
 
         NotificationCenter.default.addObserver(self, selector: #selector(openFromNotification(_:)), name: .klubbiesOpenURL, object: nil)

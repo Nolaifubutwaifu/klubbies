@@ -1,4 +1,9 @@
+import type { Viewport } from "next";
 import type { ReactNode } from "react";
+
+// The viewer is dark, so the phone's status bar area is too: Safari tints it
+// from this, and the iPhone app paints the strips around the web view with it.
+export const viewport: Viewport = { themeColor: "#14100f" };
 
 /**
  * The lightbox takes the window. Pinning it means the page behind can't add
